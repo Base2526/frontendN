@@ -1,0 +1,182 @@
+.messenger {
+  height: calc(100vh - 70px);
+  display: flex;
+}
+
+.chatMenu {
+  flex: 3;
+  border-style: dashed;
+  border-width: 0.5px;
+  margin: 5px;
+}
+
+.chatMenuInput {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid gray;
+}
+
+.chatBox {
+  flex: 7;
+  border-style: dashed;
+  border-width: 0.5px;
+  margin: 5px;
+}
+
+.chatBoxWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.chatBoxTop {
+  height: 100%;
+  overflow-y: scroll;
+  /* padding-right: 10px; */
+  border-style: dashed;
+  border-width: 0.5px;
+  padding: 5px;
+}
+
+.chatBoxBottom {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-style: dashed;
+  border-width: 0.5px;
+  /* padding: 5px; */
+}
+
+.chatMessageInput {
+  width: 80%;
+  height: 45px;
+  padding: 10px;
+}
+
+.chatSubmitButton {
+  width: 19%;
+  height: 45px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: teal;
+  color: white;
+}
+
+.chatOnline {
+  flex: 3;
+}
+
+.chatMenuWrapper,
+.chatBoxWrapper,
+.chatOnlineWrapper {
+  padding: 10px;
+  height: 100%;
+}
+
+.conversationMenuWrapper {
+  /* padding: 10px; */
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.noConversationText {
+  position: absolute;
+  top: 10%;
+  font-size: 50px;
+  color: rgb(224, 220, 220);
+  cursor: default;
+}
+
+.userActive {
+  border-style: dashed;
+  border-width: 0.5px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+@media screen and (max-width: 768px) {
+  .chatMenu {
+    flex: 1;
+  }
+
+  .chatMenuInput {
+    display: none;
+  }
+
+  .chatBox {
+    flex: 10;
+  }
+
+  .chatOnline {
+    flex: 1px;
+  }
+}
+
+.rce-mbox {
+  max-width: 450px !important;
+}
+
+.rce-mbox.rce-mbox-right {
+  max-width: 450px !important;
+}
+
+.rce-mbox-file > button {
+  max-width: 400px !important;
+}
+
+.rce-container-input {
+  background: rgba(255, 255, 255, 0) !important;
+}
+
+/* .rce-mbox-forward,
+.rce-mbox-remove {
+  width: 20px !important;
+  height: 20px !important;
+} */
+
+.rce-input-buttons {
+  margin-top: 0px !important;
+  margin-right: 5px !important;
+  margin-bottom: 0px !important;
+  margin-left: 5px !important;
+}
+
+.rce-mbox-photo--img {
+  width: auto !important;
+  max-height: 150px !important;
+}
+
+.rce-mbox-time-block {
+  background: none !important;
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+.rce-mbox-photo--img__block {
+  display: none !important;
+}
+
+.rce-mbox-photo--img img {
+  height: 150px !important;
+  width: auto !important;
+}
+
+.message {
+  margin-top: 5px !important;
+}
+
+.user {
+  display: inline-block;
+}
+
+.avatar img {
+  width: 50px;
+  height: 50px;
+}
+
+.rce-mbox-photo--img {
+  cursor: pointer;
+}
