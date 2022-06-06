@@ -10,8 +10,8 @@ import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import CloseIcon from "@mui/icons-material/Close";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import _ from "lodash";
 
 const Input = styled("input")({
@@ -21,77 +21,61 @@ const Input = styled("input")({
 const AttackFileField = ({ values, onChange, onSnackbar }) => {
   const [inputList, setInputList] = useState(values);
 
-  // useEffect(() => {
-  //   setInputList(values);
-  // }, []);
-
   useEffect(() => {
-    // onChange(inputList);
+    // console.log("useEffect > : ", values);
 
-    console.log("useEffect > : ", inputList);
+    onChange(inputList)
   }, [inputList]);
 
-  // handle input change
-  // const handleInputChange = (e, index) => {
-  //   const { name, value } = e.target;
-  //   const list = [...inputList];
-  //   list[index][name] = value;
-  //   setInputList(list);
-  // };
-
-  // handle click event of the Remove button
-  // const handleRemoveClick = (index) => {
-  //   const list = [...inputList];
-  //   list.splice(index, 1);
-  //   setInputList(list);
-  // };
-
-  // // handle click event of the Add button
-  // const handleAddClick = () => {
-  //   setInputList([...inputList, { files: {} }]);
-  // };
-
   const onFileChange = (e) => {
-    // Update the state
-    // this.setState({ selectedFile: event.target.files[0] });
-    // file
-    // console.log("onFileChange : ", e.target.files);
-    // const { name, value } = e.target;
-    // const list = [...inputList];
-    // list[index][name] = e.target.files[0];
-    // setInputList(list);
-    // console.log("onFileChange : ", e.target.files);
-
     let newInputList = [...inputList];
     for (var i = 0; i < e.target.files.length; i++) {
-      // console.log("onFileChange : ", e.target.files[i]);
       let file = e.target.files[i];
       if (file.type) {
-        console.log("onFileChange type #1 : ", i, file.type);
-
         newInputList = [...newInputList, file];
       }
     }
-    console.log("onFileChange type #2 : ", newInputList);
-
     setInputList(newInputList);
+
+    
   };
 
   return (
     <Box sx={{ p: 1 }} component="footer">
-      <Typography variant="overline" display="block" gutterBottom>
-        Attack file
-      </Typography>
+      <div>
+        <Typography variant="overline" display="block" gutterBottom>
+          Attack file
+        </Typography>
+        <label htmlFor="contained-button-file">
+          <Input
+            accept="image/*"
+            id="contained-button-file"
+            name="file"
+            multiple
+            type="file"
+            onChange={(e) => {
+              onFileChange(e);
+            }}
+          />
+          <IconButton
+            color="primary"
+            aria-label="upload picture"
+            component="span"
+          >
+            <AddBoxIcon />
+          </IconButton>
+        </label>
+      </div>
       <Stack direction="row" spacing={2}>
         {_.map(
-          _.filter(inputList, (v) => !v.isDelete),
+          _.filter(inputList, (v, key) => !v.delete),
           (file, index) => {
-            console.log("Stack :", file);
+            // console.log("Stack :", file);
 
-            if (file.type) {
+            if (!file.base64) {
               // new file
               return (
-                <div style={{ position: "relative" }}>
+                <div style={{ position: "relative" }} key={index}>
                   <Avatar
                     sx={{
                       height: 80,
@@ -102,7 +86,6 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
                     variant="rounded"
                     alt="Example Alt"
                     src={URL.createObjectURL(file)}
-                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
                   />
                    <IconButton
                     style={{
@@ -120,24 +103,17 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
                       ];
 
                       setInputList(newInputList);
-
-                      // console.log(
-                      //   "delete, new file : ",
-                      //   index,
-                      //   inputList,
-                      //   newInputList
-                      // );
                       onSnackbar({open:true, message:"Delete image"});
                     }}
                   >
-                    <CloseIcon />
+                    <RemoveCircleIcon />
                   </IconButton>
                 </div>
               );
             } else {
               // old file
               return (
-                <div style={{ position: "relative" }}>
+                <div style={{ position: "relative" }} key={index}>
                   <Avatar
                     sx={{
                       height: 80,
@@ -147,8 +123,7 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
                     }}
                     variant="rounded"
                     alt="Example Alt"
-                    src={file.url}
-                    // src="https://img.freepik.com/free-vector/cute-astronaut-dance-cartoon-vector-icon-illustration-technology-science-icon-concept-isolated-premium-vector-flat-cartoon-style_138676-3851.jpg?w=2000"
+                    src={file.base64}
                   />
                    <IconButton
                     style={{
@@ -161,17 +136,20 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
                     component="span"
                     onClick={() => {
                       let newInputList = [...inputList];
-                      newInputList[index] = {
-                        ...newInputList[index],
-                        isDelete: true
-                      };
-                      setInputList(newInputList);
+                      
+                      // console.log("Delete image : ", inputList, file.id)
 
+                      let i = _.findIndex(newInputList, (v)=>v.id == file.id)
+                      newInputList[i] = {
+                        ...newInputList[i],
+                        delete: true
+                      };
+
+                      setInputList(newInputList);
                       onSnackbar({open:true, message:"Delete image"});
-                      // console.log("delete, old file :", index, newInputList);
                     }}
                   >
-                    <CloseIcon />
+                    <RemoveCircleIcon />
                   </IconButton>
                 </div>
               );
@@ -179,27 +157,7 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
           }
         )}
       </Stack>
-      <label htmlFor="contained-button-file">
-        {/* <img src={file} /> */}
-
-        <Input
-          accept="image/*"
-          id="contained-button-file"
-          name="file"
-          multiple
-          type="file"
-          onChange={(e) => {
-            onFileChange(e);
-          }}
-        />
-        <IconButton
-          color="primary"
-          aria-label="upload picture"
-          component="span"
-        >
-          <AttachFileIcon />
-        </IconButton>
-      </label>
+     
       {/* <div style={{ marginTop: 20 }}>{JSON.stringify(inputList)}</div> */}
     </Box>
   );

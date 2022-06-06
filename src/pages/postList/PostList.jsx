@@ -6,18 +6,12 @@ import {
 } from "./PostList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
-import { userRows } from "../../data";
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import { UserContext, PostContext } from "../../Store";
 import Box from "@mui/material/Box";
-
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory
-} from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { useHistory } from "react-router-dom";
 
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -31,34 +25,49 @@ import _ from "lodash"
 import Avatar from "@mui/material/Avatar";
 import ShowMoreText from "react-show-more-text";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { getList } from "../../components/provider/DataProvider";
+
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 
 import Footer from "../home2/Footer";
+import {gqlPosts} from "../../gqlQuery"
+
+import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
 const PostList = (props) => {
   let history = useHistory();
-  // const [userData, setUserData] = useState(userRows);
-  const [userData, setUserData] = useContext(PostContext);
 
-  console.log("userData : ", userData);
+  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
+  
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  const [datas, setDatas] = useState({data: null, total: 0});
+  // const [datas, setDatas] = useState({data: null, total: 0});
 
-  useEffect(async()=>{
+  const { error, data, loading, networkStatus } = useQuery(gqlPosts, {
+    variables: {page: page, perPage: perPage},
+    notifyOnNetworkStatusChange: true,
+  });
 
-    setDatas(await getList("posts", {}))
+  console.log("error, data, loading, networkStatus, gqlPosts :", error, data, loading, networkStatus)
+  console.log(error)
 
-    // let {data, total} = await getList("posts", {})
 
-    // console.log("data, total :", data, total)
-    // console.log("userDatauserDatauserDatauserData ", userData)
+  // useEffect(async()=>{
 
-    console.log("useEffect")
-  },[])
+  //   // setDatas(await getList("posts", {}))
+
+  //   // let {data, total} = await getList("posts", {})
+
+  //   // console.log("data, total :", data, total)
+  //   // console.log("userDatauserDatauserDatauserData ", userData)
+
+  //   console.log("useEffect")
+  // },[])
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -72,7 +81,7 @@ const PostList = (props) => {
   };
 
   const handleDelete = (id) => {
-    setUserData(userData.filter((user) => user.id !== id));
+    // setUserData(userData.filter((user) => user.id !== id));
   };
 
   const columns = [
@@ -135,26 +144,11 @@ const PostList = (props) => {
               width: "100%",
               whiteSpace: "initial",
               lineHeight: "16px"
-            }}
-          >
-            {/* <Typography
-              variant="body1"
-              gutterBottom
-              dangerouslySetInnerHTML={{
-                __html: params.row.body
-              }}
-            /> */}
-            <ShowMoreText
-              lines={2}
-              more={<ExpandMore />}
-              less={""}
-              className="show-more-text"
-              anchorClass="my-anchor-css-class"
-              width={150}
-              truncatedEndingComponent={"..."}
-            >
-              {params.row.body}
-            </ShowMoreText>
+            }}>
+            <ReadMoreMaster
+              byWords={true}
+              length={10}
+              ellipsis="...">{params.row.description}</ReadMoreMaster>
           </Box>
         );
       }
@@ -202,37 +196,27 @@ const PostList = (props) => {
 
   return (
     <UserListContainer>
-      <Button
-        variant="contained"
-        onClick={() => {
-          // newPost
-          history.push("/post/new");
-        }}
-        // autoFocus
-      >
-        Add new post
-      </Button>
-
         {
-         
-           _.isEmpty(datas.data) 
-           ?  <div><CircularProgress /></div> 
-           :  <DataGrid
-                rows={datas.data}
-                columns={columns}
-                // rowsPerPageOptions={[5, 10, 20]}
-                // pageSize={5}
-                // rowsPerPageOptions={[5]}
-                // checkboxSelection
-                // disableSelectionOnClick
-                rowHeight={80}
-              />
-
+          loading
+          ?  <div><CircularProgress /></div> 
+          :  <DataGrid
+              rows={data.Posts.data}
+              columns={columns}
+              rowHeight={80}
+              pageSize={perPage}
+              onPageSizeChange={(newPerPage) => {
+                setPerPage(newPerPage)
+                setPage(0)
+              }}
+              rowsPerPageOptions={pageOptions}
+              page={page}
+              onPageChange={(newPage) =>{
+                setPage(newPage)
+              }}
+              rowCount={data.Posts.total}
+            />
         }
-
-     
-
-{/*      
+    
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -264,7 +248,18 @@ const PostList = (props) => {
         </Dialog>
       )}
 
-       */}
+       
+
+        <SpeedDial
+          ariaLabel="SpeedDial basic example"
+          sx={{ position: 'absolute', bottom: 16, right: 16 }}
+          icon={<SpeedDialIcon />}
+          onClick={(e)=>{
+            history.push("/post/new");
+          }}
+        >
+         
+        </SpeedDial>
       <Footer />
     </UserListContainer>
   );

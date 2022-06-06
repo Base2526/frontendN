@@ -37,6 +37,14 @@ const Breadcs = ({ title }) => {
 
   const notificationMatches =useRouteMatch("/notification")
 
+  const messengerMatches =useRouteMatch("/messenger")
+
+  // bookmarks
+  const bookmarksMatches =useRouteMatch("/bookmarks")
+
+  // reports
+  const reportsMatches =useRouteMatch("/reports")
+
   const handleClick = () => {};
   return (
     <div role="presentation" onClick={handleClick}>
@@ -185,6 +193,26 @@ const Breadcs = ({ title }) => {
         {notificationMatches && (
           <MuiLink component={Link} to="/notification">
             Notification
+          </MuiLink>
+        )}
+
+        {messengerMatches && (
+          <MuiLink component={Link} to="/messenger">
+            Messenger
+          </MuiLink>
+        )}
+
+        {/* bookmarks  */}
+        {bookmarksMatches && (
+          <MuiLink component={Link} to="/bookmarks">
+            Bookmarks
+          </MuiLink>
+        )}
+
+        {/*  */}
+        {reportsMatches && (
+          <MuiLink component={Link} to="/reports">
+            Reports
           </MuiLink>
         )}
 

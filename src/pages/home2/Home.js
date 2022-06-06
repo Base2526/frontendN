@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-// import { notes } from "../data/db";
-import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
 import { Container } from "@material-ui/core";
 import MasonryCard from "./MasonryCard";
 import Masonry from "react-masonry-css";
@@ -19,6 +16,15 @@ import _ from "lodash";
 import moment from "moment";
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { useQuery } from "@apollo/client";
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
+import SaveIcon from '@mui/icons-material/Save';
+import PrintIcon from '@mui/icons-material/Print';
+import ShareIcon from '@mui/icons-material/Share';
+
 
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
@@ -28,29 +34,18 @@ import Pagination from "./Pagination";
 import Detail from "./Detail";
 import { socket } from "../../SocketioClient";
 import DialogLogin from "./DialogLogin";
-import { getList } from "../../components/provider/DataProvider";
-
 import ReportDialog from "../../components/report"
+import DialogProfile from "../../components/dialogProfile"
 
-const images = [
-  "//placekitten.com/1500/500",
-  "//placekitten.com/4000/3000",
-  "//placekitten.com/800/1200",
-  "//placekitten.com/1500/1500"
-];
+import {gqlHomes} from "../../gqlQuery"
 
 const Home = (props) => {
-  const [note, setNote] = useState([]);
+  let history = useHistory();
 
-  // const [datas, setDatas] = useState([]);
-  // const [total, setTotal] = useState(0)
-
-  const [datas, setDatas] = useState({data: null, total: 0});
-
-  const navigate = useHistory();
   const [keywordSearch, setKeywordSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [category, setCategory] = useState([0,1]);
+  const [page, setPage] = useState(0);                             // Page number
+  const [rowsPerPage, setRowsPerPage] = useState(10);              // Number per page
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
   const [lightbox, setLightbox] = useState({
@@ -69,21 +64,34 @@ const Home = (props) => {
   const [snackbar, setSnackbar] = useState({open: false, message:""});
   const [report, setReport] = useState({open: false, portId:""});
 
-  useEffect(async() => {
-    // setNote(notes);
-
-    // let {data, total} = await getList("posts", {})
-    // setDatas(data)
-    // setTotal(total)
-
-    setDatas(await getList("posts", {}))
-  }, []);
-
+  const [dialogProfile, setDialogProfile] = useState({open: false, id:""});
   const breakpoints = {
     default: 3,
     1100: 2,
     700: 1
   };
+
+  const { error, data, loading, networkStatus } = useQuery(gqlHomes, {
+    variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus, category.join())
+
+  // useEffect(async() => {
+  //   // setDatas(await getList("posts", {}))
+  // }, []);
+
+  // useEffect(async() => {
+  //   // console.log("useEffect :", page, rowsPerPage)
+
+  //   // const { error, data, loading, networkStatus } = useQuery(query, {
+  //   //   // variables: {},
+  //   //   notifyOnNetworkStatusChange: true,
+  //   // });
+  
+  //   // console.log("useEffect :", loading, data)
+  // }, [page, rowsPerPage]);
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -104,13 +112,6 @@ const Home = (props) => {
   const snackbarClick = () => {
     setSnackbar({...snackbar, open: true});
   };
-
-  const [state, setState] = React.useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false
-  });
 
   const menuShare = (index) =>{
     return  <Menu
@@ -159,7 +160,7 @@ const Home = (props) => {
             </Menu>
   }
 
-  const menuSetting = (index) =>{
+  const menuSetting = (item, index) =>{
     return  <Menu
               anchorEl={anchorElSetting && anchorElSetting[index]}
               keepMounted
@@ -181,6 +182,12 @@ const Home = (props) => {
             >
               <MenuItem onClick={(e)=>{
                 handleAnchorElSettingClose()
+                history.push("/post/"+item.id+ "/edit");
+              }}>
+                Edit
+              </MenuItem>
+              <MenuItem onClick={(e)=>{
+                handleAnchorElSettingClose()
 
                 setReport({open: true, portId:index})
               }}>
@@ -195,9 +202,8 @@ const Home = (props) => {
         <SearchBar
           keyword={keywordSearch}
           onChange={(data, topic) => {
-            console.log("SearchBar onChange :", data, topic);
-
             setKeywordSearch(data);
+            setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
           }}
           onKeyDown={(ev) => {
             // key enter
@@ -210,7 +216,7 @@ const Home = (props) => {
 
         <div>
           {
-            _.isEmpty(datas.data) 
+            loading
             ? <div><CircularProgress /></div> 
             : 
               <div>
@@ -220,7 +226,7 @@ const Home = (props) => {
                     className="my-masonry-grid"
                     columnClassName="my-masonry-grid_column"
                   >
-                    {datas.data.map(
+                    {data.Homes.data.map(
                       (n, index) => {
                         return (
                           <div key={n.id}>
@@ -233,12 +239,14 @@ const Home = (props) => {
                               onSnackbar={async(data)=>{
                                 // setSnackbar(data)
 
-                                await socket().emit('follow', {test: "1234"}, (values)=>{
-                                  // console.log(error);
-                                  console.log(values);
+                                setSnackbar({open: true, message:"Follow"});
 
-                                  setSnackbar({open: true, message:"Follow"});
-                                });
+                                // await socket().emit('follow', {test: "1234"}, (values)=>{
+                                //   // console.log(error);
+                                //   console.log(values);
+
+                                //   setSnackbar({open: true, message:"Follow"});
+                                // });
                               }}
                               onLightbox={(data)=>{
                                 setLightbox(data)
@@ -251,10 +259,17 @@ const Home = (props) => {
                               onAnchorElSettingOpen={(index, e)=>{
                                 handleAnchorElSettingOpen(index, e)
                               }}
+
+                              // setReport({open: true, portId:index})
+                              onDialogProfileOpen={(index, e)=>{
+                                // handleAnchorElSettingOpen(index, e)
+                                // 
+                                setDialogProfile({open:true, id:11})
+                              }}
                               />
 
                               {menuShare(index)}
-                              {menuSetting(index)}
+                              {menuSetting(n, index)}
 
                               
                           </div>
@@ -269,34 +284,31 @@ const Home = (props) => {
                     page={page}
                     onPageChange={(event, newPage) => {
                       setPage(newPage);
+                      // navigate.push({
+                      //   pathname: "/",
+                      //   search: "?sort=date&order=newest"
+                      // });
 
-                      navigate.push({
-                        pathname: "/",
-                        search: "?sort=date&order=newest"
-                      });
+                      // console.log("onPageChange :", event,  newPage)
                     }}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event) => {
                       setRowsPerPage(parseInt(event.target.value, 10));
                       setPage(0);
 
-                      navigate.push({
-                        pathname: "/",
-                        search: "?sort=date&order=newest"
-                      });
+                      // navigate.push({
+                      //   pathname: "/",
+                      //   search: "?sort=date&order=newest"
+                      // });
+
+                      // console.log("onRowsPerPageChange :", parseInt(event.target.value, 10))
                     }}
-                    count={datas.total}
+                    count={data.Homes.total}
                   />
                 </Container>
-
-                {/* <ReportDialog /> */}
               </div>
           }
-          
-
-          
         </div>
-
         <Footer />
       </div>
 
@@ -361,6 +373,35 @@ const Home = (props) => {
       {
         report.open && <ReportDialog open={report.open} portId={report.portId} onClose={()=>setReport({open: false, portId:""})}/>
       }
+
+      {
+
+        dialogProfile.open &&  <DialogProfile open={dialogProfile.open} id={dialogProfile.id} onClose={()=>setDialogProfile({open: false, id:""})}/>
+      }
+
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClick={(e)=>{
+          history.push("/post/new");
+        }}
+      >
+        {/* {
+        [
+          { icon: <FileCopyIcon />, name: 'Copy' },
+          { icon: <SaveIcon />, name: 'Save' },
+          { icon: <PrintIcon />, name: 'Print' },
+          { icon: <ShareIcon />, name: 'Share' },
+        ].map((action) => (
+                  <SpeedDialAction
+                    key={action.name}
+                    icon={action.icon}
+                    tooltipTitle={action.name}
+                  />
+        ))
+        } */}
+      </SpeedDial>
     </div>
   );
 }

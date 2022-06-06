@@ -18,16 +18,17 @@ const checkboxs = (props) => {
 
   return (
     <Container sx={{ py: 1 }} maxWidth="xl" >
-   {props.list.map((m) => (
-      <FormControlLabel
-        fullWidth
-        id={m.key}
-        control={
-          <Checkbox id={m.key} checked={m.checked} onClick={props.handleChange} />
-        }
-        label={m.name}
-      />
-    ))} 
+      {props.list.map((m) => (
+          <FormControlLabel
+            fullWidth
+            key={m.key}
+            id={m.key}
+            control={
+              <Checkbox id={m.key} checked={m.checked} onClick={props.handleChange} />
+            }
+            label={m.name}
+          />
+        ))} 
     </Container>
   );
 };

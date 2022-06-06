@@ -74,19 +74,21 @@ const socketIO = async (props) => {
 
 
 const socket = () => {
-    if(!_.isEmpty(soc)){
-        return soc;
-    }
+  console.log("socket : ", soc)
+  if( soc !== undefined){
+      return soc;
+  }
 
-    soc = io("http://localhost:4040" , { transports : ['websocket'], query: {  x: 42} })
+  soc = io("http://localhost:4040" , { transports : ['websocket'], query: {  x: 42} })
 
-    if (soc.connected === false && soc.connecting === false) {
-        // use a connect() or reconnect() here if you want
-        soc.connect();
-        console.log("socket")
-    }
+  if (soc.connected === false && soc.connecting === undefined) {
+    // use a connect() or reconnect() here if you want
+    soc.connect();
+    console.log("socket")
+  }
 
-    return soc;
+  console.log("socket #1 ", soc, soc.connecting)
+  return soc;
 }
 
 const geolocation = async () => {

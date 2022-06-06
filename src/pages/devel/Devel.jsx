@@ -3,11 +3,33 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PopupSnackbar from "../home2/PopupSnackbar";
+import { useQuery, useMutation } from "@apollo/client";
+
+
+import { gqlUsers, gqlUser, gqlRoles, gqlCreatePost } from "../../gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
+let total = 10;
 const Devel = (props) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+
+  const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
+    variables: {
+      taskId: 1,
+    },
+    refetchQueries: () => [{
+      query: gqlUsers,
+      variables: { 
+        // status: 'OPEN',
+      },
+    }],
+  });
+
+  console.log("resultCreatePost :", resultCreatePost)
+
+
   /**
   const makeText = (length) => {
         var result           = '';
@@ -18,6 +40,7 @@ const Devel = (props) => {
        }
        return result;
     }
+    */
 
     const makeNumber = (length)=> {
         var result           = '';
@@ -29,6 +52,7 @@ const Devel = (props) => {
        return result;
     }
 
+    
     const makeFile = (length) =>{
         let files = []
         for ( var i = 0; i < length; i++ ) {
@@ -42,6 +66,7 @@ const Devel = (props) => {
         }
         return files
     }
+    
 
     const makeBank = (length) =>{
         let banks = []
@@ -51,16 +76,29 @@ const Devel = (props) => {
             const max = total;
             const rand = min + Math.random() * (max - min);
 
-            let bank = data[Math.floor(rand)]
-
             banks.push({
-                        user_bank: makeNumber(11),                  
-                        banks: bank.id
+                        bankAccountName: makeNumber(11),
+                        bank: [
+                            {
+                                name: 'ธนาคารกสิกรไทย',
+                                description: '<p>ธนาคารกสิกรไทย</p>',
+                                isPublish: 1
+                            }
+                        ]
                     })
         }
         return banks
     }
 
+    const makeTels = (length) =>{
+      let tels = []
+      for ( var i = 0; i < length; i++ ) {
+          tels.push(makeNumber(11))
+      }
+      return tels
+    }
+
+    /*
     const makeFollow = (length) =>{
         let follows = []
         for ( var i = 0; i < length; i++ ) {
@@ -120,7 +158,7 @@ const Devel = (props) => {
           let start = Date.now();
 
           {
-            /* 
+            
             for (var i = 0; i < 10; i++) {
 
                     //////////// bank
@@ -128,38 +166,52 @@ const Devel = (props) => {
                     const max = total;
                     const rand = min + Math.random() * (max - min);
 
-                    let bank = data[Math.floor(rand)]
+                    // let bank = data[Math.floor(rand)]
                     //////////// bank
 
                     //////////// user
-                    const minUser = 0;
-                    const maxUser = dataUsers.length;
-                    const randUser = minUser + Math.random() * (maxUser - minUser);
+                    // const minUser = 0;
+                    // const maxUser = dataUsers.length;
+                    // const randUser = minUser + Math.random() * (maxUser - minUser);
 
-                    let user = dataUsers[Math.floor(randUser)]
+                    // let user = dataUsers[Math.floor(randUser)]
                     //////////// user
 
                     // const randomPhoneNumber = faker.phone.phoneNumber();
                     // const im = faker.image.avatar()
                     // console.log("randomPhoneNumber :", randomPhoneNumber, im, randomstring.generate(7) )
 
-                    create('posts', { data: {
-                        title:faker.lorem.lines(1),
-                        nameSubname:faker.name.firstName() +" "+ faker.name.firstName(),
-                        idCard:makeNumber(6),
-                        number:makeNumber(6),
-                        dateTranfer: faker.date.past(),                    
-                        body:faker.lorem.paragraph(),
-                        banks:makeBank(rand),
-                        follows:makeFollow( 5),
-                        files:makeFile(rand),
-                        isPublish:0,
-                        owner_id: user.id,
-                        // createdAt: faker.date.past(),     
-                        } })
-                        
+                    // create('posts', { data: {
+                    //     title:faker.lorem.lines(1),
+                    //     nameSubname:faker.name.firstName() +" "+ faker.name.firstName(),
+                    //     idCard:makeNumber(6),
+                    //     number:makeNumber(6),
+                    //     dateTranfer: faker.date.past(),                    
+                    //     body:faker.lorem.paragraph(),
+                    //     banks:makeBank(rand),
+                    //     follows:makeFollow( 5),
+                    //     files:makeFile(rand),
+                    //     isPublish:0,
+                    //     owner_id: user.id,
+                    //     // createdAt: faker.date.past(),     
+                    //     } })
+
+                    // onCreatePost
+
+                    onCreatePost({ variables: { input: {
+                          title: faker.lorem.lines(1),
+                          nameSubname: faker.name.firstName() +" "+ faker.name.firstName(),
+                          idCard: makeNumber(6),
+                          amount: makeNumber(6),
+                          tels: makeTels(rand),
+                          banks: makeBank(rand),
+                          description: faker.lorem.paragraph(),
+                          dateTranfer:  faker.date.past(),
+                          files:makeFile(rand),
+                        }
+                      }
+                    });     
                 }
-          */
           }
 
           let executionTime = `Time to execute = ${

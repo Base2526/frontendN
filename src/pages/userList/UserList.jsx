@@ -6,11 +6,8 @@ import {
 } from "./UserList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
-import { userRows } from "../../data";
 import { useState, useContext, useEffect } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { UserContext } from "../../Store";
-
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -21,8 +18,13 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { useQuery } from "@apollo/client";
+import { useDemoData } from "@mui/x-data-grid-generator";
 
-import { getList } from "../../components/provider/DataProvider";
+// import { getList } from "../../components/provider/DataProvider";
+import {gqlUsers} from "../../gqlQuery"
 
 import Footer from "../home2/Footer";
 
@@ -30,18 +32,33 @@ const UserList = (props) => {
   let history = useHistory();
 
   // const [userData, setUserData] = useState(userRows);
-  const [userData, setUserData] = useContext(UserContext);
+  // const [userData, setUserData] = useContext(UserContext);
 
-  const [datas, setDatas] = useState({data: null, total: 0});
+  // const [datas, setDatas] = useState({data: null, total: 0});
+
+  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  useEffect(async()=>{
-    setDatas( await getList("users", {}) )
-  }, [])
+  const { error, data, loading, networkStatus } = useQuery(gqlUsers, {
+    variables: {page: page, perPage: perPage},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
+
+  // const { dataDemo } = useDemoData({
+  //   rowLength: 100
+  // });
+
+  // useEffect(async()=>{
+  //   setDatas( await getList("users", {}) )
+  // }, [])
 
   const handleDelete = (id) => {
     setUserData(userData.filter((user) => user.id !== id));
@@ -131,27 +148,28 @@ const UserList = (props) => {
 
   return (
     <UserListContainer>
-      <Button
-        variant="contained"
-        onClick={() => {
-          // newPost
-          history.push("/user/new");
-        }}
-        // autoFocus
-      >
-        Add new user
-      </Button>
-
       {
-         _.isEmpty(datas.data) 
-         ?  <div><CircularProgress /></div> 
-         :  <DataGrid
-              rows={datas.data}
-              columns={columns}
-            />
-      }
-      
+        loading
+        ? <div><CircularProgress /></div> 
+        : <DataGrid
+            rows={data.Users.data}
+            columns={columns}
+            rowHeight={80}
 
+            pageSize={perPage}
+            onPageSizeChange={(newPerPage) => {
+              setPerPage(newPerPage)
+              setPage(0)
+            }}
+            rowsPerPageOptions={pageOptions}
+            page={page}
+            onPageChange={(newPage) =>{
+              setPage(newPage)
+            }}
+            rowCount={data.Users.total}
+          />
+      }
+    
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -182,6 +200,15 @@ const UserList = (props) => {
           </DialogActions>
         </Dialog>
       )}
+
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClick={(e)=>{
+          history.push("/user/new");
+        }}
+      />
       <Footer />
     </UserListContainer>
   );

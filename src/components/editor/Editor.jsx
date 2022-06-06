@@ -1,21 +1,25 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { CKEditor } from "ckeditor4-react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-const Editor = (props) => {
+const Editor = ({label, initData, onEditorChange}) => {
+
+  useEffect(()=>{
+    // console.log("initData :", initData)
+  }, [])
+
   return (
     <Box>
-      {props.label ? (
-        <Typography variant="subtitle1" gutterBottom component="div">
-          {props.label}
+      {label ? (
+        <Typography variant="overline" display="block" gutterBottom>
+          {label}
         </Typography>
       ) : (
         ""
       )}
-
-      <CKEditor label="Descrition" initData={""} />
+      <CKEditor label="Descrition" initData={initData} onChange={(event)=>{onEditorChange(event.editor.getData())}} />
     </Box>
   );
 };

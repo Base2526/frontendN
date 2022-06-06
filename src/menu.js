@@ -21,6 +21,9 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import HomeIcon from "@mui/icons-material/Home";
 import MailIcon from "@material-ui/icons/Mail";
 
+import BookmarksIcon from '@mui/icons-material/Bookmarks';
+import BugReportIcon from '@mui/icons-material/BugReport';
+
 const MenuList = [
   {
     Id: 1,
@@ -48,12 +51,12 @@ const MenuList = [
     Icon: <Timeline className="icon" />,
     Path: "/posts"
   },
-  // {
-  //   Id: 3,
-  //   Name: "Comments",
-  //   Icon: <CommentIcon className="icon" />,
-  //   Path: "/comments"
-  // },
+  {
+    Id: 3,
+    Name: "Bookmarks",
+    Icon: <BookmarksIcon className="icon" />,
+    Path: "/bookmarks"
+  },
   {
     Id: 4,
     Name: "Users",
@@ -98,6 +101,13 @@ const MenuList = [
         Path: "/theme-mails"
       }
     ]
+  },
+  {
+    // ReportList
+    Id: 8,
+    Name: "Contact Us",
+    Icon: <BugReportIcon className="icon" />,
+    Path: "/contact-us"
   }
 ];
 

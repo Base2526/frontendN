@@ -6,10 +6,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { IconButton, Typography, makeStyles } from "@material-ui/core";
+import CommentIcon from "@mui/icons-material/Comment";
+import { useHistory } from "react-router-dom";
 
 import Avatar from "@material-ui/core/Avatar";
 
-const index =({open, portId, onClose})=> {
+const index =({open, id, onClose})=> {
+    const navigate = useHistory();
   return (
       <Dialog open={open}>
         <DialogTitle>REPORT</DialogTitle>
@@ -17,21 +21,15 @@ const index =({open, portId, onClose})=> {
           <DialogContentText>
           <Avatar>H</Avatar>
           </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="message"
-            // type="email"
-            fullWidth
-            variant="standard"
-            multiline
-            rows={4}
-          />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>CLOSE</Button>
-          <Button onClick={onClose}>REPORT</Button>
+          <IconButton onClick={() => {
+                // onPanelComment({ isOpen: true, commentId: 3456 })
+                navigate.push("/messenger")
+            }}>
+              <CommentIcon />
+            </IconButton>
         </DialogActions>
       </Dialog>
   );

@@ -6,49 +6,45 @@ import {
 } from "./ThemeMailList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
-import { userRows } from "../../data";
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
-import { RoleContext } from "../../Store";
-
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory
-} from "react-router-dom";
-
+import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-
 import CircularProgress from '@mui/material/CircularProgress';
-import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { useQuery } from "@apollo/client";
 
-import { getList } from "../../components/provider/DataProvider";
+// import { getList } from "../../components/provider/DataProvider";
+import {gqlThemeMails} from "../../gqlQuery"
 import Footer from "../home2/Footer";
 
 const ThemeMailList = (props) => {
   let history = useHistory();
-  // const [userData, setUserData] = useState(userRows);
-  const [userData, setUserData] = useContext(RoleContext);
-  const [datas, setDatas] = useState({data: null, total: 0});
+
+  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  useEffect(async()=>{
-    setDatas( await getList("mails", {}) )
-  }, [])
+  const { error, data, loading, networkStatus } = useQuery(gqlThemeMails, {
+    variables: {page: page, perPage: perPage},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -132,23 +128,25 @@ const ThemeMailList = (props) => {
 
   return (
     <UserListContainer>
-      <Button
-        variant="contained"
-        onClick={() => {
-          // newPost
-          history.push("/theme-mail/new");
-        }}
-        // autoFocus
-      >
-        Add new Theme mail
-      </Button>
-     
-      {
-        _.isEmpty(datas.data) 
-        ?  <div><CircularProgress /></div> 
-        :  <DataGrid
-            rows={datas.data}
+   
+     {
+        loading
+        ? <div><CircularProgress /></div> 
+        : <DataGrid
+            rows={data.Mails.data}
             columns={columns}
+            rowHeight={80}
+
+            pageSize={perPage}
+            onPageSizeChange={(newPerPage) => {
+              setPerPage(newPerPage)
+              setPage(0)
+            }}
+            rowsPerPageOptions={pageOptions}
+            page={page}
+            onPageChange={(newPage) =>{
+              setPage(newPage)
+            }}
           />
       }
 
@@ -183,6 +181,17 @@ const ThemeMailList = (props) => {
           </DialogActions>
         </Dialog>
       )}
+
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClick={(e)=>{
+          history.push("/theme-mail/new");
+        }}
+      />
+
+      <Footer />
     </UserListContainer>
   );
 };

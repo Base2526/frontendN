@@ -1,39 +1,45 @@
 import {
   UserListContainer,
-  UserWrapper,
-  EditButton,
   ButtonWrapper
 } from "./SocketList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
-import { userRows } from "../../data";
 import { Link } from "react-router-dom";
 import { useState, useContext } from "react";
-import { SocketContext } from "../../Store";
-
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory
-} from "react-router-dom";
-
+import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import CircularProgress from '@mui/material/CircularProgress';
+import Avatar from "@mui/material/Avatar";
+import _ from "lodash"
+
+import { useQuery } from "@apollo/client";
+
+import {gqlSockets} from "../../gqlQuery"
+import Footer from "../home2/Footer";
 
 const SocketList = (props) => {
   let history = useHistory();
-  // const [userData, setUserData] = useState(userRows);
-  const [userData, setUserData] = useContext(SocketContext);
+ 
+  const [pageOptions, setPageOptions] = useState([20, 100]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
+
+  const { error, data, loading, networkStatus } = useQuery(gqlSockets, {
+    variables: {page: page, perPage: perPage},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -51,31 +57,16 @@ const SocketList = (props) => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
     {
       field: "socketId",
       headerName: "Socket Id",
       width: 170
-      // renderCell: (params) => {
-      //   return (
-      //     <UserWrapper>
-      //       <img src={params.row.avatar} alt="" />
-      //       {params.row.userName}
-      //     </UserWrapper>
-      //   );
-      // }
     },
-    // { field: "email", headerName: "Email", width: 130 },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   width: 130
-    // },
-    // {
-    //   field: "transaction",
-    //   headerName: "Transaction",
-    //   width: 170
-    // },
+    {
+      field: "description",
+      headerName: "Description",
+      width: 170
+    },
     {
       field: "action",
       headerName: "Action",
@@ -99,24 +90,29 @@ const SocketList = (props) => {
 
   return (
     <UserListContainer>
-      {/* <Button
-        variant="contained"
-        onClick={() => {
-          // newPost
-          history.push("/newSocket");
-        }}
-        // autoFocus
-      >
-        Add new socket
-      </Button> */}
-      <DataGrid
-        rows={userData}
-        columns={columns}
-        // pageSize={5}
-        // rowsPerPageOptions={[5]}
-        // checkboxSelection
-        // disableSelectionOnClick
-      />
+      
+
+      {
+         loading
+         ?  <div><CircularProgress /></div> 
+         :  <DataGrid
+              rows={data.Sockets.data}
+              columns={columns}
+              rowHeight={80}
+
+              pageSize={perPage}
+              onPageSizeChange={(newPerPage) => {
+                setPerPage(newPerPage)
+                setPage(0)
+              }}
+              rowsPerPageOptions={pageOptions}
+              page={page}
+              onPageChange={(newPage) =>{
+                setPage(newPage)
+              }}
+            />
+      }
+
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -147,6 +143,7 @@ const SocketList = (props) => {
           </DialogActions>
         </Dialog>
       )}
+      <Footer />
     </UserListContainer>
   );
 };

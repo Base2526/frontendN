@@ -6,13 +6,13 @@ import Button from "@mui/material/Button";
 
 const PopupSnackbar = ({ isOpen, onClose, message }) => {
   useEffect(() => {
-    console.log("useEffect panelComment");
+    // console.log("useEffect panelComment");
   }, []);
 
   return (
     <Snackbar
       open={isOpen}
-      autoHideDuration={6000}
+      autoHideDuration={1000}
       onClose={onClose}
       message={message}
       action={

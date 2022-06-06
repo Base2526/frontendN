@@ -37,6 +37,8 @@ import Comment from "./pages/comment/Comment";
 import SocketList from "./pages/socketList/SocketList";
 import Socket from "./pages/socket/Socket";
 
+import { socket } from "./SocketioClient";
+
 import BankList from "./pages/bankList/BankList";
 import Bank from "./pages/bank/Bank";
 
@@ -48,6 +50,10 @@ import Devel from "./pages/devel/Devel";
 import Notification from "./pages/notification"
 import Messenger from "./pages/messenger"
 
+import BookmarkList from "./pages/bookmarkList/BookmarkList"
+
+import ContactUsList from "./pages/contactUsList/ContactUsList"
+
 // ThemeMailList
 import ThemeMailList from "./pages/themeMailList/ThemeMailList";
 import ThemeMail from "./pages/themeMail/ThemeMail";
@@ -55,21 +61,11 @@ import ThemeMail from "./pages/themeMail/ThemeMail";
 import _ from "lodash";
 import { MenuList } from "./menu";
 import CustomizedListItem from "./CustomizedListItem";
-
-// import Typography from "@mui/material/Typography";
-// import Breadcrumbs from "@mui/material/Breadcrumbs";
-// import Link from "@mui/material/Link";
-// import HomeIcon from "@mui/icons-material/Home";
-// import WhatshotIcon from "@mui/icons-material/Whatshot";
-// import GrainIcon from "@mui/icons-material/Grain";
-
 import Breadcs from "./components/breadcrumbs/Breadcs";
-
 import { NotificationsNone, Language, Settings, Comment as CommentIcon } from "@material-ui/icons";
 import styled from "styled-components";
 
-// import CommentIcon from '@mui/icons-material/Comment';
-import { socket } from "./SocketioClient";
+import MyAppBar from "./MyAppBar";
 
 const drawerWidth = 220;
 
@@ -199,6 +195,9 @@ const App = (props) => {
   useEffect(async () => {
     // let socket = await socket({});
     // console.log("socket : ", socket)
+
+    console.log("useEffect : App")
+    socket()
   }, [])
 
   const handleDrawerOpen = () => {
@@ -229,7 +228,19 @@ const App = (props) => {
       <Store>
         <div className={props.classes.root}>
           <CssBaseline />
-          <AppBar
+          <MyAppBar 
+            classes={props.classes} 
+            onDrawerOpen={
+              handleDrawerOpen
+            }
+            handleMenu={(e)=>{
+
+            }}
+            handleClose={(e)=>{
+              
+            }}
+          />
+          {/* <AppBar
             position="fixed"
             className={props.classes.appBar}
             fooJon={classNames(props.classes.appBar, {
@@ -301,7 +312,7 @@ const App = (props) => {
                 </Menu>
               </TopRight>
             </Toolbar>
-          </AppBar>
+          </AppBar> */}
           <Drawer
             variant="permanent"
             className={classNames(props.classes.drawer, {
@@ -379,23 +390,13 @@ const App = (props) => {
                   <User />
                 </Route>
 
-                {/* <Route path="/products">
-                  <ProductList />
-                </Route>
-                <Route path="/product/:id">
-                  <Product />
-                </Route>
-                <Route path="/newProduct">
-                  <NewProduct />
-                </Route> */}
-
                 <Route path="/posts">
                   <PostList />
                 </Route>
-                <Route path="/post/:mode">
+                <Route path="/post/:id/:mode">
                   <Post />
                 </Route>
-                <Route path="/post/:id/:mode">
+                <Route path="/post/:mode">
                   <Post />
                 </Route>
 
@@ -467,6 +468,17 @@ const App = (props) => {
                   <Messenger />
                 </Route>
                 {/* Notification */}
+
+                {/* BookmarkList */}
+                <Route path="/bookmarks">
+                  <BookmarkList />
+                </Route>
+
+
+                {/* ReportList */}
+                <Route path="/contact-us">
+                  <ContactUsList />
+                </Route>
               </Switch>
             </div>
           </main>

@@ -29,25 +29,37 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import _ from "lodash"
-
-import { getList } from "../../components/provider/DataProvider";
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { useQuery } from "@apollo/client";
+import {gqlRoles} from "../../gqlQuery"
 import Footer from "../home2/Footer";
 
 const RoleList = (props) => {
   let history = useHistory();
   // const [userData, setUserData] = useState(userRows);
-  const [userData, setUserData] = useContext(RoleContext);
+  // const [userData, setUserData] = useContext(RoleContext);
+  // const [datas, setDatas] = useState({data: null, total: 0});
 
-  const [datas, setDatas] = useState({data: null, total: 0});
+  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  useEffect(async()=>{
-    setDatas( await getList("roles", {}) )
-  }, [])
+  // useEffect(async()=>{
+  //   setDatas( await getList("roles", {}) )
+  // }, [])
+
+  const { error, data, loading, networkStatus } = useQuery(gqlRoles, {
+    variables: {page: page, perPage: perPage},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -141,24 +153,24 @@ const RoleList = (props) => {
 
   return (
     <UserListContainer>
-      <Button
-        variant="contained"
-        onClick={() => {
-          // newPost
-          history.push("/role/new");
-        }}
-        // autoFocus
-      >
-        Add new role
-      </Button>
-      
-
       {
-         _.isEmpty(datas.data) 
+         loading
          ?  <div><CircularProgress /></div> 
          :  <DataGrid
-              rows={datas.data}
+              rows={data.Roles.data}
               columns={columns}
+              rowHeight={80}
+
+              pageSize={perPage}
+              onPageSizeChange={(newPerPage) => {
+                setPerPage(newPerPage)
+                setPage(0)
+              }}
+              rowsPerPageOptions={pageOptions}
+              page={page}
+              onPageChange={(newPage) =>{
+                setPage(newPage)
+              }}
             />
       }
 
@@ -192,6 +204,16 @@ const RoleList = (props) => {
           </DialogActions>
         </Dialog>
       )}
+
+      
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClick={(e)=>{
+          history.push("/role/new");
+        }}
+      />
 
       <Footer />
     </UserListContainer>

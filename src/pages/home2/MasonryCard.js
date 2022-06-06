@@ -25,6 +25,16 @@ import ShowMoreText from "react-show-more-text";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 
+
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+
+import ReadMoreMaster from "../../utils/ReadMoreMaster"
+
+
 const useStyles = makeStyles({
   avatar: {
     backgroundColor: (n) => {
@@ -48,7 +58,7 @@ const useStyles = makeStyles({
   }
 });
 
-const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen }) => {
+const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogProfileOpen }) => {
   const classes = useStyles(n);
 
   const [expand, setExpand] = useState(false);
@@ -57,41 +67,40 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
   };
 
   const renderMedia = (m) =>{
-    if(m.files){
+    if( !_.isEmpty(m.files) ){
         return <CardActionArea
-        style={{ position: "relative", paddingBottom: "10px" }}
-      >
-        <CardMedia
-          component="img"
-          height="194"
-          image={m.files[0].base64}
-          alt={m.files[0].fileName}
-          onClick={() => {
-            onLightbox({ isOpen: true, photoIndex: 0, images:m.files })
-          }}
-        />
+          style={{ position: "relative", paddingBottom: "10px" }}
+        >
+          <CardMedia
+            component="img"
+            height="194"
+            image={ m.files[0].base64 }
+            alt={ m.files[0].fileName }
+            onClick={() => {
+              onLightbox({ isOpen: true, photoIndex: 0, images:m.files })
+            }}
+          />
+          
+            {m.files.length > 1 ?
+              <div
+                  style={{
+                      position: "absolute",
+                      bottom: "15px",
+                      right: "5px",
+                      padding: "5px",
+                      backgroundColor: "#e1dede",
+                      borderRadius: "5px",
+                      margin: "5px",
+                      color: "#919191"
+                  }}
+                  >{m.files.length}</div>
+              : <div />}
         
-          {m.files.length > 1 ?
-            <div
-                style={{
-                    position: "absolute",
-                    bottom: "15px",
-                    right: "5px",
-                    padding: "5px",
-                    backgroundColor: "#e1dede",
-                    borderRadius: "5px",
-                    margin: "5px",
-                    color: "#919191"
-                }}
-                >{m.files.length}</div>
-            : <div />}
-       
-      </CardActionArea>
+        </CardActionArea>
     }else{
         return <div />
     }
      
-    
   }
 
   return (
@@ -106,64 +115,90 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
               <MoreVertIcon />
             </IconButton>
           }
-          title={n.title}
-          subheader={moment(n.dateTranfer).format('MMMM Do YYYY')}
+          // onDialogProfileOpen
+          title={ <Typography onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{n.title}</Typography> }
+          subheader={moment(n.createdAt).format('MMMM Do YYYY')}
         />
         <CardContent>
+
+          <div>
+
+          <Accordion 
+          // expanded={false}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1a-content"
+              id="panel1a-header"
+              onClick={(e)=>{
+                console.log("expanded")
+              }}
+            >
+              <Typography>text</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+                malesuada lacus ex, sit amet blandit leo lobortis eget.
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          </div>
           <div>
             {renderMedia(n)}
             <CardActionArea style={{}}>
-                <Typography variant="subtitle2" gutterBottom component="div">
+                <Typography variant="subtitle2" color="textSecondary">
                     หัวข้อร้องเรียน : {n.title}
                 </Typography>
-                {/* <Typography variant="body2" color="textSecondary">
-                    รายละเอียด : {n.body}
-                </Typography> */}
-                <ShowMoreText
-                    lines={2}
-                    more={"See more"}
-                    less={""}
-                    onClick={onClick}
-                    className="show-more-text"
-                    anchorClass="my-anchor-css-class"
-                    expanded={expand}
-                    width={400}
-                    truncatedEndingComponent={"..."}
+                
+                <Typography
+                  style={{ cursor: "pointer" }}
+                  variant="subtitle2"
+                  color="textSecondary"
                 >
-                   รายละเอียด : {n.body}
-                </ShowMoreText>
+                  ชื่อ-นามสกุล : {n.nameSubname}
+                </Typography>
+           
+                <Typography variant="subtitle2" color="textSecondary">
+                  ยอดเงิน : {n.amount}
+                </Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  วันที่โอน : {moment(n.dateTranfer).format('MMMM Do YYYY')}
+                </Typography>
+                     
+                <ReadMoreMaster
+                  parentClass={"read-more-master"}
+                  byWords={true}
+                  length={15}
+                  readMore="See More"
+                  readLess="See less" 
+                  ellipsis="...">{"รายละเอียด :" + n.description}</ReadMoreMaster>
             </CardActionArea>
-            <Typography variant="subtitle2" color="textSecondary">
-              ยอดเงิน : {n.number}
-            </Typography>
-            <Typography variant="subtitle2" color="textSecondary">
-              วันที่ : {moment(n.dateTranfer).format('MMMM Do YYYY')}
-            </Typography>
-            <Typography
-              style={{ cursor: "pointer" }}
-              variant="subtitle2"
-              color="textSecondary"
-            >
-              ชื่อ : {n.nameSubname}
-            </Typography>
           </div>
           <Divider light />
           <div>
-            <IconButton onClick={() => {
-                onSnackbar({open: true, message:"Follow"});
+            <IconButton onClick={(e) => {
+              onSnackbar({open: true, message:"Follow"});
             }}>
               <BookmarkIcon />
             </IconButton>
-            <IconButton  onClick={(e) => {
-                          onAnchorElShareOpen(index, e);
-                        }}>
-                <ShareIcon />
-               
+            <IconButton onClick={(e) => {
+              onAnchorElShareOpen(index, e);
+            }}>
+              <ShareIcon />
             </IconButton>
-            <IconButton onClick={() => {
-                onPanelComment({ isOpen: true, commentId: 3456 })
+            <IconButton onClick={(e) => {
+              onPanelComment({ isOpen: true, commentId: 3456 })
             }}>
               <CommentIcon />
+            </IconButton>
+            <IconButton onClick={(e) => {
+              // onPanelComment({ isOpen: true, commentId: 3456 })
+
+              console.log("ExpandMoreIcon")
+            }}>
+              <ExpandMoreIcon />
             </IconButton>
           </div>
         </CardContent>
