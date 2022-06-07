@@ -23,6 +23,7 @@ import Stack from "@mui/material/Stack";
 import { useParams } from "react-router-dom";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useHistory } from "react-router-dom";
+import LinearProgress from '@mui/material/LinearProgress';
 
 import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
@@ -214,7 +215,7 @@ const Post = (props) => {
             idCard: input.idCard,
             amount: input.amount,
             tels: input.tels,
-            banks: _.omitDeep(input.banks, ['__typename']),
+            banks: input.banks, // _.omitDeep(input.banks, ['__typename']),
             description: input.description,
             dateTranfer: input.dateTranfer,
             files: [...newAttackFilesBase64, ...oldAttackFiles]
@@ -230,7 +231,7 @@ const Post = (props) => {
                       idCard: input.idCard,
                       amount: input.amount,
                       tels: input.tels,
-                      banks: _.omitDeep(input.banks, ['__typename']),
+                      banks: input.banks, //_.omitDeep(input.banks, ['__typename']),
                       description: input.description,
                       dateTranfer: input.dateTranfer,
                       files:  _.omitDeep(_.filter([...newAttackFilesBase64, ...oldAttackFiles], (v, key) => !v.delete), ['__typename', 'id'])
@@ -334,10 +335,7 @@ const Post = (props) => {
                 <BankInputField
                   values={input.banks}
                   onChange={(values) => {
-                    console.log("Bank onChange >> :", values);
-
-                    // setBanks(values)
-
+                    console.log("BankInputField : ", values)
                     setInput({...input, banks: values})
                   }}
                 />
@@ -346,24 +344,19 @@ const Post = (props) => {
                   label={"Description"} 
                   initData={ input.description }
                   onEditorChange={(newDescription)=>{
-                    console.log("onEditorChange :", newDescription)
-
-                    // setDescription(value)
-
                     setInput({...input, description: newDescription})
                   }} />
 
                 <AttackFileField
                   values={input.attackFiles}
                   onChange={(values) => {
-                    console.log("AttackFileField >> :", values);
-                    // setAttackFiles(values)
                     setInput({...input, attackFiles: values})
                   }}
                   onSnackbar={(data) => {
                     setSnackbar(data);
                   }}
                 />
+
               </div>
               <Button type="submit" variant="contained" color="primary">
                 Create

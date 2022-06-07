@@ -6,7 +6,7 @@ import PopupSnackbar from "../home2/PopupSnackbar";
 import { useQuery, useMutation } from "@apollo/client";
 
 
-import { gqlUsers, gqlUser, gqlRoles, gqlCreatePost } from "../../gqlQuery"
+import { gqlUsers, gqlUser, gqlRoles, gqlCreatePost, gqlBanks } from "../../gqlQuery"
 
 const { faker } = require("@faker-js/faker");
 
@@ -14,6 +14,19 @@ let total = 10;
 const Devel = (props) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
+  const valueBanks = useQuery(gqlBanks, {
+    variables: {page: 0, perPage: 100},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("valueBanks :", valueBanks)
+
+  /*
+  valueBanks
+  data:
+Banks:
+data
+  */
 
   const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
     variables: {
@@ -73,18 +86,12 @@ const Devel = (props) => {
         for ( var i = 0; i < length; i++ ) {
 
             const min = 0;
-            const max = total;
+            const max = valueBanks.data.Banks.data.length;
             const rand = min + Math.random() * (max - min);
 
             banks.push({
-                        bankAccountName: makeNumber(11),
-                        bank: [
-                            {
-                                name: 'ธนาคารกสิกรไทย',
-                                description: '<p>ธนาคารกสิกรไทย</p>',
-                                isPublish: 1
-                            }
-                        ]
+                      bankAccountName: makeNumber(11),
+                      bankId:valueBanks.data.Banks.data[Math.floor(rand)].id
                     })
         }
         return banks
@@ -159,7 +166,7 @@ const Devel = (props) => {
 
           {
             
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < 100; i++) {
 
                     //////////// bank
                     const min = 0;

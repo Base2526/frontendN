@@ -10,6 +10,9 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import IconButton from "@mui/material/IconButton";
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { useQuery } from "@apollo/client";
+import LinearProgress from '@mui/material/LinearProgress';
+
+import _ from "lodash"
 
 import {gqlBanks} from "../../gqlQuery"
 
@@ -20,6 +23,8 @@ const BankInputField = ({ values, onChange }) => {
     variables: {page: 0, perPage: 100},
     notifyOnNetworkStatusChange: true,
   });
+
+  console.log("valueBanks :", valueBanks)
 
   useEffect(() => {
     onChange(inputList);
@@ -40,67 +45,83 @@ const BankInputField = ({ values, onChange }) => {
   };
 
   const handleAddClick = () => {
-    setInputList([...inputList, { bankAccountName: "", bank: {} }]);
+    setInputList([...inputList, { bankAccountName: "", bankId: "" }]);
   };
 
   const onBankIdChange = (e, bank, index) => {
-    const newInputList = [...inputList];
-    newInputList[index]["bank"] = bank;
+    console.log("onBankIdChange ", bank)
+    let newInputList = [...inputList];
+    if(bank !== null){
+      newInputList[index].bankId = bank.id;
+    }else{
+      newInputList[index].bankId = "";
+    }
     setInputList(newInputList);
   };
 
-  return (
-    <Box sx={{ p: 1 }} component="footer">
-      <div>
-        <Typography variant="overline" display="block" gutterBottom>
-          Bank.
-        </Typography>
-        <IconButton
-          color="primary"
-          aria-label="upload picture"
-          component="span"
-          onClick={handleAddClick}>
-          <AddBoxIcon />
-        </IconButton>
-      </div>
-
-      {inputList.map((x, i) => {
-
-        // console.log("inputList >>", x)
-        return (
-          <div className="box" key={i}>
-            <TextField
-              id="input-bank-account-name"
-              name="bankAccountName"
-              label="Bank account name"
-              variant="filled"
-              value={x.bankAccountName}
-              required
-              onChange={(e) => onInputChange(e, i)}
-            />
-
-            <Autocomplete
+  const bankView = (item, i) =>{
+    let value =  _.find(valueBanks.data.Banks.data, (v)=>item.bankId === v.id)
+    return  <Autocomplete
               disablePortal
               id="input-bank-id"
-              options={valueBanks.loading ? [] : valueBanks.data.Banks.data}
+              options={valueBanks.data.Banks.data}
               getOptionLabel={(option) => option.name}
-              defaultValue={ _.isEmpty(x.bank) ? undefined :  x.bank[0]}
-              renderInput={(params) => <TextField {...params} label="Bank" required={_.isEmpty(x.bankId) ? true : false} />}
+              defaultValue={ value }
+              renderInput={(params) => <TextField {...params} label="Bank" required={_.isEmpty(item.bankId) ? true : false} />}
               onChange={(event, values) => onBankIdChange(event, values, i)}
             />
+  }
 
-            <IconButton
-              color="primary"
-              aria-label="upload picture"
-              component="span"
-              onClick={() => handleRemoveClick(i)}>
-              <RemoveCircleIcon />
-            </IconButton>
-          </div>
-        );
-      })}
-      {/* <div style={{ marginTop: 20 }}>{JSON.stringify(inputList)}</div> */}
-    </Box>
+  return (
+    <div>
+      {
+        valueBanks.loading
+        ? <LinearProgress sx={{width:"100px"}} /> 
+        : <Box sx={{ p: 1 }} component="footer">
+            <div>
+              <Typography variant="overline" display="block" gutterBottom>
+                Bank.
+              </Typography>
+              <IconButton
+                color="primary"
+                aria-label="upload picture"
+                component="span"
+                onClick={handleAddClick}>
+                <AddBoxIcon />
+              </IconButton>
+            </div>
+      
+            {inputList.map((x, i) => {
+      
+              // console.log("inputList >>", x)
+              return (
+                <div className="box" key={i}>
+                  <TextField
+                    id="input-bank-account-name"
+                    name="bankAccountName"
+                    label="Bank account name"
+                    variant="filled"
+                    value={x.bankAccountName}
+                    required
+                    onChange={(e) => onInputChange(e, i)}
+                  />
+      
+                  {bankView(x, i)}
+      
+                  <IconButton
+                    color="primary"
+                    aria-label="upload picture"
+                    component="span"
+                    onClick={() => handleRemoveClick(i)}>
+                    <RemoveCircleIcon />
+                  </IconButton>
+                </div>
+              );
+            })}
+            {/* <div style={{ marginTop: 20 }}>{JSON.stringify(inputList)}</div> */}
+          </Box>
+      }
+    </div>
   );
 };
 

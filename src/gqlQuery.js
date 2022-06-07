@@ -20,15 +20,9 @@ export const gqlHomes = gql`
                 dateTranfer
                 description
                 tels
-                banks {
-                    id: _id
+                banks{
                     bankAccountName
-                    bank {
-                        id: _id
-                        name
-                        description
-                        isPublish
-                    }
+                    bankId
                 }
                 follows
                 files {
@@ -70,15 +64,9 @@ export const gqlPosts = gql`
                 owner_id
                 createdAt
                 updatedAt
-                banks {
-                    id: _id
+                banks{
                     bankAccountName
-                    bank {
-                    _id
-                    name
-                    description
-                    isPublish
-                    }
+                    bankId
                 }
                 files {
                     id:_id
@@ -108,12 +96,7 @@ export const gqlPost = gql`
                 description
                 banks{
                     bankAccountName
-                    bank{
-                        id: _id
-                        name
-                        description
-                        isPublish
-                    }
+                    bankId
                 }
                 follows
                 files{
@@ -176,11 +159,11 @@ export const gqlUser = gql`
                 roles
                 isActive
                 image{
-                _id
-                size
-                type
-                lastModified
-                base64
+                    id: _id
+                    size
+                    type
+                    lastModified
+                    base64
                 }
                 lastAccess
             }
@@ -232,7 +215,7 @@ export const gqlSockets = gql`
             data{
                 id: _id
                 socketId
-                description
+                # description
             }
         }
     }`;
@@ -270,7 +253,6 @@ export const gqlReports = gql`
         }
     }`;
 
-
 //////////////////  mutation  ///////////////////
 export const gqlCreateUser = gql`
   mutation CreateUser($input: UserInput) {
@@ -282,6 +264,13 @@ export const gqlCreateUser = gql`
 export const gqlCreatePost = gql`
   mutation CreatePost($input: PostInput) {
     createPost(input: $input) {
+      id: _id
+    }
+  }`;
+
+export const gqlUpdateUser = gql`
+  mutation UpdateUser($id: ID!, $input: UserInput) {
+    updateUser(_id: $id, input: $input) {
       id: _id
     }
   }`;

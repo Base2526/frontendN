@@ -39,6 +39,8 @@ import DialogProfile from "../../components/dialogProfile"
 
 import {gqlHomes} from "../../gqlQuery"
 
+import {checkAuth, getPermissions} from "../../components/provider/AuthProvider"
+
 const Home = (props) => {
   let history = useHistory();
 
@@ -78,9 +80,14 @@ const Home = (props) => {
 
   console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus, category.join())
 
-  // useEffect(async() => {
-  //   // setDatas(await getList("posts", {}))
-  // }, []);
+  useEffect(async() => {
+    // setDatas(await getList("posts", {}))
+
+    let permissions = await getPermissions()
+    let auth = await checkAuth()
+
+    console.log("Home : ", permissions, auth)
+  }, []);
 
   // useEffect(async() => {
   //   // console.log("useEffect :", page, rowsPerPage)

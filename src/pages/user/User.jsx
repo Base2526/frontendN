@@ -22,10 +22,15 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useParams } from "react-router-dom";
 import _ from "lodash";
-// import { getList } from "../../components/provider/DataProvider";
+import deepdash from "deepdash";
+deepdash(_);
+
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import { useHistory } from "react-router-dom";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser } from "../../gqlQuery"
+import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser, gqlUpdateUser } from "../../gqlQuery"
 
 import {convertFileToBase64} from "../../util"
 
@@ -33,66 +38,43 @@ const Input = styled("input")({
   display: "none"
 });
 
-let optionsIsactive = [
-  { name: "Active", id: "active" },
-  { name: "Unactive", id: "unactive" }
-]
+
 
 let editValues = undefined;
+let initValues =  {
+                    username: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    profile: undefined,
+                    roles: [],
+                    isActive: false
+                  }
+
 const User = (props) => {
-  const [profile, setProfile] = useState(undefined);
+
+  let history = useHistory();
+
+  // const [profile, setProfile] = useState(undefined);
   const [showPassword, setShowPassword] = useState(false);
   const [showCofirmPassword, setShowCofirmPassword] = useState(false);
 
-  const [roles, setRoles] = useState([])
-  const [isActive, setIsActive] = useState(undefined)
+  // const [roles, setRoles] = useState([])
+  // const [isActive, setIsActive] = useState(undefined)
 
   // const [roleDatas, setRoleDatas] = useState({data: null, total: 0});
 
-  const [input, setInput] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
-  });
+  const [input, setInput] = useState(initValues);
 
   const [error, setError] = useState({
     username: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    profile: "",
+    roles: "",
+    isActive: ""
   });
-
-  const onValueRoles = () =>{
-    if( _.isEmpty(roles) ){
-      if(!_.isEmpty(editValues)){
-        let {loading}  = editValues
-        if(!loading){
-          let {status, data} = editValues.data.User
-          if(status){
-            if( !loadingRoles && !_.isEmpty(dataRoles.Roles) ){
-              setRoles(_.filter(dataRoles.Roles.data, (v)=>data.roles.includes(v.id) ))  
-            }
-          }
-        }
-      }
-    }
-  }
-
-  const onValueIsActive = () =>{
-    if( _.isEmpty(isActive) ){
-      if(!_.isEmpty(editValues)){
-        let {loading}  = editValues
-        if(!loading){
-          let {status, data} = editValues.data.User
-          if(status){
-            console.log("setIsActive :", data.isActive, optionsIsactive[0])
-            setIsActive(data.isActive === "active" ? optionsIsactive[0] : optionsIsactive[1])
-          }
-        }
-      }
-    }
-  }
 
   const { error: errorRoles, data: dataRoles, loading: loadingRoles, networkStatus: networkStatusRoles } = useQuery(gqlRoles, {
     variables: {page: 0, perPage: 20},
@@ -102,21 +84,8 @@ const User = (props) => {
   console.log("errorRoles, dataRoles, loadingRoles, networkStatusRoles :", errorRoles, dataRoles, loadingRoles, networkStatusRoles)
 
   let { id, mode } = useParams();
-  
-  // useEffect(async() => {
-    
 
   console.log("id, mode : ", id, mode)
-
-    
-  //   switch(mode){
-  //     case "new":{
-  //       setInput({...input, username: "", email: ""})
-  //       break;
-  //     }
-  //   }
-
-  // }, []);
 
   switch(mode){
 
@@ -134,18 +103,31 @@ const User = (props) => {
 
       console.log("editValues : ", editValues)
 
-      onValueRoles()
-      onValueIsActive()
+      if(_.isEqual(input, initValues)) {
+        if(!_.isEmpty(editValues)){
+          let {loading}  = editValues
+          
+          if(!loading){
+            let {status, data} = editValues.data.User
+
+            console.log("edit editValues : ", data)
+            if(status){
+              setInput({
+                username: data.username,
+                email: data.email,
+                profile: _.isEmpty(data.image) ? undefined : data.image[0] ,
+                roles: data.roles,
+                isActive: data.isActive
+              })
+            }
+          }
+        }
+      }
       break;
     }
   }
-  // useEffect(async() => {
-  //   console.log("useParams :", id, mode);
 
-  //   // setRoleDatas( await getList("roles", {}) )
-  // }, []);
-
-  const [onSubmitForm, { data: dataCreateUser, loading: loadingCreateUser, error: errorCreateUser }] = useMutation(gqlCreateUser, {
+  const [onCreateUser, { data: dataCreateUser, loading: loadingCreateUser, error: errorCreateUser }] = useMutation(gqlCreateUser, {
     variables: {
       taskId: 1,
     },
@@ -159,52 +141,27 @@ const User = (props) => {
 
   console.log("dataCreateUser, loadingCreateUser, errorCreateUser :", dataCreateUser, loadingCreateUser, errorCreateUser)
 
-  // if (loading) return 'Submitting...';
-  // if (error) return `Submission error! ${error.message}`;
 
-  const onInputChange = (e) => {
-    const { name, value } = e.target;
-    setInput((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-    validateInput(e);
-  };
+  const [onUpdateUser, resultUpdateUser] = useMutation(gqlUpdateUser, 
+    {
+      onCompleted({ data }) {
+        history.push("/users");
+      }
+    }
+    // {
+    // variables: {
+    //   taskId: 1,
+    // },
+    // refetchQueries: () => [{
+    //   query: gqlUsers,
+    //   variables: { 
+    //     // status: 'OPEN',
+    //   },
+    // }],
+  // }
+  );
 
-  const onProfileChange = (e) => {
-    // let newInputList = [...inputList];
-    // for (var i = 0; i < e.target.files.length; i++) {
-    //   // console.log("onFileChange : ", e.target.files[i]);
-    //   let file = e.target.files[i];
-    //   if (file.type) {
-    //     console.log("onFileChange type #1 : ", i, file.type);
-    //     newInputList = [...newInputList, file];
-    //   }
-    // }
-    // console.log("onFileChange type #2 : ", newInputList);
-    // setInputList(newInputList);
-
-    setProfile(e.target.files[0]);
-    console.log("e.target.files : ", e.target.files);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    // const list = [...inputList];
-    // list[index][name] = value;
-    // setInputList(list);
-
-    console.log("handleInputChange :", value);
-  };
-
-  const onRolesChange = (event, values) => {
-    setRoles(values)
-  };
-
-  const onIsActiveChange = (event, values) => {
-    console.log("onIsActiveChange :", values)
-    setIsActive(values)
-  };
+  console.log("resultUpdateUser :", resultUpdateUser)
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = () => setShowPassword(!showPassword);
@@ -265,263 +222,273 @@ const User = (props) => {
     });
   };
 
-  const onProfileSrc = () =>{
-    if(profile === undefined){
-      if(!_.isEmpty(editValues)){
-        let {loading}  = editValues
-        if(!loading){
-          let {status, data} = editValues.data.User
-          if(status){
-            return  _.isEmpty(data.image) ? "" : data.image[0].base64
-          }
-        }
-      }
-    }else{
-
-      if(profile.base64){
-        return profile.base64
-      }else{
-        return URL.createObjectURL(profile)
-      }
-    }
-
-    return "";
+  const rolesView = () =>{
+    let value = _.filter(dataRoles.Roles.data, v => input.roles.includes(v.id))
+    
+    return  <Autocomplete
+              multiple
+              id="user-roles"
+              name="userRoles"
+              options={ dataRoles.Roles.data }
+              getOptionLabel={(option) => option.name}
+              value={ value }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="User roles"
+                  placeholder="role"
+                  required={ input.roles.length === 0 ? true : false }
+                />
+              )}
+              onChange={(event, values)=>{
+                let newRoles = _.map(values, v=>v.id)
+                setInput({...input, roles:newRoles})
+              }}
+            />
   }
 
-  const onValueUsername = () =>{
-    if( _.isEmpty(input.username) ){
+  const isActiveView = () =>{
 
-      // mode
-      console.log("onValueUsername > ", editValues)
-      if(!_.isEmpty(editValues)){
-        let {loading}  = editValues
-        if(!loading){
-          let {status, data} = editValues.data.User
-          if(status){
-            return  data.username
-          }
-        }
-      }
+    let optionsIsactive = [
+      { name: "Active", id: "active" },
+      { name: "Unactive", id: "unactive" }
+    ]
+
+    let value = undefined
+    if(input.isActive === undefined) {
+      value = optionsIsactive[1]
     }else{
-      return input.username
+      value = _.find(optionsIsactive, v=> v.id === input.isActive )
     }
 
-    return "";
+    return  <Autocomplete
+              id="user-isactive"
+              name="isActive"
+              options={optionsIsactive}
+              getOptionLabel={(option) => option.name}
+              value={value}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Unactive"
+                  placeholder="Unactive"
+                  required={ input.isActive === undefined ? true : false }
+                />
+              )}
+              onChange={(event, value)=>{
+                setInput({...input, isActive: value.id})
+              }}
+            />
   }
-
-  const onValueEmail = () =>{
-    if( _.isEmpty(input.email) ){
-      if(!_.isEmpty(editValues)){
-        let {loading}  = editValues
-        if(!loading){
-          let {status, data} = editValues.data.User
-          if(status){
-            return  data.email
-          }
-        }
-      }
-    }else{
-      return input.email
-    }
-
-    return "";
-  }
-
+  
   const submitForm = async(event) => {
     event.preventDefault();
 
-    console.log("submitForm : onSubmitForm ", profile, input);
+    console.log("submitForm : onSubmitForm ", input);
 
-    let inputN = {
-      username: input.username,
-      password: input.password,
-      email: input.email,
-      // roles,
-      isActive: isActive,
+    switch(mode){
+      case "new":{
+        onCreateUser({ variables: { input: {
+                                              username: input.username,
+                                              email: input.email,
+                                              password: input.password,
+                                              roles: input.roles,
+                                              isActive: input.isActive,
+                                              image: input.profile === undefined ? [] : await convertFileToBase64(profile)
+                                            }
+                                  } 
+                                });
+
+                  break;
+      }
+
+      case "edit":{
+
+        let image = []
+        if(input.profile !== undefined){
+          if( input.profile.base64 ){
+            image = [_.omitDeep(input.profile, ['__typename', 'id'])]
+          }else{
+            image = [await convertFileToBase64(input.profile)]
+          }
+        }
+
+        let newInput = {
+          username: input.username,
+          email: input.email,
+          password: input.password,
+          roles: input.roles,
+          isActive: input.isActive,
+          image
+        }
+
+        // console.log("newInput :", newInput)
+        onUpdateUser({ variables: { 
+          id: editValues.data.User.data.id,
+          input: newInput
+        }});
+      }
     }
-     
-    onSubmitForm({ variables: { input: {
-                                      username: input.username,
-                                      email: input.email,
-                                      password: input.password,
-                                      roles: _.map(roles, (v)=>v.id),
-                                      isActive: isActive,
-                                      image: profile === null ? [] : await convertFileToBase64(profile)
-                                    }
-                              } 
-                  });
   };
 
   return (
-    <Box
-      component="form"
-      sx={{
-        "& .MuiTextField-root": { m: 1, width: "50ch" }
-      }}
-      // noValidate
-      // autoComplete="off"
-      onSubmit={submitForm}
-    >
-      <div>
-        <Typography variant="overline" display="block" gutterBottom>
-          Profile
-        </Typography>
-        <Stack direction="row" spacing={2}>
-          <Avatar
-            className={"user-profile"}
+    <div>
+      {
+        editValues != null && editValues.loading
+        ? <div><CircularProgress /></div> 
+        : <Box
+            component="form"
             sx={{
-              height: 80,
-              width: 80
+              "& .MuiTextField-root": { m: 1, width: "50ch" }
             }}
-            variant="rounded"
-            alt="Example Alt"
-            src={onProfileSrc()}
-          />
-        </Stack>
-        <label htmlFor="profile">
-          <Input
-            accept="image/*"
-            id="profile"
-            name="file"
-            // multiple
-            type="file"
-            onChange={(e) => {
-              onProfileChange(e);
-            }}
-          />
-          <IconButton
-            color="primary"
-            aria-label="upload picture"
-            component="span"
+            // noValidate
+            // autoComplete="off"
+            onSubmit={submitForm}
           >
-            <PhotoCamera />
-          </IconButton>
-        </label>
-      </div>
-      <TextField
-        id="user-username"
-        name="username"
-        label="Username"
-        variant="filled"
-        required
-        // value={input.username}
-        value={onValueUsername()}
-        onChange={onInputChange}
-        onBlur={validateInput}
-        // helperText={_.isEmpty(error.username)? "Input username" : error.username}
-        helperText={error.username}
-        error={_.isEmpty(error.username) ? false : true}
-      />
-      <TextField
-        id="user-email"
-        name="email"
-        label="Email"
-        variant="filled"
-        required
-        // value={input.email}
-        value={onValueEmail()}
-        onChange={onInputChange}
-        onBlur={validateInput}
-        helperText={error.email}
-        error={_.isEmpty(error.email) ? false : true}
-      />
-      <TextField
-        id="user-password"
-        name="password"
-        label="Password"
-        variant="filled"
-        type={showPassword ? "text" : "password"} // <-- This is where the magic happens
-        required
-        value={input.password}
-        onChange={onInputChange}
-        onBlur={validateInput}
-        helperText={error.password}
-        error={_.isEmpty(error.password) ? false : true}
-        InputProps={{
-          // <-- This is where the toggle button is added.
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-              >
-                {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-              </IconButton>
-            </InputAdornment>
-          )
-        }}
-      />
-      <TextField
-        id="filled-basic"
-        name="confirmPassword"
-        label="Confirm password"
-        variant="filled"
-        type={showCofirmPassword ? "text" : "password"}
-        required
-        value={input.confirmPassword}
-        onChange={onInputChange}
-        onBlur={validateInput}
-        helperText={error.confirmPassword}
-        error={_.isEmpty(error.confirmPassword) ? false : true}
-        InputProps={{
-          // <-- This is where the toggle button is added.
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowCofirmPassword}
-                onMouseDown={handleMouseDownCofirmPassword}
-              >
-                {showCofirmPassword ? (
-                  <VisibilityIcon />
-                ) : (
-                  <VisibilityOffIcon />
-                )}
-              </IconButton>
-            </InputAdornment>
-          )
-        }}
-      />
-      <Autocomplete
-        multiple
-        id="user-roles"
-        name="userRoles"
-        options={ loadingRoles ? [] : dataRoles.Roles.data }
-        getOptionLabel={(option) => option.name}
-        value={roles}
-        required
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="User roles"
-            placeholder="role"
-            required={roles.length === 0 ? true : false}
-          />
-        )}
-        onChange={onRolesChange}
-      />
+            <div>
+              <Typography variant="overline" display="block" gutterBottom>
+                Profile
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Avatar
+                  className={"user-profile"}
+                  sx={{
+                    height: 80,
+                    width: 80
+                  }}
+                  variant="rounded"
+                  alt="Example Alt"
+                  src={input.profile == undefined ? "" : input.profile.base64 ? input.profile.base64: URL.createObjectURL(input.profile)}
+                />
+              </Stack>
+              <label htmlFor="profile">
+                <Input
+                  accept="image/*"
+                  id="profile"
+                  name="file"
+                  // multiple
+                  type="file"
+                  onChange={(e) => {
+                    setInput({...input, profile:e.target.files[0]})
+                  }}
+                />
+                <IconButton
+                  color="primary"
+                  aria-label="upload picture"
+                  component="span"
+                >
+                  <PhotoCamera />
+                </IconButton>
+              </label>
+            </div>
+            <TextField
+              id="user-username"
+              name="username"
+              label="Username"
+              variant="filled"
+              required
+              value={input.username}
+              onChange={(e)=>{
+                setInput({...input, username:e.target.value})
+              }}
+              onBlur={validateInput}
+              // helperText={_.isEmpty(error.username)? "Input username" : error.username}
+              helperText={error.username}
+              error={_.isEmpty(error.username) ? false : true}
+            />
+            <TextField
+              id="user-email"
+              name="email"
+              label="Email"
+              variant="filled"
+              required
+              value={input.email}
+              onChange={(e)=>{
+                setInput({...input, email:e.target.value})
+              }}
+              onBlur={validateInput}
+              helperText={error.email}
+              error={_.isEmpty(error.email) ? false : true}
+            />
+            <TextField
+              id="user-password"
+              name="password"
+              label="Password"
+              variant="filled"
+              type={showPassword ? "text" : "password"} // <-- This is where the magic happens
+              required
+              value={input.password}
+              onChange={(e)=>{
+                setInput({...input, password:e.target.value})
+              }}
+              onBlur={validateInput}
+              helperText={error.password}
+              error={_.isEmpty(error.password) ? false : true}
+              InputProps={{
+                // <-- This is where the toggle button is added.
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                    >
+                      {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+            <TextField
+              id="filled-basic"
+              name="confirmPassword"
+              label="Confirm password"
+              variant="filled"
+              type={showCofirmPassword ? "text" : "password"}
+              required
+              value={input.confirmPassword}
+              onChange={(e)=>{
+                setInput({...input, confirmPassword:e.target.value})
+              }}
+              onBlur={validateInput}
+              helperText={error.confirmPassword}
+              error={_.isEmpty(error.confirmPassword) ? false : true}
+              InputProps={{
+                // <-- This is where the toggle button is added.
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowCofirmPassword}
+                      onMouseDown={handleMouseDownCofirmPassword}
+                    >
+                      {showCofirmPassword ? (
+                        <VisibilityIcon />
+                      ) : (
+                        <VisibilityOffIcon />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+            
+            {
+              loadingRoles
+              ? <LinearProgress sx={{width:"100px"}} /> 
+              : rolesView()
+            }
 
-      <Autocomplete
-        id="user-isactive"
-        name="isActive"
-        options={optionsIsactive}
-        getOptionLabel={(option) => option.name}
-        value={ isActive }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Unactive"
-            placeholder="Unactive"
-            required={ isActive === undefined ? true : false}
-          />
-        )}
-        onChange={onIsActiveChange}
-      />
-      <Button type="submit" variant="contained" color="primary">
-        Create
-      </Button>
-    </Box>
+            {
+              isActiveView()
+            }
+            
+            <Button type="submit" variant="contained" color="primary">
+              Create
+            </Button>
+          </Box>
+      }
+    </div>
   );
 };
 

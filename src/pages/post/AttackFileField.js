@@ -36,8 +36,6 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
       }
     }
     setInputList(newInputList);
-
-    
   };
 
   return (

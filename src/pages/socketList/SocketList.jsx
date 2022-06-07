@@ -90,8 +90,6 @@ const SocketList = (props) => {
 
   return (
     <UserListContainer>
-      
-
       {
          loading
          ?  <div><CircularProgress /></div> 

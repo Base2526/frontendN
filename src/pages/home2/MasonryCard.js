@@ -121,8 +121,7 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
         />
         <CardContent>
 
-          <div>
-
+          {/* <div>
           <Accordion 
           // expanded={false}
           >
@@ -144,7 +143,7 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
             </AccordionDetails>
           </Accordion>
 
-          </div>
+          </div> */}
           <div>
             {renderMedia(n)}
             <CardActionArea style={{}}>
