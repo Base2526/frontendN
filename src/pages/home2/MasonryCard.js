@@ -20,7 +20,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
-
+import CircularProgress from '@mui/material/CircularProgress';
 import ShowMoreText from "react-show-more-text";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
@@ -31,8 +31,11 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useQuery } from "@apollo/client";
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
+
+import {gqlUser} from "../../gqlQuery"
 
 
 const useStyles = makeStyles({
@@ -103,22 +106,41 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
      
   }
 
+  const viewHeader = ()=>{
+
+    let userValue = useQuery(gqlUser, {
+      variables: {id: n.ownerId},
+      notifyOnNetworkStatusChange: true,
+    });
+
+    console.log("userValue : ", userValue)
+
+    if(userValue.loading){
+      return <div><CircularProgress /></div> 
+    }else{
+      return  <CardHeader
+                avatar={<Avatar className={classes.avatar} src={userValue.data.User.data.image[0].base64}  />}
+                action={
+                  <IconButton onClick={(e) => {
+                      onAnchorElSettingOpen(index, e);
+                  }}>
+                    <MoreVertIcon />
+                  </IconButton>
+                }
+                // onDialogProfileOpen
+                title={ <Typography onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
+                subheader={moment(n.createdAt).format('MMMM Do YYYY')}
+                />
+
+    }
+
+   
+  }
+
   return (
     <div>
       <Card elevation={1} className={classes.test}>
-        <CardHeader
-          avatar={<Avatar className={classes.avatar}>{"A"}</Avatar>}
-          action={
-            <IconButton onClick={(e) => {
-                onAnchorElSettingOpen(index, e);
-            }}>
-              <MoreVertIcon />
-            </IconButton>
-          }
-          // onDialogProfileOpen
-          title={ <Typography onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{n.title}</Typography> }
-          subheader={moment(n.createdAt).format('MMMM Do YYYY')}
-        />
+        {viewHeader()}
         <CardContent>
 
           {/* <div>

@@ -34,7 +34,7 @@ export const gqlHomes = gql`
                     type
                 }
                 isPublish
-                owner_id
+                ownerId
                 createdAt
                 updatedAt
             }
@@ -61,7 +61,6 @@ export const gqlPosts = gql`
                 tels
                 follows
                 isPublish
-                owner_id
                 createdAt
                 updatedAt
                 banks{
@@ -76,6 +75,7 @@ export const gqlPosts = gql`
                     size
                     type
                 }
+                ownerId
             }
         }
     }`;
@@ -109,7 +109,7 @@ export const gqlPost = gql`
                 }
                 tels
                 isPublish
-                owner_id
+                ownerId
                 createdAt
                 updatedAt
             }
@@ -186,6 +186,34 @@ export const gqlRoles = gql`
             }
         }
     }`;
+
+export const gqlRole = gql`
+    query Role($id: ID!){
+        Role(_id: $id){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+            }
+        }
+    }`;
+
+export const gqlManyRoles = gql`
+    query GetManyRoles($ids: [ID!]!){
+        getManyRoles(_ids: $ids)
+        {
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+                isPublish
+            }
+        }
+    }`;
  
 export const gqlBanks = gql`
     query Banks($page: Int, $perPage: Int){
@@ -199,7 +227,48 @@ export const gqlBanks = gql`
                 id: _id
                 name
                 description
-                isPublish
+            }
+        }
+    }`;
+
+export const gqlBank = gql`
+    query Bank($id: ID!){
+        Bank(_id: $id){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+            }
+        }
+    }`;
+
+export const gqlTContactUsList = gql`
+    query TContactUsList($page: Int, $perPage: Int){
+        TContactUsList(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+            }
+        }
+    }`;
+
+export const gqlTContactUs = gql`
+    query TContactUs($id: ID!){
+        TContactUs(_id: $id){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
             }
         }
     }`;
@@ -253,33 +322,216 @@ export const gqlReports = gql`
         }
     }`;
 
+export const gqlBookmarks = gql`
+    query Bookmarks($page: Int, $perPage: Int){
+        Bookmarks(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                postId
+            }
+        }
+    }`;
+
+export const gqlBookmarksByPostId = gql`
+    query BookmarksByPostId($postId: ID!, $page: Int, $perPage: Int){
+        BookmarksByPostId(
+            postId: $postId
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                postId
+            }
+        }
+    }`;
+
+export const gqlContactUs = gql`
+    query ContactUsList($page: Int, $perPage: Int){
+        ContactUsList(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                postId
+                categoryId
+                description
+            }
+        }
+    }`;
+
+export const gqlComments = gql`
+    query Comments($page: Int, $perPage: Int) {
+        Comments(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            total
+            executionTime
+            data {
+                id: _id
+                postId
+                nameSubnam
+            }
+        }
+    }`;
+
+export const gqlShares = gql`
+    query Shares($page: Int, $perPage: Int){
+        Shares(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                postId
+                destination
+            }
+        }
+    }`;
+
+export const gqlShareByPostId = gql`
+    query ShareByPostId($postId: ID!, $page: Int, $perPage: Int){
+        ShareByPostId(
+            postId: $postId
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                postId
+                destination
+            }
+        }
+    }`;
+
+export const gqlDblog = gql`
+    query Dblog($page: Int, $perPage: Int){
+        Dblog(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                level
+                message
+                timestamp
+            }
+        }
+    }`;
+
 //////////////////  mutation  ///////////////////
 export const gqlCreateUser = gql`
   mutation CreateUser($input: UserInput) {
     createUser(input: $input) {
       id: _id
     }
-  }`;
+    }`;
 
 export const gqlCreatePost = gql`
   mutation CreatePost($input: PostInput) {
     createPost(input: $input) {
       id: _id
     }
-  }`;
+    }`;
+
+export const gqlCreateBookmark = gql`
+    mutation CreateBookmark($input: BookmarkInput) {
+        createBookmark(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateRole = gql`
+    mutation CreateRole($input: RoleInput) {
+        createRole(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateBank = gql`
+    mutation CreateBank($input: BankInput) {
+        createBank(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateContactUs = gql`
+    mutation CreateContactUs($input: ContactUsInput) {
+        createContactUs(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateTContactUs = gql`
+    mutation CreateTContactUs($input: TContactUsInput) {
+        createTContactUs(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateShare = gql`
+    mutation CreateShare($input: ShareInput) {
+        createShare(input: $input) {
+            id: _id
+        }
+    }`;
 
 export const gqlUpdateUser = gql`
   mutation UpdateUser($id: ID!, $input: UserInput) {
     updateUser(_id: $id, input: $input) {
       id: _id
     }
-  }`;
+    }`;
 
 export const gqlUpdatePost = gql`
   mutation UpdatePost($id: ID!, $input: PostInput) {
     updatePost(_id: $id, input: $input) {
       id: _id
     }
-  }`;
+    }`;
+ 
+export const gqlUpdateRole = gql`
+    mutation UpdateRole($id: ID!, $input: RoleInput) {
+        updateRole(_id: $id, input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlUpdateBank = gql`
+    mutation UpdateBank($id: ID!, $input: BankInput) {
+        updateBank(_id: $id, input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlUpdateTContactUs = gql`
+    mutation UpdateTContactUs($id: ID!, $input: TContactUsInput) {
+        updateTContactUs(_id: $id, input: $input) {
+            id: _id
+        }
+    }`;
 
 //////////////////  mutation  ///////////////////

@@ -16,7 +16,7 @@ import _ from "lodash";
 import moment from "moment";
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -24,7 +24,6 @@ import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import PrintIcon from '@mui/icons-material/Print';
 import ShareIcon from '@mui/icons-material/Share';
-
 
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
@@ -37,9 +36,9 @@ import DialogLogin from "./DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
 
-import {gqlHomes} from "../../gqlQuery"
+import {gqlHomes, gqlUser, gqlCreateContactUs} from "../../gqlQuery"
 
-import {checkAuth, getPermissions} from "../../components/provider/AuthProvider"
+import {checkAuth, getPermissions} from "../../AuthProvider"
 
 const Home = (props) => {
   let history = useHistory();
@@ -47,7 +46,7 @@ const Home = (props) => {
   const [keywordSearch, setKeywordSearch] = useState("");
   const [category, setCategory] = useState([0,1]);
   const [page, setPage] = useState(0);                             // Page number
-  const [rowsPerPage, setRowsPerPage] = useState(10);              // Number per page
+  const [rowsPerPage, setRowsPerPage] = useState(30);              // Number per page
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
   const [lightbox, setLightbox] = useState({
@@ -64,7 +63,7 @@ const Home = (props) => {
   const [anchorElSetting, setAnchorElSetting] = useState(null);
   const [anchorElShare, setAnchorElShare] = useState(null);
   const [snackbar, setSnackbar] = useState({open: false, message:""});
-  const [report, setReport] = useState({open: false, portId:""});
+  const [report, setReport] = useState({open: false, postId:""});
 
   const [dialogProfile, setDialogProfile] = useState({open: false, id:""});
   const breakpoints = {
@@ -73,32 +72,30 @@ const Home = (props) => {
     700: 1
   };
 
-  const { error, data, loading, networkStatus } = useQuery(gqlHomes, {
+  const [onCreateContactUs, resultCreateContactUsValues] = useMutation(gqlCreateContactUs
+    , {
+        onCompleted({ data }) {
+          history.push("/");
+        }
+      }
+  );
+
+  console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
+
+  const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus, category.join())
+  console.log("homesValues :", homesValues)
 
   useEffect(async() => {
-    // setDatas(await getList("posts", {}))
 
     let permissions = await getPermissions()
     let auth = await checkAuth()
 
     console.log("Home : ", permissions, auth)
   }, []);
-
-  // useEffect(async() => {
-  //   // console.log("useEffect :", page, rowsPerPage)
-
-  //   // const { error, data, loading, networkStatus } = useQuery(query, {
-  //   //   // variables: {},
-  //   //   notifyOnNetworkStatusChange: true,
-  //   // });
-  
-  //   // console.log("useEffect :", loading, data)
-  // }, [page, rowsPerPage]);
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -196,7 +193,7 @@ const Home = (props) => {
               <MenuItem onClick={(e)=>{
                 handleAnchorElSettingClose()
 
-                setReport({open: true, portId:index})
+                setReport({open: true, postId:item.id})
               }}>
                 Report
               </MenuItem>
@@ -223,7 +220,7 @@ const Home = (props) => {
 
         <div>
           {
-            loading
+            homesValues.loading
             ? <div><CircularProgress /></div> 
             : 
               <div>
@@ -233,7 +230,7 @@ const Home = (props) => {
                     className="my-masonry-grid"
                     columnClassName="my-masonry-grid_column"
                   >
-                    {data.Homes.data.map(
+                    {homesValues.data.Homes.data.map(
                       (n, index) => {
                         return (
                           <div key={n.id}>
@@ -267,10 +264,7 @@ const Home = (props) => {
                                 handleAnchorElSettingOpen(index, e)
                               }}
 
-                              // setReport({open: true, portId:index})
                               onDialogProfileOpen={(index, e)=>{
-                                // handleAnchorElSettingOpen(index, e)
-                                // 
                                 setDialogProfile({open:true, id:11})
                               }}
                               />
@@ -302,15 +296,8 @@ const Home = (props) => {
                     onRowsPerPageChange={(event) => {
                       setRowsPerPage(parseInt(event.target.value, 10));
                       setPage(0);
-
-                      // navigate.push({
-                      //   pathname: "/",
-                      //   search: "?sort=date&order=newest"
-                      // });
-
-                      // console.log("onRowsPerPageChange :", parseInt(event.target.value, 10))
                     }}
-                    count={data.Homes.total}
+                    count={homesValues.data.Homes.total}
                   />
                 </Container>
               </div>
@@ -378,7 +365,26 @@ const Home = (props) => {
       )}
 
       {
-        report.open && <ReportDialog open={report.open} portId={report.portId} onClose={()=>setReport({open: false, portId:""})}/>
+        report.open && <ReportDialog 
+                        open={report.open} 
+                        postId={report.postId} 
+                        onReport={(e)=>{
+                          console.log("onReport :", e)
+
+                          onCreateContactUs({ variables: { input: {
+                                  userId: "62a2c0cecf7946010d3c743f",
+                                  postId: e.postId,     
+                                  categoryId: e.categoryId,
+                                  description: e.description
+                                } 
+                              } 
+                          });
+
+                          setReport({open: false, postId:""})
+                        }}
+
+                        // onCreateTContactUs
+                        onClose={()=>setReport({open: false, postId:""})}/>
       }
 
       {
@@ -394,20 +400,6 @@ const Home = (props) => {
           history.push("/post/new");
         }}
       >
-        {/* {
-        [
-          { icon: <FileCopyIcon />, name: 'Copy' },
-          { icon: <SaveIcon />, name: 'Save' },
-          { icon: <PrintIcon />, name: 'Print' },
-          { icon: <ShareIcon />, name: 'Share' },
-        ].map((action) => (
-                  <SpeedDialAction
-                    key={action.name}
-                    icon={action.icon}
-                    tooltipTitle={action.name}
-                  />
-        ))
-        } */}
       </SpeedDial>
     </div>
   );

@@ -45,6 +45,17 @@ const Breadcs = ({ title }) => {
   // reports
   const reportsMatches =useRouteMatch("/reports")
 
+  // 
+  const sharesMatches =useRouteMatch("/shares")
+
+  // 
+  const contactUsMatches =useRouteMatch("/contact-us")
+
+  // 
+  const tcontactusListMatches =useRouteMatch("/tcontactus-list")
+
+  const dblogMatches =useRouteMatch("/dblog")
+
   const handleClick = () => {};
   return (
     <div role="presentation" onClick={handleClick}>
@@ -213,6 +224,33 @@ const Breadcs = ({ title }) => {
         {reportsMatches && (
           <MuiLink component={Link} to="/reports">
             Reports
+          </MuiLink>
+        )}
+
+        {/*  */}
+        {sharesMatches && (
+          <MuiLink component={Link} to="/shares">
+            Shares
+          </MuiLink>
+        )}
+
+        {/*  */}
+        {contactUsMatches && (
+          <MuiLink component={Link} to="/contact-us">
+            Contact Us
+          </MuiLink>
+        )}
+
+        {tcontactusListMatches && (
+          <MuiLink component={Link} to="/tcontactus-list">
+            Taxonomy Contact Us
+          </MuiLink>
+        )}
+        
+        {/* dblogMatches */}
+        {dblogMatches && (
+          <MuiLink component={Link} to="/dblog">
+            Recent log messages 
           </MuiLink>
         )}
 

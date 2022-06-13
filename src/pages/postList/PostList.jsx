@@ -28,9 +28,13 @@ import ExpandMore from "@material-ui/icons/ExpandMore";
 
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import LinearProgress from '@mui/material/LinearProgress';
+
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import Footer from "../home2/Footer";
-import {gqlPosts} from "../../gqlQuery"
+import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId} from "../../gqlQuery"
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
@@ -46,32 +50,14 @@ const PostList = (props) => {
     id: ""
   });
 
-  // const [datas, setDatas] = useState({data: null, total: 0});
-
   const { error, data, loading, networkStatus } = useQuery(gqlPosts, {
     variables: {page: page, perPage: perPage},
     notifyOnNetworkStatusChange: true,
   });
 
   console.log("error, data, loading, networkStatus, gqlPosts :", error, data, loading, networkStatus)
-  console.log(error)
-
-
-  // useEffect(async()=>{
-
-  //   // setDatas(await getList("posts", {}))
-
-  //   // let {data, total} = await getList("posts", {})
-
-  //   // console.log("data, total :", data, total)
-  //   // console.log("userDatauserDatauserDatauserData ", userData)
-
-  //   console.log("useEffect")
-  // },[])
 
   const handleClickOpen = () => {
-    // setOpen(true);
-
     setOpenDialogDelete({ ...openDialogDelete, isOpen: true });
   };
 
@@ -122,20 +108,12 @@ const PostList = (props) => {
     {
       field: "title",
       headerName: "Title",
-      width: 170
-      // renderCell: (params) => {
-      //   return (
-      //     <UserWrapper>
-      //       <img src={params.row.avatar} alt="" />
-      //       {params.row.userName}
-      //     </UserWrapper>
-      //   );
-      // }
+      width: 150
     },
     {
       field: "body",
       headerName: "Detail",
-      width: 250,
+      width: 200,
       renderCell: (params) => {
         return (
           <Box
@@ -154,26 +132,63 @@ const PostList = (props) => {
       }
     },
     {
-      field: 'col1',
+      field: 'comments',
       headerName: 'Comments',
       width: 150,
       disableClickEventBubbling: false,
       renderCell: (params) => {
-        return <ButtonWrapper><Link to={`/comments`}>
-        <button className="editBtn">Comment +100</button>
-      </Link></ButtonWrapper>
+        
+        return  <ButtonWrapper><Link to={`/comments`}>
+                  <button className="editBtn">Comment +100</button>
+                </Link></ButtonWrapper>
+      }
+    },
+    {
+      field: "bookmark",
+      headerName: "Bookmark",
+      width: 120,
+      renderCell: (params) => {
+        const bmValus = useQuery(gqlBookmarksByPostId, {
+          variables: {postId: params.row.id, page: 0, perPage: 10000},
+          notifyOnNetworkStatusChange: true,
+        });
+
+        return  bmValus.loading 
+                ? <LinearProgress sx={{width:"100px"}} />
+                : bmValus.data.BookmarksByPostId.data.length == 0 
+                    ? <div /> 
+                    : <ButtonWrapper><Link to={`/comments`}>
+                        <button className="editBtn">{bmValus.data.BookmarksByPostId.data.length}</button>
+                      </Link></ButtonWrapper>
         
       }
     },
     {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 170
+      field: "share",
+      headerName: "Share",
+      width: 120,
+      renderCell: (params) => {
+        console.log("share : ", params)
+
+        const shareValus = useQuery(gqlShareByPostId, {
+          variables: {postId: params.row.id, page: 0, perPage: 10000},
+          notifyOnNetworkStatusChange: true,
+        });
+
+        return  shareValus.loading 
+                ? <LinearProgress sx={{width:"100px"}} />
+                : shareValus.data.ShareByPostId.data.length == 0 
+                    ? <div /> 
+                    : <ButtonWrapper><Link to={`/comments`}>
+                        <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
+                      </Link></ButtonWrapper>
+        
+      }
     },
     {
       field: "action",
       headerName: "Action",
-      width: 140,
+      width: 150,
       renderCell: (params) => {
         return (
           <ButtonWrapper>
@@ -195,11 +210,13 @@ const PostList = (props) => {
   ];
 
   return (
-    <UserListContainer>
+    <Box style={{
+      flex: 4
+    }}>
         {
           loading
-          ?  <div><CircularProgress /></div> 
-          :  <DataGrid
+          ? <div><CircularProgress /></div> 
+          : <DataGrid
               rows={data.Posts.data}
               columns={columns}
               rowHeight={80}
@@ -261,7 +278,7 @@ const PostList = (props) => {
          
         </SpeedDial>
       <Footer />
-    </UserListContainer>
+    </Box>
   );
 };
 

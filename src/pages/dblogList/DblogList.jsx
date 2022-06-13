@@ -3,21 +3,18 @@ import {
   UserWrapper,
   EditButton,
   ButtonWrapper
-} from "./RoleList.styled";
+} from "./DblogList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
-// import { userRows } from "../../data";
 import { Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
-// import { RoleContext } from "../../Store";
-
+import moment from "moment";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   useHistory
 } from "react-router-dom";
-
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -32,16 +29,13 @@ import _ from "lodash"
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
-import { gqlRoles } from "../../gqlQuery"
+import { gqlDblog } from "../../gqlQuery"
 import Footer from "../home2/Footer";
 
-const RoleList = (props) => {
+const DblogList = (props) => {
   let history = useHistory();
-  // const [userData, setUserData] = useState(userRows);
-  // const [userData, setUserData] = useContext(RoleContext);
-  // const [datas, setDatas] = useState({data: null, total: 0});
 
-  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [pageOptions, setPageOptions] = useState([50, 100, 200]);  
   const [page, setPage] = useState(0);  
   const [perPage, setPerPage] = useState(pageOptions[0])
 
@@ -50,18 +44,12 @@ const RoleList = (props) => {
     id: ""
   });
 
-  const rolesValues = useQuery(gqlRoles, {
+  const dblogValues = useQuery(gqlDblog, {
     variables: {page: page, perPage: perPage},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("rolesValues :", rolesValues)
-
-  const handleClickOpen = () => {
-    // setOpen(true);
-
-    setOpenDialogDelete({ ...openDialogDelete, isOpen: true });
-  };
+  console.log("dblogValues :", dblogValues)
 
   const handleClose = () => {
     // setOpen(false);
@@ -72,35 +60,38 @@ const RoleList = (props) => {
     // setUserData(userData.filter((user) => user.id !== id));
   };
 
+  /*
+  level: String
+    meta: String
+    message: String
+    timestamp: String
+  */
+
   const columns = [
     {
-      field: "name",
-      headerName: "Name",
-      width: 170
+      field: "level",
+      headerName: "Level",
+      width: 100
     },
     {
-      field: "description",
-      headerName: "Description",
-      width: 250,
+      field: "message",
+      headerName: "Message",
+      width: 500,
+    },
+    // {
+    //   field: "meta",
+    //   headerName: "Meta",
+    //   width: 250,
+    // },
+    {
+      field: "timestamp",
+      headerName: "Create at",
+      width: 200,
       renderCell: (params) => {
-        return (
-          <Box
-            sx={{
-              maxHeight: "inherit",
-              width: "100%",
-              whiteSpace: "initial",
-              lineHeight: "16px"
-            }}
-          >
-            <Typography
-              variant="body1"
-              gutterBottom
-              dangerouslySetInnerHTML={{
-                __html: params.row.description
-              }}
-            />
-          </Box>
-        );
+        console.log("params.row.timestamp :", params.row.timestamp/1000)
+        return  <Typography variant="overline" display="block" gutterBottom>
+                  {moment.unix(params.row.timestamp/1000).format('DD/MM/YYYY hh:mm:ss A')}
+                </Typography>
       }
     },
     {
@@ -110,9 +101,9 @@ const RoleList = (props) => {
       renderCell: (params) => {
         return (
           <ButtonWrapper>
-            <Link to={`/role/${params.row.id}/edit`}>
+            {/* <Link to={`/role/${params.row.id}/edit`}>
               <button className="editBtn">Edit</button>
-            </Link>
+            </Link> */}
             <DeleteOutline
               className="deleteBtn"
               onClick={() => {
@@ -130,10 +121,10 @@ const RoleList = (props) => {
       flex: 4
     }}>
       {
-         rolesValues.loading
+         dblogValues.loading
          ?  <div><CircularProgress /></div> 
          :  <DataGrid
-              rows={rolesValues.data.Roles.data}
+              rows={dblogValues.data.Dblog.data}
               columns={columns}
               rowHeight={80}
 
@@ -196,4 +187,4 @@ const RoleList = (props) => {
   );
 };
 
-export default RoleList;
+export default DblogList;

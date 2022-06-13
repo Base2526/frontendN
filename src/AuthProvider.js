@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-import { client } from './ApolloClient';
+// import { client } from './components/provider/ApolloClient';
 
 const _  = require('lodash')
 

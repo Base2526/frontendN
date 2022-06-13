@@ -1,9 +1,9 @@
 import {
-  UserListContainer,
-  UserWrapper,
-  EditButton,
-  ButtonWrapper
-} from "./UserList.styled";
+    UserListContainer,
+    UserWrapper,
+    EditButton,
+    ButtonWrapper
+} from "./ShareList.styled";
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { useState, useContext, useEffect } from "react";
@@ -18,46 +18,31 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import { useQuery } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
+import { useQuery } from "@apollo/client";
+import Box from "@mui/material/Box";
 
-import {gqlUsers, gqlManyRoles} from "../../gqlQuery"
-
+import {gqlShares, gqlPost, gqlUser} from "../../gqlQuery"
 import Footer from "../home2/Footer";
 
-const UserList = (props) => {
+const ShareList = (props) => {
   let history = useHistory();
 
-  // const [userData, setUserData] = useState(userRows);
-  // const [userData, setUserData] = useContext(UserContext);
-
-  // const [datas, setDatas] = useState({data: null, total: 0});
-
-  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
+  const [pageOptions, setPageOptions] = useState([20, 100]);  
   const [page, setPage] = useState(0);  
   const [perPage, setPerPage] = useState(pageOptions[0])
+
+  const shareValues = useQuery(gqlShares, {
+    variables: {page, perPage},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("shareValues :", shareValues)
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
-
-  const { error, data, loading, networkStatus } = useQuery(gqlUsers, {
-    variables: {page: page, perPage: perPage},
-    notifyOnNetworkStatusChange: true,
-  });
-
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
-
-  // const { dataDemo } = useDemoData({
-  //   rowLength: 100
-  // });
-
-  // useEffect(async()=>{
-  //   setDatas( await getList("users", {}) )
-  // }, [])
 
   const handleDelete = (id) => {
     setUserData(userData.filter((user) => user.id !== id));
@@ -69,65 +54,53 @@ const UserList = (props) => {
   };
 
   const columns = [
-    {
-      field: "image",
-      headerName: "Image",
-      width: 130,
-      renderCell: (params) => {
-        console.log("params.row.image :", params.row.image)
-        if(params.row.image.length < 1){
-          return <Avatar
-                  sx={{
-                    height: 100,
-                    width: 100
-                  }}>A</Avatar>
-        }
-        return (
-          <div style={{ position: "relative" }}>
-            <Avatar
-              sx={{
-                height: 100,
-                width: 100
-              }}
-              variant="rounded"
-              alt="Example Alt"
-              src={params.row.image[0].base64}
-            />
-          </div>
-        );
-      }
-    },
-    { field: "displayName", headerName: "Display name", width: 150 },
-    { field: "username", headerName: "User name", width: 150 },
-    { field: "email", headerName: "Email", width: 180 },
     { 
-      field: "roles", 
-      headerName: "Roles", 
+      field: "userId", 
+      headerName: "Username", 
       width: 150,
       renderCell: (params) => {
-        let values = useQuery(gqlManyRoles, {
-          variables: { ids: params.row.roles },
+        let value = useQuery(gqlUser, {
+          variables: {id: params.row.userId},
           notifyOnNetworkStatusChange: true,
         });
 
-        return  values.loading 
+        return  value.loading 
                 ? <LinearProgress sx={{width:"100px"}} />
-                : <div>
-                  {
-                    _.map(values.data.getManyRoles.data, (v)=>{
-                      return  <Typography variant="overline" display="block" gutterBottom>
-                              {v.name}
-                            </Typography>
-                    })
-                  }
-                </div>
+                : <Typography variant="overline" display="block" gutterBottom>
+                    {value.data.User.data.displayName}
+                  </Typography>
         
       }
     },
-    {
-      field: "lastAccess",
-      headerName: "Last access",
-      width: 200
+    { 
+      field: "postId", 
+      headerName: "Post name", 
+      width: 400, 
+      renderCell: (params) => {
+        let postValue = useQuery(gqlPost, {
+          variables: {id: params.row.postId},
+          notifyOnNetworkStatusChange: true,
+        });
+
+        // console.log("postValue : ", params.row.postId, postValue.data.Post.data.title)
+
+        return  postValue.loading 
+                ? <LinearProgress sx={{width:"100px"}} />
+                : <Typography variant="overline" display="block" gutterBottom>
+                    {postValue.data.Post.data.title}
+                  </Typography>
+        
+      }
+    },
+    { 
+      field: "destination", 
+      headerName: "Destination", 
+      width: 100, 
+      renderCell: (params) => {
+        return  <Typography>
+                  {params.row.destination}
+                </Typography>
+      }
     },
     {
       field: "action",
@@ -136,9 +109,6 @@ const UserList = (props) => {
       renderCell: (params) => {
         return (
           <ButtonWrapper>
-            <Link to={`/user/${params.row.id}/edit`}>
-              <button className="editBtn">Edit</button>
-            </Link>
             <DeleteOutline
               className="deleteBtn"
               onClick={() => {
@@ -152,12 +122,14 @@ const UserList = (props) => {
   ];
 
   return (
-    <UserListContainer>
+    <Box style={{
+      flex: 4
+    }}>
       {
-        loading
-        ? <div><CircularProgress /></div> 
-        : <DataGrid
-            rows={data.Users.data}
+        shareValues.loading
+        ?  <div><CircularProgress /></div> 
+        :  <DataGrid
+            rows={shareValues.data.Shares.data}
             columns={columns}
             rowHeight={80}
 
@@ -171,10 +143,9 @@ const UserList = (props) => {
             onPageChange={(newPage) =>{
               setPage(newPage)
             }}
-            rowCount={data.Users.total}
           />
       }
-    
+        
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -205,18 +176,10 @@ const UserList = (props) => {
           </DialogActions>
         </Dialog>
       )}
-
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
-          history.push("/user/new");
-        }}
-      />
       <Footer />
-    </UserListContainer>
+    </Box>
   );
 };
 
-export default UserList;
+export default ShareList;
+  

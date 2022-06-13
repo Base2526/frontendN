@@ -66,6 +66,8 @@ const User = (props) => {
 
   const [input, setInput] = useState(initValues);
 
+  console.log("== User ==", input)
+
   const [error, setError] = useState({
     username: "",
     email: "",
@@ -101,7 +103,7 @@ const User = (props) => {
         notifyOnNetworkStatusChange: true,
       });
 
-      console.log("editValues : ", editValues)
+      console.log("editValues : ", editValues, input)
 
       if(_.isEqual(input, initValues)) {
         if(!_.isEmpty(editValues)){

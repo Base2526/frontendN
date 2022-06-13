@@ -16,6 +16,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
+import Box from "@mui/material/Box";
 
 import { useQuery } from "@apollo/client";
 
@@ -89,7 +90,9 @@ const SocketList = (props) => {
   ];
 
   return (
-    <UserListContainer>
+    <Box style={{
+      flex: 4
+    }}>
       {
          loading
          ?  <div><CircularProgress /></div> 
@@ -142,7 +145,7 @@ const SocketList = (props) => {
         </Dialog>
       )}
       <Footer />
-    </UserListContainer>
+    </Box>
   );
 };
 

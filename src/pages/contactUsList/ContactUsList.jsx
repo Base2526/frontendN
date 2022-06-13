@@ -20,28 +20,40 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
+import LinearProgress from '@mui/material/LinearProgress';
 
-import { getList } from "../../components/provider/DataProvider";
+import { useQuery, useMutation } from "@apollo/client";
+import {gqlContactUs, gqlPost, gqlUser, gqlTContactUs} from "../../gqlQuery"
 
 import Footer from "../home2/Footer";
   
 const ContactUsList = (props) => {
     let history = useHistory();
   
-    // const [userData, setUserData] = useState(userRows);
-    const [userData, setUserData] = useContext(UserContext);
-  
-    const [datas, setDatas] = useState({data: null, total: 0});
+    const [pageOptions, setPageOptions] = useState([20, 100]);  
+    const [page, setPage] = useState(0);  
+    const [perPage, setPerPage] = useState(pageOptions[0])
+
+    const contactUsValues = useQuery(gqlContactUs, {
+      variables: {page, perPage},
+      notifyOnNetworkStatusChange: true,
+    });
+
+    console.log("contactUsValues :", contactUsValues)
+
+    // 
+    // const tContactUsListValues = useQuery(gqlTContactUsList, {
+    //   variables: {page, perPage},
+    //   notifyOnNetworkStatusChange: true,
+    // });
+
+    // console.log("tContactUsListValues :", tContactUsListValues)
   
     const [openDialogDelete, setOpenDialogDelete] = useState({
       isOpen: false,
       id: ""
     });
-  
-    useEffect(async()=>{
-      setDatas( await getList("users", {}) )
-    }, [])
-  
+    
     const handleDelete = (id) => {
       setUserData(userData.filter((user) => user.id !== id));
     };
@@ -50,62 +62,72 @@ const ContactUsList = (props) => {
       // setOpen(false);
       setOpenDialogDelete({ ...openDialogDelete, isOpen: false });
     };
-  
+
+    /*
+    categoryId: "62a434855359720693aa83fc"
+    description: "asdf"
+    id: "62a4620f03c1690257de9d8b"
+    postId: "62a31ce2ca4789003e5f5123"
+    userId: "62a2c0cecf7946010d3c743f"
+    */
+
     const columns = [
-      {
-        field: "image",
-        headerName: "Image",
-        width: 130,
+      { field: "userId", 
+        headerName: "Username", 
+        width: 200,
         renderCell: (params) => {
-          console.log("params.row.image :", params.row.image)
-          if(params.row.image.length < 1){
-            return <Avatar
-                    sx={{
-                      height: 100,
-                      width: 100
-                    }}>A</Avatar>
-          }
-          return (
-            <div style={{ position: "relative" }}>
-              <Avatar
-                sx={{
-                  height: 100,
-                  width: 100
-                }}
-                variant="rounded"
-                alt="Example Alt"
-                src={params.row.image[0].base64}
-              />
-            </div>
-          );
-        }
+          let value = useQuery(gqlUser, {
+            variables: {id: params.row.userId},
+            notifyOnNetworkStatusChange: true,
+          });
+
+          return  value.loading 
+                  ? <LinearProgress sx={{width:"100px"}} />
+                  : <Typography variant="overline" display="block" gutterBottom>
+                      {value.data.User.data.displayName}
+                    </Typography>
+          
+        } 
       },
-      { field: "displayName", headerName: "Display name", width: 150 },
-      { field: "username", headerName: "User name", width: 150 },
-      // {
-      //   field: "user",
-      //   headerName: "User",
-      //   width: 170,
-      //   renderCell: (params) => {
-      //     return (
-      //       <UserWrapper>
-      //         <img src={params.row.avatar} alt="" />
-      //         {params.row.userName}
-      //       </UserWrapper>
-      //     );
-      //   }
-      // },
-      { field: "email", headerName: "Email", width: 180 },
+      { field: "categoryId", 
+        headerName: "Category", 
+        width: 200,
+        renderCell: (params) => {
+          let value = useQuery(gqlTContactUs, {
+            variables: {id: params.row.categoryId},
+            notifyOnNetworkStatusChange: true,
+          });
+
+          return  value.loading 
+                  ? <LinearProgress sx={{width:"100px"}} />
+                  : <Typography variant="overline" display="block" gutterBottom>
+                      {value.data.TContactUs.data.name}
+                    </Typography>
+        } 
+      },
+      { field: "postId", 
+        headerName: "Post name", 
+        width: 200,
+        renderCell: (params) => {
+          let value = useQuery(gqlPost, {
+            variables: {id: params.row.postId},
+            notifyOnNetworkStatusChange: true,
+          });
+
+          console.log("postId :", value)
+          return  value.loading 
+                  ? <LinearProgress sx={{width:"100px"}} />
+                  : <Typography variant="overline" display="block" gutterBottom>
+                      {value.data.Post.data.title}
+                    </Typography>
+        } 
+      },
+      { field: "description", headerName: "Description", width: 250 },
       {
-        field: "lastAccess",
-        headerName: "Last access",
-        width: 200
+        field: "createdAt",
+        headerName: "Created At",
+        width: 170
       },
-      // {
-      //   field: "transaction",
-      //   headerName: "Transaction",
-      //   width: 170
-      // },
       {
         field: "action",
         headerName: "Action",
@@ -113,9 +135,6 @@ const ContactUsList = (props) => {
         renderCell: (params) => {
           return (
             <ButtonWrapper>
-              {/* <Link to={`/user/${params.row.id}/edit`}>
-                <button className="editBtn">Edit</button>
-              </Link> */}
               <DeleteOutline
                 className="deleteBtn"
                 onClick={() => {
@@ -132,12 +151,24 @@ const ContactUsList = (props) => {
       <UserListContainer>
 
         {
-           _.isEmpty(datas.data) 
-           ?  <div><CircularProgress /></div> 
-           :  <DataGrid
-                rows={datas.data}
-                columns={columns}
-              />
+          contactUsValues.loading
+          ?  <div><CircularProgress /></div> 
+          :  <DataGrid
+              rows={contactUsValues.data.ContactUsList.data}
+              columns={columns}
+              rowHeight={80}
+
+              pageSize={perPage}
+              onPageSizeChange={(newPerPage) => {
+                setPerPage(newPerPage)
+                setPage(0)
+              }}
+              rowsPerPageOptions={pageOptions}
+              page={page}
+              onPageChange={(newPage) =>{
+                setPage(newPage)
+              }}
+            />
         }
           
         {openDialogDelete.isOpen && (

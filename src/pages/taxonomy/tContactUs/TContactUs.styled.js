@@ -82,24 +82,3 @@ export const NewUserButton = styled.button`
     background-color: #1214a1;
   }
 `;
-
-export const ButtonWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-
-  .editBtn {
-    border: none;
-    border-radius: 10px;
-    padding: 3px 10px;
-    background-color: #dbffee;
-    color: #078f4e;
-    cursor: pointer;
-  }
-
-  .deleteBtn {
-    color: red;
-    cursor: pointer;
-  }
-`;

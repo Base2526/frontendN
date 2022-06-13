@@ -20,7 +20,8 @@ import {
   Switch,
   Route,
   useHistory,
-  Link
+  Link,
+  useLocation
 } from "react-router-dom";
 import UserList from "./pages/userList/UserList";
 import User from "./pages/user/User";
@@ -54,9 +55,17 @@ import BookmarkList from "./pages/bookmarkList/BookmarkList"
 
 import ContactUsList from "./pages/contactUsList/ContactUsList"
 
+import TContactUs from "./pages/taxonomy/tContactUs/TContactUs"
+import TContactUsList from "./pages/taxonomy/tContactUsList/TContactUsList"
+
 // ThemeMailList
 import ThemeMailList from "./pages/themeMailList/ThemeMailList";
 import ThemeMail from "./pages/themeMail/ThemeMail";
+
+// ShareList
+import ShareList from "./pages/shareList/ShareList"
+
+import DblogList from "./pages/dblogList/DblogList"
 
 import _ from "lodash";
 import { MenuList } from "./menu";
@@ -223,6 +232,18 @@ const App = (props) => {
     console.log("handleText");
   };
 
+  const NoMatch = () =>{
+    let location = useLocation();
+
+    return (
+      <div>
+        <h3>
+          Page not found !!! <code>{location.pathname}</code>
+        </h3>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Store>
@@ -377,6 +398,7 @@ const App = (props) => {
             <div className="container">
               {/* <Sidebar /> */}
               <Switch>
+                
                 <Route path="/" exact>
                   <Home handleText={handleText} />
                 </Route>
@@ -460,6 +482,18 @@ const App = (props) => {
                   <ThemeMail />
                 </Route>
 
+
+                <Route path="/tcontactus-list">
+                  <TContactUsList />
+                </Route>
+                <Route path="/tcontactus/:id/:mode">
+                  <TContactUs />
+                </Route>
+                <Route path="/tcontactus/:mode">
+                  <TContactUs />
+                </Route>
+                
+
                 <Route path="/notification">
                   <Notification />
                 </Route>
@@ -467,18 +501,27 @@ const App = (props) => {
                 <Route path="/messenger">
                   <Messenger />
                 </Route>
-                {/* Notification */}
 
-                {/* BookmarkList */}
                 <Route path="/bookmarks">
                   <BookmarkList />
                 </Route>
 
-
-                {/* ReportList */}
                 <Route path="/contact-us">
                   <ContactUsList />
                 </Route>
+
+                <Route path="/shares">
+                  <ShareList />
+                </Route>
+
+                <Route path="/dblog">
+                  <DblogList />
+                </Route>
+
+                <Route path="*">
+                  <NoMatch />
+                </Route>
+
               </Switch>
             </div>
           </main>

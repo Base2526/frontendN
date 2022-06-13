@@ -39,12 +39,12 @@ const BankList = (props) => {
     id: ""
   });
 
-  const { error, data, loading, networkStatus } = useQuery(gqlBanks, {
+  const bankValues = useQuery(gqlBanks, {
     variables: {page: page, perPage: perPage},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
+  console.log("bankValues :", bankValues)
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -109,7 +109,7 @@ const BankList = (props) => {
       renderCell: (params) => {
         return (
           <ButtonWrapper>
-            <Link to={`/role/${params.row.id}/edit`}>
+            <Link to={`/bank/${params.row.id}/edit`}>
               <button className="editBtn">Edit</button>
             </Link>
             <DeleteOutline
@@ -130,10 +130,10 @@ const BankList = (props) => {
     <UserListContainer>
     
       {
-         loading
+         bankValues.loading
          ?  <div><CircularProgress /></div> 
          :  <DataGrid
-              rows={data.Banks.data}
+              rows={bankValues.data.Banks.data}
               columns={columns}
               rowHeight={80}
 

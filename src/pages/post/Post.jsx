@@ -3,8 +3,11 @@ import {
   NewUserForm,
   FormItem,
   GenderContainer,
-  NewUserButton
+  NewUserButton,
+  ButtonWrapper
 } from "./NewPost.styled";
+
+import "./Post.css";
 
 import React, { useEffect, useState } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -24,6 +27,9 @@ import { useParams } from "react-router-dom";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useHistory } from "react-router-dom";
 import LinearProgress from '@mui/material/LinearProgress';
+import { DataGrid } from "@mui/x-data-grid";
+import { DeleteOutline } from "@material-ui/icons";
+import Typography from "@mui/material/Typography";
 
 import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
@@ -36,14 +42,22 @@ import Footer from "../home2/Footer";
 import Editor from "../../components/editor/Editor";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost } from "../../gqlQuery"
+import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, gqlUser, gqlBookmarksByPostId, gqlShareByPostId} from "../../gqlQuery"
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
 import {convertFileToBase64} from "../../util"
 
+import Tabs from "../../components/tab/Tabs";
+import Panel from "../../components/tab/Panel";
+
+import BookmarkList from "../bookmarkList/BookmarkList"
+
 let editValues = undefined;
+let bookmarkValues = undefined;
+let shareValues = undefined;
+
 let initValues = {
   title: "", 
   nameSubname: "", 
@@ -56,12 +70,140 @@ let initValues = {
   attackFiles: [] 
 }
 
+const bmColumns = [
+  { 
+    field: "userId", 
+    headerName: "Username", 
+    width: 150,
+    renderCell: (params) => {
+      let value = useQuery(gqlUser, {
+        variables: {id: params.row.userId},
+        notifyOnNetworkStatusChange: true,
+      });
+
+      return  value.loading 
+              ? <LinearProgress sx={{width:"100px"}} />
+              : <Typography variant="overline" display="block" gutterBottom>
+                  {value.data.User.data.displayName}
+                </Typography>
+      
+    }
+  },
+  { 
+    field: "postId", 
+    headerName: "Post name", 
+    width: 400, 
+    renderCell: (params) => {
+      let postValue = useQuery(gqlPost, {
+        variables: {id: params.row.postId},
+        notifyOnNetworkStatusChange: true,
+      });
+
+      return  postValue.loading 
+              ? <LinearProgress sx={{width:"100px"}} />
+              : <Typography variant="overline" display="block" gutterBottom>
+                  {postValue.data.Post.data.title}
+                </Typography>
+      
+    }
+  },
+  {
+    field: "action",
+    headerName: "Action",
+    width: 140,
+    renderCell: (params) => {
+      return (
+        <ButtonWrapper>
+          <DeleteOutline
+            className="deleteBtn"
+            onClick={() => {
+              setOpenDialogDelete({ isOpen: true, id: params.row.id });
+            }}
+          />
+        </ButtonWrapper>
+      );
+    }
+  }
+];
+
+const shcolumns = [
+  { 
+    field: "userId", 
+    headerName: "Username", 
+    width: 150,
+    renderCell: (params) => {
+      let value = useQuery(gqlUser, {
+        variables: {id: params.row.userId},
+        notifyOnNetworkStatusChange: true,
+      });
+
+      return  value.loading 
+              ? <LinearProgress sx={{width:"100px"}} />
+              : <Typography variant="overline" display="block" gutterBottom>
+                  {value.data.User.data.displayName}
+                </Typography>
+      
+    }
+  },
+  { 
+    field: "postId", 
+    headerName: "Post name", 
+    width: 400, 
+    renderCell: (params) => {
+      let postValue = useQuery(gqlPost, {
+        variables: {id: params.row.postId},
+        notifyOnNetworkStatusChange: true,
+      });
+
+      return  postValue.loading 
+              ? <LinearProgress sx={{width:"100px"}} />
+              : <Typography variant="overline" display="block" gutterBottom>
+                  {postValue.data.Post.data.title}
+                </Typography>
+      
+    }
+  },
+  { 
+    field: "destination", 
+    headerName: "Destination", 
+    width: 100, 
+    renderCell: (params) => {
+      return  <Typography>
+                {params.row.destination}
+              </Typography>
+    }
+  },
+  {
+    field: "action",
+    headerName: "Action",
+    width: 140,
+    renderCell: (params) => {
+      return (
+        <ButtonWrapper>
+          <DeleteOutline
+            className="deleteBtn"
+            onClick={() => {
+              setOpenDialogDelete({ isOpen: true, id: params.row.id });
+            }}
+          />
+        </ButtonWrapper>
+      );
+    }
+  }
+];
+
 const Post = (props) => {
   let history = useHistory();
+
+  let { id, mode } = useParams();
 
   const [snackbar, setSnackbar] = useState({open:false, message:""});
   const [input, setInput]       = useState(initValues);
   const [error, setError]       = useState(initValues);
+
+  const [bmPageOptions, setBmPageOptions] = useState([20, 100]);  
+  const [bmPage, setBmPage] = useState(0);  
+  const [bmPerPage, setBmPerPage] = useState(bmPageOptions[0])
 
   const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
     // variables: {
@@ -93,18 +235,8 @@ const Post = (props) => {
     // }],
   // }
   );
-
-  const updateCache = (cache, {data}) => {
-    console.log("updateCache")
-  };
-
-  const resetInput = () => {
-    console.log("updateCache")
-  };
-
   console.log("resultUpdatePost :", resultUpdatePost)
 
-  let { id, mode } = useParams();
 
   switch(mode){
     case "new":{
@@ -113,12 +245,23 @@ const Post = (props) => {
     }
    
     case "edit":{
+      bookmarkValues = useQuery(gqlBookmarksByPostId, {
+        variables: {postId: id, page: 0, perPage: 100},
+        notifyOnNetworkStatusChange: true,
+      });
+      console.log("bookmarkValues : ", bookmarkValues)
+    
+      shareValues = useQuery(gqlShareByPostId, {
+        variables: {postId: id, page: 0, perPage: 100},
+        notifyOnNetworkStatusChange: true,
+      });
+      console.log("shareValues : ", shareValues)
+    
       editValues = useQuery(gqlPost, {
         variables: {id},
         notifyOnNetworkStatusChange: true,
       });
 
-     
       if(_.isEqual(input, initValues)) {
         if(!_.isEmpty(editValues)){
           let {loading}  = editValues
@@ -247,122 +390,297 @@ const Post = (props) => {
     }
   };
 
+  const mainView = () =>{
+    console.log("mainView : ", mode)
+    switch(mode){
+      case "new":{
+        return  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box
+                    component="form"
+                    sx={{
+                      "& .MuiTextField-root": { m: 1, width: "50ch" }
+                    }}
+                    onSubmit={submitForm}>
+                    <div>
+                      <TextField
+                        id="post-title"
+                        name="title"
+                        label="Title"
+                        variant="filled"
+                        required
+                        value={input.title}
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={error.title}
+                        error={_.isEmpty(error.title) ? false : true}
+                      />
+
+                      <TextField
+                        id="post-name-subname"
+                        name="nameSubname"
+                        label="Name Subname"
+                        variant="filled"
+                        required
+                        value={input.nameSubname}
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={error.nameSubname}
+                        error={_.isEmpty(error.nameSubname) ? false : true}
+                      />
+
+                      <TextField
+                        id="post-idcard"
+                        name="idCard"
+                        label="ID Card"
+                        variant="filled"
+                        required
+                        value={input.idCard}
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={error.idCard}
+                        error={_.isEmpty(error.idCard) ? false : true}
+                      />
+
+                      <TextField
+                        id="post-amount"
+                        name="amount"
+                        label="Amount"
+                        variant="filled"
+                        type="number"
+                        required
+                        value={input.amount}
+                        onChange={onInputChange}
+                        onBlur={validateInput}
+                        helperText={error.amount}
+                        error={_.isEmpty(error.amount) ? false : true}
+                      />
+
+                      <DesktopDatePicker
+                        label="Date"
+                        inputFormat="dd/MM/yyyy"
+                        value={ input.dateTranfer }
+                        onChange={(newDate) => {
+                          setInput({...input, dateTranfer: newDate})
+                        }}
+                        renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
+                      />
+
+                      <TelInputField
+                        values={input.tels}
+                        onChange={(values) => {
+                          console.log("Tel onChange >> :", values);
+                          // setTels(values)
+                          setInput({...input, tels: values})
+                        }}
+                      />
+
+                      <BankInputField
+                        values={input.banks}
+                        onChange={(values) => {
+                          console.log("BankInputField : ", values)
+                          setInput({...input, banks: values})
+                        }}
+                      />
+
+                      <Editor 
+                        label={"Description"} 
+                        initData={ input.description }
+                        onEditorChange={(newDescription)=>{
+                          setInput({...input, description: newDescription})
+                        }} />
+
+                      <AttackFileField
+                        values={input.attackFiles}
+                        onChange={(values) => {
+                          setInput({...input, attackFiles: values})
+                        }}
+                        onSnackbar={(data) => {
+                          setSnackbar(data);
+                        }}
+                      />
+
+                    </div>
+                    <Button type="submit" variant="contained" color="primary">
+                      Create
+                    </Button>
+                  </Box>
+                </LocalizationProvider>
+      }
+     
+      case "edit":{
+        return  editValues != null && editValues.loading
+                ? <div><CircularProgress /></div> 
+                : <Tabs>
+                    <Panel title="Detail">
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <Box
+                          component="form"
+                          sx={{
+                            "& .MuiTextField-root": { m: 1, width: "50ch" }
+                          }}
+                          onSubmit={submitForm}>
+                          <div>
+                            <TextField
+                              id="post-title"
+                              name="title"
+                              label="Title"
+                              variant="filled"
+                              required
+                              value={input.title}
+                              onChange={onInputChange}
+                              onBlur={validateInput}
+                              helperText={error.title}
+                              error={_.isEmpty(error.title) ? false : true}
+                            />
+
+                            <TextField
+                              id="post-name-subname"
+                              name="nameSubname"
+                              label="Name Subname"
+                              variant="filled"
+                              required
+                              value={input.nameSubname}
+                              onChange={onInputChange}
+                              onBlur={validateInput}
+                              helperText={error.nameSubname}
+                              error={_.isEmpty(error.nameSubname) ? false : true}
+                            />
+
+                            <TextField
+                              id="post-idcard"
+                              name="idCard"
+                              label="ID Card"
+                              variant="filled"
+                              required
+                              value={input.idCard}
+                              onChange={onInputChange}
+                              onBlur={validateInput}
+                              helperText={error.idCard}
+                              error={_.isEmpty(error.idCard) ? false : true}
+                            />
+
+                            <TextField
+                              id="post-amount"
+                              name="amount"
+                              label="Amount"
+                              variant="filled"
+                              type="number"
+                              required
+                              value={input.amount}
+                              onChange={onInputChange}
+                              onBlur={validateInput}
+                              helperText={error.amount}
+                              error={_.isEmpty(error.amount) ? false : true}
+                            />
+
+                            <DesktopDatePicker
+                              label="Date"
+                              inputFormat="dd/MM/yyyy"
+                              value={ input.dateTranfer }
+                              onChange={(newDate) => {
+                                setInput({...input, dateTranfer: newDate})
+                              }}
+                              renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
+                            />
+
+                            <TelInputField
+                              values={input.tels}
+                              onChange={(values) => {
+                                console.log("Tel onChange >> :", values);
+                                // setTels(values)
+                                setInput({...input, tels: values})
+                              }}
+                            />
+
+                            <BankInputField
+                              values={input.banks}
+                              onChange={(values) => {
+                                console.log("BankInputField : ", values)
+                                setInput({...input, banks: values})
+                              }}
+                            />
+
+                            <Editor 
+                              label={"Description"} 
+                              initData={ input.description }
+                              onEditorChange={(newDescription)=>{
+                                setInput({...input, description: newDescription})
+                              }} />
+
+                            <AttackFileField
+                              values={input.attackFiles}
+                              onChange={(values) => {
+                                setInput({...input, attackFiles: values})
+                              }}
+                              onSnackbar={(data) => {
+                                setSnackbar(data);
+                              }}
+                            />
+
+                          </div>
+                          <Button type="submit" variant="contained" color="primary">
+                            Create
+                          </Button>
+                        </Box>
+                      </LocalizationProvider>
+                    </Panel>
+                    <Panel title={bookmarkValues.loading ? "Bookmarks" : "Bookmarks (" + bookmarkValues.data.BookmarksByPostId.data.length  +")"}>
+                      {
+                        bookmarkValues.loading 
+                        ? <div><CircularProgress /></div> 
+                        : <div style={{ height: 700, width: "1000px" }}>
+                            <DataGrid 
+                              rows={bookmarkValues.data.BookmarksByPostId.data} 
+                              columns={bmColumns} 
+                              rowHeight={80}
+
+                              pageSize={bmPerPage}
+                              onPageSizeChange={(newPerPage) => {
+                                setBmPerPage(newPerPage)
+                                setBmPage(0)
+                              }}
+                              rowsPerPageOptions={bmPageOptions}
+                              page={bmPage}
+                              onPageChange={(newPage) =>{
+                                setBmPage(newPage)
+                              }}/>
+                          </div>
+                      }
+                    
+                    </Panel>
+                    <Panel title={shareValues.loading ? "Shares" : "Shares (" + shareValues.data.ShareByPostId.data.length  +")"}>
+                      {
+                        shareValues.loading
+                        ? <div><CircularProgress /></div> 
+                        : <div style={{ height: 700, width: "1000px" }}>
+                            <DataGrid 
+                              rows={shareValues.data.ShareByPostId.data} 
+                              columns={shcolumns} 
+                              rowHeight={80}
+
+                              pageSize={bmPerPage}
+                              onPageSizeChange={(newPerPage) => {
+                                setBmPerPage(newPerPage)
+                                setBmPage(0)
+                              }}
+                              rowsPerPageOptions={bmPageOptions}
+                              page={bmPage}
+                              onPageChange={(newPage) =>{
+                                setBmPage(newPage)
+                              }}/>
+                          </div>
+
+                      }
+                    </Panel>
+                  </Tabs>
+      }
+    }
+  }
+
   return (
     <div>
       {
-        editValues != null && editValues.loading
-        ? <div><CircularProgress /></div> 
-        : <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Box
-              component="form"
-              sx={{
-                "& .MuiTextField-root": { m: 1, width: "50ch" }
-              }}
-              onSubmit={submitForm}>
-              <div>
-                <TextField
-                  id="post-title"
-                  name="title"
-                  label="Title"
-                  variant="filled"
-                  required
-                  value={input.title}
-                  onChange={onInputChange}
-                  onBlur={validateInput}
-                  helperText={error.title}
-                  error={_.isEmpty(error.title) ? false : true}
-                />
-
-                <TextField
-                  id="post-name-subname"
-                  name="nameSubname"
-                  label="Name Subname"
-                  variant="filled"
-                  required
-                  value={input.nameSubname}
-                  onChange={onInputChange}
-                  onBlur={validateInput}
-                  helperText={error.nameSubname}
-                  error={_.isEmpty(error.nameSubname) ? false : true}
-                />
-
-                <TextField
-                  id="post-idcard"
-                  name="idCard"
-                  label="ID Card"
-                  variant="filled"
-                  required
-                  value={input.idCard}
-                  onChange={onInputChange}
-                  onBlur={validateInput}
-                  helperText={error.idCard}
-                  error={_.isEmpty(error.idCard) ? false : true}
-                />
-
-                <TextField
-                  id="post-amount"
-                  name="amount"
-                  label="Amount"
-                  variant="filled"
-                  type="number"
-                  required
-                  value={input.amount}
-                  onChange={onInputChange}
-                  onBlur={validateInput}
-                  helperText={error.amount}
-                  error={_.isEmpty(error.amount) ? false : true}
-                />
-
-                <DesktopDatePicker
-                  label="Date"
-                  inputFormat="dd/MM/yyyy"
-                  value={ input.dateTranfer }
-                  onChange={(newDate) => {
-                    setInput({...input, dateTranfer: newDate})
-                  }}
-                  renderInput={(params) => <TextField {...params} required={input.dateTranfer === null ? true: false} />}
-                />
-
-                <TelInputField
-                  values={input.tels}
-                  onChange={(values) => {
-                    console.log("Tel onChange >> :", values);
-                    // setTels(values)
-                    setInput({...input, tels: values})
-                  }}
-                />
-
-                <BankInputField
-                  values={input.banks}
-                  onChange={(values) => {
-                    console.log("BankInputField : ", values)
-                    setInput({...input, banks: values})
-                  }}
-                />
-
-                <Editor 
-                  label={"Description"} 
-                  initData={ input.description }
-                  onEditorChange={(newDescription)=>{
-                    setInput({...input, description: newDescription})
-                  }} />
-
-                <AttackFileField
-                  values={input.attackFiles}
-                  onChange={(values) => {
-                    setInput({...input, attackFiles: values})
-                  }}
-                  onSnackbar={(data) => {
-                    setSnackbar(data);
-                  }}
-                />
-
-              </div>
-              <Button type="submit" variant="contained" color="primary">
-                Create
-              </Button>
-            </Box>
-          </LocalizationProvider>
+        mainView()
       }
      
       {snackbar.open && (
