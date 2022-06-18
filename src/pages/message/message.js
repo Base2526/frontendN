@@ -32,7 +32,9 @@ function useForceUpdate() {
   return () => setValue((value) => value + 1);
 }
 
-const index = (props) => {
+// https://github.com/saswatamcode/graphQLChat
+
+const message = (props) => {
   const messageListReferance = useRef();
   const inputReferance = useRef();
 
@@ -404,6 +406,40 @@ const index = (props) => {
           }
         />
       </div> */}
+      <div className="left-panel">
+      <ChatList
+        className='chat-list'
+        onClick={(e)=>{
+          console.log("Click : ChatList")
+        }}
+        dataSource={[
+            {
+                avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                alt: 'Reactjs',
+                title: 'Facebook',
+                subtitle: 'What are you doing?',
+                date: new Date(),
+                unread: 0,
+            },
+            {
+              avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+              alt: 'Reactjs',
+              title: 'Facebook',
+              subtitle: 'What are you doing?',
+              date: new Date(),
+              unread: 0,
+            },
+            {
+              avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+              alt: 'Reactjs',
+              title: 'Facebook',
+              subtitle: 'What are you doing?',
+              date: new Date(),
+              unread: 0,
+            }
+        ]} />
+
+      </div>
       <div className="right-panel">
         <MessageList
           referance={messageListReferance}
@@ -471,7 +507,6 @@ const index = (props) => {
             </div>
           )}
         </MessageList>
-
         <Input
           placeholder="Input message"
           defaultValue=""
@@ -503,4 +538,4 @@ const index = (props) => {
   );
 }
 
-export default index;
+export default message;

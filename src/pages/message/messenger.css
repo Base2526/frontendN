@@ -21,17 +21,12 @@ button {
   font-family: verdana, ubuntu;
 }
 
-/* .container {
+.container {
+  flex: 1;
   display: flex;
-  flex-direction: row;
-  min-height: 100%;
-  overflow: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-} */
+  flex-wrap: wrap;
+  /* background: hsl(0, 20%, 70%); */
+} 
 
 .chat-list {
   min-width: 240px;
@@ -39,10 +34,20 @@ button {
   overflow: auto;
 }
 
+.left-panel {
+  flex: 3;
+  font-size: 16px;
+  background: hsl(0, 50%, 60%);
+  padding: 2px;
+  border-style: dotted;
+}
+
 .right-panel {
-  flex: 1;
+  flex: 9;
   display: flex;
   flex-direction: column;
+  border-style: dotted;
+  margin-left: 5px;
 }
 
 .message-list {
@@ -53,5 +58,9 @@ button {
 
 .input-area {
   height: 50px;
-  background: red;
+  /* background: red; */
+}
+
+.rce-container-mlist{
+  max-height: 500px;
 }

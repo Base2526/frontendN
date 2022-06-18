@@ -34,12 +34,14 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
 import Footer from "../home2/Footer";
-import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId} from "../../gqlQuery"
+import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment} from "../../gqlQuery"
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
 const PostList = (props) => {
   let history = useHistory();
+
+  let userId = "62a31ce2ca4789003e5f5123";
 
   const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
   const [page, setPage] = useState(0);  
@@ -137,10 +139,29 @@ const PostList = (props) => {
       width: 150,
       disableClickEventBubbling: false,
       renderCell: (params) => {
-        
-        return  <ButtonWrapper><Link to={`/comments`}>
-                  <button className="editBtn">Comment +100</button>
-                </Link></ButtonWrapper>
+     
+        let commentValues = useQuery(gqlComment, {
+          variables: {postId: params.row.id},
+          notifyOnNetworkStatusChange: true,
+        });
+    
+        if(!commentValues.loading){
+          if(commentValues.data.Comment.data.length == 0){
+            return <div />
+          }
+    
+          let count = 0;
+          _.map(commentValues.data.Comment.data, (v) => {
+            if (v.replies) {
+              count += v.replies.length;
+            }
+          });
+    
+          return  <ButtonWrapper><Link to={`/comments`}>
+                    <button className="editBtn">{commentValues.data.Comment.data.length + count}</button>
+                  </Link></ButtonWrapper>
+        }
+        return <div />
       }
     },
     {
@@ -149,16 +170,18 @@ const PostList = (props) => {
       width: 120,
       renderCell: (params) => {
         const bmValus = useQuery(gqlBookmarksByPostId, {
-          variables: {postId: params.row.id, page: 0, perPage: 10000},
+          variables: { postId: params.row.id },
           notifyOnNetworkStatusChange: true,
         });
 
+        // console.log("gqlBookmarksByPostId : ", bmValus)
+
         return  bmValus.loading 
                 ? <LinearProgress sx={{width:"100px"}} />
-                : bmValus.data.BookmarksByPostId.data.length == 0 
+                : bmValus.data.bookmarksByPostId.data.length == 0 
                     ? <div /> 
                     : <ButtonWrapper><Link to={`/comments`}>
-                        <button className="editBtn">{bmValus.data.BookmarksByPostId.data.length}</button>
+                        <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
                       </Link></ButtonWrapper>
         
       }

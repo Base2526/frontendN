@@ -36,7 +36,7 @@ import DialogLogin from "./DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
 
-import {gqlHomes, gqlUser, gqlCreateContactUs} from "../../gqlQuery"
+import {gqlHomes, gqlUser, gqlCreateContactUs, gqlCreateBookmark} from "../../gqlQuery"
 
 import {checkAuth, getPermissions} from "../../AuthProvider"
 
@@ -81,6 +81,59 @@ const Home = (props) => {
   );
 
   console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
+
+
+  // 
+  const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+    , {
+        update: (cache, {data: {createBookmark}}) => {
+          // Update the cache as an approximation of server-side mutation effects
+          // console.log("update :", cache, createBookmark)
+
+          /*
+          const data = cache.readQuery({
+            query: gqlHomes,
+            variables: {
+              page, 
+              perPage: rowsPerPage, 
+              keywordSearch: keywordSearch, 
+              category: category.join()
+            }
+          });
+
+          console.log("data :", data)
+
+          let new_data = [...data.Homes.data]
+          
+          new_data[0] = {...new_data[0], title: "11111xxxx"}
+          // xxx[0] = xxx1
+
+          let new_homes = {...data.Homes, data: new_data}
+
+          console.log("data.Homes : ", new_homes)
+          cache.writeQuery({
+            query: gqlHomes,
+            data: {
+              Homes: new_homes
+            },
+            variables: {
+              page, 
+              perPage: rowsPerPage, 
+              keywordSearch: keywordSearch, 
+              category: category.join()
+            }
+          });
+
+          console.log("> update :", cache, createBookmark, data.Homes.data)
+          */
+        },
+        onCompleted({ data }) {
+          // history.push("/");
+          console.log("onCompleted > onCreateBookmark")
+        },
+      },
+      
+  );
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
@@ -240,17 +293,30 @@ const Home = (props) => {
                               onPanelComment={(data)=>{
                                 setPanelComment(data)
                               }}
-                              onSnackbar={async(data)=>{
-                                // setSnackbar(data)
+                              // onSnackbar={async(data)=>{
+                              //   // setSnackbar(data)
 
-                                setSnackbar({open: true, message:"Follow"});
+                              //   setSnackbar({open: true, message:"Follow"});
 
-                                // await socket().emit('follow', {test: "1234"}, (values)=>{
-                                //   // console.log(error);
-                                //   console.log(values);
+                              //   // await socket().emit('follow', {test: "1234"}, (values)=>{
+                              //   //   // console.log(error);
+                              //   //   console.log(values);
 
-                                //   setSnackbar({open: true, message:"Follow"});
-                                // });
+                              //   //   setSnackbar({open: true, message:"Follow"});
+                              //   // });
+                              // }}
+
+                              onBookmark={(e)=>{
+
+                                console.log("onBookmark : ", e)
+
+                                onCreateBookmark({ variables: { input: {
+                                      postId: "62a31ce2ca4789003e5f5123",
+                                      userId: "62a2f65ecf7946010d3c75da",
+                                      status: false
+                                    }
+                                  }
+                                }); 
                               }}
                               onLightbox={(data)=>{
                                 setLightbox(data)
@@ -321,9 +387,7 @@ const Home = (props) => {
           commentId={panelComment.commentId}
           isOpen={panelComment.isOpen}
           onRequestClose={() => {
-            // setPaneRightOpen(false);
-            let newPanelComment = { ...panelComment };
-            newPanelComment = { ...newPanelComment, isOpen: false };
+            let newPanelComment = { ...panelComment, isOpen: false };
             setPanelComment(newPanelComment);
           }}
         />

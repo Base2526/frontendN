@@ -138,3 +138,7 @@ body {
 .App-grow-13 {
   cursor: pointer;
 }
+
+.card-header-title {
+  cursor: pointer;
+}

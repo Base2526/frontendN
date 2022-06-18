@@ -35,14 +35,12 @@ import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
 import RadioGroupField from "./RadioGroupField";
 import TelInputField from "./TelInputField";
-
 import PopupSnackbar from "../home2/PopupSnackbar";
 import Footer from "../home2/Footer";
-
 import Editor from "../../components/editor/Editor";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, gqlUser, gqlBookmarksByPostId, gqlShareByPostId} from "../../gqlQuery"
+import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId} from "../../gqlQuery"
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
@@ -55,7 +53,7 @@ import Panel from "../../components/tab/Panel";
 import BookmarkList from "../bookmarkList/BookmarkList"
 
 let editValues = undefined;
-let bookmarkValues = undefined;
+let bookmarksByPostIdValues = undefined;
 let shareValues = undefined;
 
 let initValues = {
@@ -81,10 +79,12 @@ const bmColumns = [
         notifyOnNetworkStatusChange: true,
       });
 
+      console.log("Username : ", value)
+
       return  value.loading 
               ? <LinearProgress sx={{width:"100px"}} />
               : <Typography variant="overline" display="block" gutterBottom>
-                  {value.data.User.data.displayName}
+                  { value.data.User.data === null ? "" : value.data.User.data.displayName}
                 </Typography>
       
     }
@@ -195,6 +195,8 @@ const shcolumns = [
 const Post = (props) => {
   let history = useHistory();
 
+  let userId = "62a31ce2ca4789003e5f5123";
+
   let { id, mode } = useParams();
 
   const [snackbar, setSnackbar] = useState({open:false, message:""});
@@ -245,11 +247,11 @@ const Post = (props) => {
     }
    
     case "edit":{
-      bookmarkValues = useQuery(gqlBookmarksByPostId, {
-        variables: {postId: id, page: 0, perPage: 100},
+      bookmarksByPostIdValues = useQuery(gqlBookmarksByPostId, {
+        variables: { postId: id },
         notifyOnNetworkStatusChange: true,
       });
-      console.log("bookmarkValues : ", bookmarkValues)
+      console.log("bookmarksByPostIdValues : ", bookmarksByPostIdValues)
     
       shareValues = useQuery(gqlShareByPostId, {
         variables: {postId: id, page: 0, perPage: 100},
@@ -624,13 +626,13 @@ const Post = (props) => {
                         </Box>
                       </LocalizationProvider>
                     </Panel>
-                    <Panel title={bookmarkValues.loading ? "Bookmarks" : "Bookmarks (" + bookmarkValues.data.BookmarksByPostId.data.length  +")"}>
+                    <Panel title={bookmarksByPostIdValues.loading ? "Bookmarks" : "Bookmarks (" + bookmarksByPostIdValues.data.bookmarksByPostId.data.length  +")"}>
                       {
-                        bookmarkValues.loading 
+                        bookmarksByPostIdValues.loading 
                         ? <div><CircularProgress /></div> 
                         : <div style={{ height: 700, width: "1000px" }}>
                             <DataGrid 
-                              rows={bookmarkValues.data.BookmarksByPostId.data} 
+                              rows={bookmarksByPostIdValues.data.bookmarksByPostId.data} 
                               columns={bmColumns} 
                               rowHeight={80}
 
@@ -646,8 +648,7 @@ const Post = (props) => {
                               }}/>
                           </div>
                       }
-                    
-                    </Panel>
+                    </Panel> 
                     <Panel title={shareValues.loading ? "Shares" : "Shares (" + shareValues.data.ShareByPostId.data.length  +")"}>
                       {
                         shareValues.loading

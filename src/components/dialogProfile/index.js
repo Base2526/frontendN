@@ -26,7 +26,7 @@ const index =({open, id, onClose})=> {
           <Button onClick={onClose}>CLOSE</Button>
           <IconButton onClick={() => {
                 // onPanelComment({ isOpen: true, commentId: 3456 })
-                navigate.push("/messenger")
+                navigate.push("/message")
             }}>
               <CommentIcon />
             </IconButton>

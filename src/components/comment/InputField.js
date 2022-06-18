@@ -19,11 +19,11 @@ const InputField = ({ cancellor, parentId, child, value, edit, main }) => {
   return (
     <form
       className={"form"}
-      style={
-        !child && !edit && main === undefined
-          ? { marginLeft: 36 }
-          : { marginLeft: 8 }
-      }
+      // style={
+      //   !child && !edit && main === undefined
+      //     ? { marginLeft: 36 }
+      //     : { marginLeft: 8 }
+      // }
     >
       {/* 
       <div className={"userImg"}>

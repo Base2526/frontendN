@@ -15,6 +15,7 @@ import BookmarkIcon from "@mui/icons-material/Bookmark";
 import Divider from "@material-ui/core/Divider";
 import ShareIcon from "@mui/icons-material/Share";
 import CommentIcon from "@mui/icons-material/Comment";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import moment from "moment";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -31,11 +32,12 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { useHistory } from "react-router-dom";
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
-import {gqlUser} from "../../gqlQuery"
+import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlBookmarksByPostId, gqlIsBookmark} from "../../gqlQuery"
 
 
 const useStyles = makeStyles({
@@ -61,13 +63,45 @@ const useStyles = makeStyles({
   }
 });
 
-const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogProfileOpen }) => {
+const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogProfileOpen }) => {
   const classes = useStyles(n);
+  let history = useHistory();
+
+  let userId = "62a31ce2ca4789003e5f5123";
 
   const [expand, setExpand] = useState(false);
-  const onClick = () => {
-    setExpand(!expand);
-  };
+
+
+  const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+    , {
+        update: (cache, {data: {createBookmark}}) => {
+          const data1 = cache.readQuery({
+            query: gqlIsBookmark,
+            variables: {
+              userId: userId,
+              postId: n.id
+            }
+          });
+
+          let newData = {...data1.isBookmark}
+          newData = {...newData, data: createBookmark}
+        
+          cache.writeQuery({
+            query: gqlIsBookmark,
+            data: {
+              isBookmark: newData
+            },
+            variables: {
+              userId: userId,
+              postId: n.id
+            }
+          });
+        },
+        onCompleted({ data }) {
+          // console.log("bookmark :::: onCompleted")
+        },
+      },  
+  );
 
   const renderMedia = (m) =>{
     if( !_.isEmpty(m.files) ){
@@ -113,28 +147,141 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
       notifyOnNetworkStatusChange: true,
     });
 
-    console.log("userValue : ", userValue)
 
     if(userValue.loading){
       return <div><CircularProgress /></div> 
     }else{
       return  <CardHeader
-                avatar={<Avatar className={classes.avatar} src={userValue.data.User.data.image[0].base64}  />}
+                avatar={<Avatar className={"card-header-title"} src={userValue.data.User.data.image[0].base64}  />}
                 action={
-                  <IconButton onClick={(e) => {
+                  <IconButton  onClick={(e) => {
                       onAnchorElSettingOpen(index, e);
                   }}>
                     <MoreVertIcon />
                   </IconButton>
                 }
                 // onDialogProfileOpen
-                title={ <Typography onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
+                title={ <Typography className={"card-header-title"} onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
                 subheader={moment(n.createdAt).format('MMMM Do YYYY')}
                 />
 
     }
 
    
+  }
+
+  const iconBookmark =()=>{
+
+    const bmValus = useQuery(gqlIsBookmark, {
+      variables: {userId: userId, postId: n.id},
+      notifyOnNetworkStatusChange: true,
+    });
+
+    if(!bmValus.loading){
+      if(bmValus.data.isBookmark.data === null){
+        return  <IconButton onClick={(e) => {
+                    onCreateBookmark({ variables: { input: {
+                          postId: n.id,
+                          userId: userId,
+                          status: true
+                        }
+                      }
+                    }); 
+                  }}>
+                  <BookmarkIcon style={{ color:"" }} /> 
+                </IconButton>
+      }
+
+      let color = bmValus.data.isBookmark.data.status === null ? "" : bmValus.data.isBookmark.data.status ? "blue" : ""
+
+      return  <IconButton onClick={(e) => {
+                  onCreateBookmark({ variables: { input: {
+                        postId: n.id,
+                        userId: userId,
+                        status: !bmValus.data.isBookmark.data.status
+                      }
+                    }
+                  }); 
+                }}>
+                <BookmarkIcon style={{ color }} /> 
+              </IconButton>
+        
+    }
+    return  <IconButton onClick={(e) => {
+                onCreateBookmark({ variables: { input: {
+                      postId: n.id,
+                      userId: userId,
+                      status: true
+                    }
+                  }
+                }); 
+              }}>
+              <BookmarkIcon style={{ color:"" }} /> 
+            </IconButton>
+  }
+
+  const iconShare = () =>{
+    // gqlShareByPostId
+
+    let shareValues = useQuery(gqlShareByPostId, {
+      variables: {postId: n.id, page: 0, perPage: 1000},
+      notifyOnNetworkStatusChange: true,
+    });
+
+    if(!shareValues.loading){
+      if(shareValues.data.ShareByPostId.data.length == 0){
+        return <ShareIcon />
+      }
+
+      return  <div>
+                <ShareIcon />
+                <div style={{
+                    position: "absolute",
+                    right: "5px",
+                    borderRadius: "5px",
+                    borderStyle: "solid",
+                    borderColor: "red",
+                    borderWidth: "1px",
+                    fontSize: "10px"
+                }}>{shareValues.data.ShareByPostId.data.length}</div>
+              </div>
+    }
+    return <ShareIcon />
+  }
+
+  const iconComment = () =>{
+    let commentValues = useQuery(gqlComment, {
+      variables: {postId: n.id},
+      notifyOnNetworkStatusChange: true,
+    });
+
+    if(!commentValues.loading){
+      if(commentValues.data.Comment.data.length == 0){
+        return <CommentIcon />
+      }
+
+      let count = 0;
+      _.map(commentValues.data.Comment.data, (v) => {
+        if (v.replies) {
+          count += v.replies.length;
+        }
+      });
+
+      return  <div>
+                <CommentIcon />
+                <div style={{
+                  position: "absolute",
+                  right: "5px",
+                  borderRadius: "5px",
+                  borderStyle: "solid",
+                  borderColor: "red",
+                  borderWidth: "1px",
+                  fontSize: "10px"
+                }}>{commentValues.data.Comment.data.length + count}</div>
+              </div>
+    }
+
+    return <CommentIcon />
   }
 
   return (
@@ -199,24 +346,24 @@ const MasonryCard =({ n, index, onPanelComment, onSnackbar, onLightbox, onAnchor
           </div>
           <Divider light />
           <div>
-            <IconButton onClick={(e) => {
-              onSnackbar({open: true, message:"Follow"});
-            }}>
-              <BookmarkIcon />
-            </IconButton>
+            
+            {iconBookmark()}
             <IconButton onClick={(e) => {
               onAnchorElShareOpen(index, e);
             }}>
-              <ShareIcon />
+              {iconShare()}
             </IconButton>
             <IconButton onClick={(e) => {
-              onPanelComment({ isOpen: true, commentId: 3456 })
+              onPanelComment({ isOpen: true, commentId: n.id })
             }}>
-              <CommentIcon />
+              {iconComment()}
             </IconButton>
             <IconButton onClick={(e) => {
-              // onPanelComment({ isOpen: true, commentId: 3456 })
-
+              history.push("/detail/" + n.id);
+            }}>
+              <OpenInNewIcon /> 
+            </IconButton>
+            <IconButton onClick={(e) => {
               console.log("ExpandMoreIcon")
             }}>
               <ExpandMoreIcon />

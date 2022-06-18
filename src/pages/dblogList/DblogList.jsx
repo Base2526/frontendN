@@ -35,7 +35,7 @@ import Footer from "../home2/Footer";
 const DblogList = (props) => {
   let history = useHistory();
 
-  const [pageOptions, setPageOptions] = useState([50, 100, 200]);  
+  const [pageOptions, setPageOptions] = useState([50, 100]);  
   const [page, setPage] = useState(0);  
   const [perPage, setPerPage] = useState(pageOptions[0])
 

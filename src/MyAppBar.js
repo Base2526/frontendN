@@ -84,7 +84,7 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose}) =>{
                   <TopIconBadge>2</TopIconBadge>
                 </IconContainer>
                 </Link>
-                <Link to="/messenger">
+                <Link to="/message">
                   <IconContainer>
                     <CommentIcon />
                     <TopIconBadge>2</TopIconBadge>

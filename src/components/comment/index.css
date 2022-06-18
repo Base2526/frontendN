@@ -64,7 +64,7 @@
   background-color: #f3f3f3;
   padding: 8px;
   /* padding-bottom: 15px; */
-  border-radius: 8px;
+  /* border-radius: 8px; */
 
   display: flex;
   flex-direction: column;
@@ -91,8 +91,8 @@
   margin-top: -2px;
 }
 .displayComments {
-  margin-top: 8px;
-  margin-left: 15px;
+  /* margin-top: 8px;
+  margin-left: 15px; */
 }
 .displayComments .halfDiv {
   display: flex;

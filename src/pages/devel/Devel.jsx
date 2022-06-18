@@ -389,7 +389,8 @@ const Devel = (props) => {
             for (var i = 0; i < 1000; i++) {
               onCreateBookmark({ variables: { input: {
                     postId: makePostId(),
-                    userId: makeUserId()
+                    userId: makeUserId(),
+                    status: i%2 == 0 ? true : false
                   }
                 }
               });     

@@ -339,18 +339,32 @@ export const gqlBookmarks = gql`
     }`;
 
 export const gqlBookmarksByPostId = gql`
-    query BookmarksByPostId($postId: ID!, $page: Int, $perPage: Int){
-        BookmarksByPostId(
+    query BookmarksByPostId($postId: ID!){
+        bookmarksByPostId(
             postId: $postId
-            page: $page
-            perPage: $perPage
+        ){
+            status
+            executionTime
+            data {
+                id: _id
+                userId
+                postId
+                status
+            }
+        }
+    }`;
+
+export const gqlIsBookmark = gql`
+    query IsBookmark($userId: ID!, $postId: ID!){
+        isBookmark(
+            userId: $userId
+            postId: $postId
         ){
             status
             executionTime
             data{
-                id: _id
-                userId
-                postId
+                _id
+                status
             }
         }
     }`;
@@ -373,19 +387,26 @@ export const gqlContactUs = gql`
         }
     }`;
 
-export const gqlComments = gql`
-    query Comments($page: Int, $perPage: Int) {
-        Comments(
-            page: $page
-            perPage: $perPage
+export const gqlComment = gql`
+    query Comment($postId: ID!) {
+        Comment(
+            postId: $postId
         ){
             status
-            total
             executionTime
             data {
-                id: _id
-                postId
-                nameSubnam
+                userId
+                comId
+                fullName
+                avatarUrl
+                text
+                replies {
+                    userId
+                    comId
+                    fullName
+                    avatarUrl
+                    text
+                }
             }
         }
     }`;
@@ -460,7 +481,8 @@ export const gqlCreatePost = gql`
 export const gqlCreateBookmark = gql`
     mutation CreateBookmark($input: BookmarkInput) {
         createBookmark(input: $input) {
-            id: _id
+            _id
+            status
         }
     }`;
 
@@ -489,6 +511,28 @@ export const gqlCreateTContactUs = gql`
     mutation CreateTContactUs($input: TContactUsInput) {
         createTContactUs(input: $input) {
             id: _id
+        }
+    }`;
+
+export const gqlCreateComment = gql`
+    mutation CreateComment($input: CommentInput) {
+        createComment(input: $input) {
+            status
+            executionTime
+            data {
+                userId
+                comId
+                fullName
+                avatarUrl
+                text
+                replies {
+                  userId
+                  comId
+                  fullName
+                  avatarUrl
+                  text
+                }
+            }
         }
     }`;
 
@@ -533,5 +577,7 @@ export const gqlUpdateTContactUs = gql`
             id: _id
         }
     }`;
+
+    // createComment
 
 //////////////////  mutation  ///////////////////

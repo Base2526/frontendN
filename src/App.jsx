@@ -49,7 +49,7 @@ import Role from "./pages/role/Role";
 import Devel from "./pages/devel/Devel";
 
 import Notification from "./pages/notification"
-import Messenger from "./pages/messenger"
+import Message from "./pages/message/message"
 
 import BookmarkList from "./pages/bookmarkList/BookmarkList"
 
@@ -66,6 +66,8 @@ import ThemeMail from "./pages/themeMail/ThemeMail";
 import ShareList from "./pages/shareList/ShareList"
 
 import DblogList from "./pages/dblogList/DblogList"
+
+import Detail from "./pages/detail/Detail"
 
 import _ from "lodash";
 import { MenuList } from "./menu";
@@ -498,8 +500,8 @@ const App = (props) => {
                   <Notification />
                 </Route>
 
-                <Route path="/messenger">
-                  <Messenger />
+                <Route path="/message">
+                  <Message />
                 </Route>
 
                 <Route path="/bookmarks">
@@ -516,6 +518,10 @@ const App = (props) => {
 
                 <Route path="/dblog">
                   <DblogList />
+                </Route>
+
+                <Route path="/detail/:id">
+                  <Detail/>
                 </Route>
 
                 <Route path="*">

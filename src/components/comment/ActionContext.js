@@ -77,7 +77,10 @@ export const ActionProvider = ({
           fullName: currentUser.name,
           text: text
         })
-        newList[index].replies = newReplies
+        // newList[index].replies = newReplies
+        // setComment(newList)
+
+        newList[index] = {...newList[index], replies: newReplies}
         setComment(newList)
       }
     }
@@ -87,7 +90,10 @@ export const ActionProvider = ({
     if (parentId === undefined) {
       const newList = [...comments]
       const index = newList.findIndex((x) => x.comId === id)
-      newList[index].text = text
+      // newList[index].text = text
+      // setComment(newList)
+
+      newList[index] = {...newList[index], text: text}
       setComment(newList)
     } else if (parentId !== undefined) {
       const newList = [...comments]
@@ -107,7 +113,10 @@ export const ActionProvider = ({
       const newList = [...comments]
       const index = newList.findIndex((x) => x.comId === parentId)
       const filter = newList[index].replies.filter((x) => x.comId !== id)
-      newList[index].replies = filter
+      // newList[index].replies = filter
+      // setComment(newList)
+
+      newList[index] = {...newList[index], replies: filter}
       setComment(newList)
     }
   }

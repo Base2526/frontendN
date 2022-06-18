@@ -37,7 +37,7 @@ const Breadcs = ({ title }) => {
 
   const notificationMatches =useRouteMatch("/notification")
 
-  const messengerMatches =useRouteMatch("/messenger")
+  const messengerMatches =useRouteMatch("/message")
 
   // bookmarks
   const bookmarksMatches =useRouteMatch("/bookmarks")
@@ -55,6 +55,8 @@ const Breadcs = ({ title }) => {
   const tcontactusListMatches =useRouteMatch("/tcontactus-list")
 
   const dblogMatches =useRouteMatch("/dblog")
+
+  const detailMatches =useRouteMatch("/detail")
 
   const handleClick = () => {};
   return (
@@ -208,8 +210,8 @@ const Breadcs = ({ title }) => {
         )}
 
         {messengerMatches && (
-          <MuiLink component={Link} to="/messenger">
-            Messenger
+          <MuiLink component={Link} to="/message">
+            Message
           </MuiLink>
         )}
 
@@ -251,6 +253,13 @@ const Breadcs = ({ title }) => {
         {dblogMatches && (
           <MuiLink component={Link} to="/dblog">
             Recent log messages 
+          </MuiLink>
+        )}
+
+        {/* detailMatches */}
+        {detailMatches && (
+          <MuiLink component={Link} to="/detail">
+            Detail 
           </MuiLink>
         )}
 
