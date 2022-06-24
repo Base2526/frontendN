@@ -33,7 +33,11 @@ const DialogLogin = (props) => {
   };
 
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog 
+    onClose={(e)=>{
+      onClose(false)
+    }} 
+    open={open}>
       <DialogTitle>Sign in to Banlist</DialogTitle>
 
       <DialogContent>
@@ -48,7 +52,9 @@ const DialogLogin = (props) => {
             render={(renderProps) => (
               // <button onClick={renderProps.onClick} disabled={renderProps.disabled}>This is my custom Google button</button>
               <GoogleLoginButton
-                onClick={renderProps.onClick}
+                onClick={(e)=>{
+                  renderProps.onClick
+                }}
                 buttonText="Login"
                 className="mt-3 mb-3"
               />

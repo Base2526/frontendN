@@ -33,7 +33,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import { gqlRoles } from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
 
 const RoleList = (props) => {
   let history = useHistory();

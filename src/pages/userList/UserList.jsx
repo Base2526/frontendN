@@ -23,9 +23,9 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
 
-import {gqlUsers, gqlManyRoles} from "../../gqlQuery"
+import {gqlUsers, gqlManyRoles, gqlPostsByOwner} from "../../gqlQuery"
 
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
 
 const UserList = (props) => {
   let history = useHistory();
@@ -97,9 +97,34 @@ const UserList = (props) => {
         );
       }
     },
-    { field: "displayName", headerName: "Display name", width: 150 },
-    { field: "username", headerName: "User name", width: 150 },
+    { field: "displayName", 
+      headerName: "Display name", 
+      width: 150, 
+      renderCell: (params) =>{
+
+        return  <Link to={`/user/${params.row.id}/view`}>
+                  {params.row.displayName}
+                </Link>
+      }
+    },
     { field: "email", headerName: "Email", width: 180 },
+    {
+      field: "posts",
+      headerName: "Posts",
+      width: 120,
+      renderCell: (params) => {
+        const postsByOwner = useQuery(gqlPostsByOwner, {
+          variables: { ownerId: params.row.id },
+          notifyOnNetworkStatusChange: true,
+        });
+
+        return postsByOwner.loading
+              ? <LinearProgress sx={{width:"100px"}} />
+              : <>{postsByOwner.data.postsByOwner.data.length }</>        
+      }
+    },
+    /*
+    { field: "username", headerName: "User name", width: 150 },
     { 
       field: "roles", 
       headerName: "Roles", 
@@ -124,6 +149,7 @@ const UserList = (props) => {
         
       }
     },
+  */
     {
       field: "lastAccess",
       headerName: "Last access",

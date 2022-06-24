@@ -30,7 +30,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import { gqlDblog } from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
 
 const DblogList = (props) => {
   let history = useHistory();
@@ -171,17 +171,6 @@ const DblogList = (props) => {
           </DialogActions>
         </Dialog>
       )}
-
-      
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
-          history.push("/role/new");
-        }}
-      />
-
       <Footer />
     </Box>
   );

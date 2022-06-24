@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import PopupSnackbar from "../home2/PopupSnackbar";
+import PopupSnackbar from "../home/PopupSnackbar";
 import { useQuery, useMutation } from "@apollo/client";
 
 
@@ -256,7 +256,7 @@ const Devel = (props) => {
 
           {
             
-            for (var i = 0; i < 99; i++) {
+            for (var i = 0; i < 1000; i++) {
 
                     //////////// bank
                     const min = 0;
@@ -324,7 +324,7 @@ const Devel = (props) => {
           let start = Date.now();
 
           {
-            for (var i = 0; i < 100; i++) {
+            for (var i = 0; i < 1000; i++) {
               onCreateUser({ variables: { input: {
                     // displayName: faker.name.firstName() ,
                     username: faker.name.firstName() ,

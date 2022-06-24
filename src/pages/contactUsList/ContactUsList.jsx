@@ -25,7 +25,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { useQuery, useMutation } from "@apollo/client";
 import {gqlContactUs, gqlPost, gqlUser, gqlTContactUs} from "../../gqlQuery"
 
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
   
 const ContactUsList = (props) => {
     let history = useHistory();

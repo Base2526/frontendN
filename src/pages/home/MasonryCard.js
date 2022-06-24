@@ -37,8 +37,10 @@ import { useHistory } from "react-router-dom";
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
-import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlBookmarksByPostId, gqlIsBookmark} from "../../gqlQuery"
+import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlIsBookmark} from "../../gqlQuery"
 
+// import { getPermissions } from "../../AuthProvider"
+import { isAuth } from "../../AuthProvider"
 
 const useStyles = makeStyles({
   avatar: {
@@ -63,14 +65,13 @@ const useStyles = makeStyles({
   }
 });
 
-const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogProfileOpen }) => {
+const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogLogin }) => {
   const classes = useStyles(n);
   let history = useHistory();
 
-  let userId = "62a31ce2ca4789003e5f5123";
+  let userId = "62a2c0cecf7946010d3c743f";
 
   const [expand, setExpand] = useState(false);
-
 
   const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
     , {
@@ -102,6 +103,21 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
         },
       },  
   );
+
+  const handleCreateBookmark = (status) =>{
+    
+    if( !isAuth() ){
+      onDialogLogin(true)
+    }else{
+      onCreateBookmark({ variables: { input: {
+            postId: n.id,
+            userId: userId,
+            status
+          }
+        }
+      }); 
+    }
+  }
 
   const renderMedia = (m) =>{
     if( !_.isEmpty(m.files) ){
@@ -152,7 +168,10 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
       return <div><CircularProgress /></div> 
     }else{
       return  <CardHeader
-                avatar={<Avatar className={"card-header-title"} src={userValue.data.User.data.image[0].base64}  />}
+                avatar={<Avatar 
+                          className={"card-header-title"} 
+                          src={userValue.data.User.data.image[0].base64}
+                          onClick={(e)=> history.push("/user/" + userValue.data.User.data.id +"/view") }  />}
                 action={
                   <IconButton  onClick={(e) => {
                       onAnchorElSettingOpen(index, e);
@@ -160,14 +179,12 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
                     <MoreVertIcon />
                   </IconButton>
                 }
-                // onDialogProfileOpen
-                title={ <Typography className={"card-header-title"} onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
+                title={ <Typography className={"card-header-title"} onClick={(e)=>{
+                  history.push("/user/" + userValue.data.User.data.id +"/view");
+                }} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
                 subheader={moment(n.createdAt).format('MMMM Do YYYY')}
                 />
-
     }
-
-   
   }
 
   const iconBookmark =()=>{
@@ -180,13 +197,7 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
     if(!bmValus.loading){
       if(bmValus.data.isBookmark.data === null){
         return  <IconButton onClick={(e) => {
-                    onCreateBookmark({ variables: { input: {
-                          postId: n.id,
-                          userId: userId,
-                          status: true
-                        }
-                      }
-                    }); 
+                    handleCreateBookmark(true)
                   }}>
                   <BookmarkIcon style={{ color:"" }} /> 
                 </IconButton>
@@ -195,26 +206,14 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
       let color = bmValus.data.isBookmark.data.status === null ? "" : bmValus.data.isBookmark.data.status ? "blue" : ""
 
       return  <IconButton onClick={(e) => {
-                  onCreateBookmark({ variables: { input: {
-                        postId: n.id,
-                        userId: userId,
-                        status: !bmValus.data.isBookmark.data.status
-                      }
-                    }
-                  }); 
+                  handleCreateBookmark(!bmValus.data.isBookmark.data.status)
                 }}>
                 <BookmarkIcon style={{ color }} /> 
               </IconButton>
         
     }
     return  <IconButton onClick={(e) => {
-                onCreateBookmark({ variables: { input: {
-                      postId: n.id,
-                      userId: userId,
-                      status: true
-                    }
-                  }
-                }); 
+                handleCreateBookmark(true)
               }}>
               <BookmarkIcon style={{ color:"" }} /> 
             </IconButton>

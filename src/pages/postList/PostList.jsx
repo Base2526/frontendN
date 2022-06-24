@@ -33,8 +33,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
-import Footer from "../home2/Footer";
-import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment} from "../../gqlQuery"
+import Footer from "../home/Footer";
+import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment, gqlUser} from "../../gqlQuery"
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
@@ -134,6 +134,27 @@ const PostList = (props) => {
       }
     },
     {
+      field: 'ownerId',
+      headerName: 'Owner',
+      width: 150,
+      disableClickEventBubbling: false,
+      renderCell: (params) => {
+        
+
+        let userValue = useQuery(gqlUser, {
+          variables: {id: params.row.ownerId},
+          notifyOnNetworkStatusChange: true,
+        });
+
+        // console.log("Owner Id :", userValue )
+
+        // /user/62a2c0cecf7946010d3c743f/view
+        return userValue.loading 
+              ? <LinearProgress sx={{width:"100px"}} />
+              : userValue != null ? <Link to={`/user/${userValue.data.User.data.id}/view`}>{userValue.data.User.data.displayName}</Link> : <></>
+      }
+    },
+    {
       field: 'comments',
       headerName: 'Comments',
       width: 150,
@@ -191,7 +212,7 @@ const PostList = (props) => {
       headerName: "Share",
       width: 120,
       renderCell: (params) => {
-        console.log("share : ", params)
+        // console.log("share : ", params)
 
         const shareValus = useQuery(gqlShareByPostId, {
           variables: {postId: params.row.id, page: 0, perPage: 10000},

@@ -1,3 +1,5 @@
+import "./Detail.css"
+
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import { useQuery, useMutation } from "@apollo/client";
@@ -22,11 +24,14 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import "./Detail.css"
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import {gqlPost, gqlComment, gqlCreateComment, gqlCreateBookmark, gqlIsBookmark, gqlBookmarksByPostId, gqlBanks} from "../../gqlQuery"
-import data from "../home2/data.json";
+import data from "../home/data.json";
 import { CommentSection } from "../../components/comment";
+
+import DialogLogin from "../../DialogLogin";
+
+import { getPermissions } from "../../AuthProvider"
 
 const Detail = (props) => {
     const { pathname } = useLocation();
@@ -36,6 +41,15 @@ const Detail = (props) => {
 
     const [anchorElShare, setAnchorElShare] = useState(null);
     const [anchorElSetting, setAnchorElSetting] = useState(null);
+    const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+    
+    const check = () =>{
+        let permissions = getPermissions()
+        if( permissions && (permissions.includes("authenticated") || permissions.includes("administrator"))){
+            return true
+        }
+        return  false
+    }
 
     const handleAnchorElSettingOpen = (index, event) => {
         setAnchorElSetting(event.currentTarget);
@@ -218,13 +232,16 @@ const Detail = (props) => {
           let color = bmValus.data.isBookmark.data.status === null ? "" : bmValus.data.isBookmark.data.status ? "blue" : ""
     
           return  <IconButton onClick={(e) => {
-                      onCreateBookmark({ variables: { input: {
-                            postId: id,
-                            userId: userId2,
-                            status: !bmValus.data.isBookmark.data.status
-                          }
-                        }
-                      }); 
+
+                      check() 
+                      ? onCreateBookmark({ variables: { input: {
+                                postId: id,
+                                userId: userId2,
+                                status: !bmValus.data.isBookmark.data.status
+                            }
+                            }
+                        })
+                      : setDialogLoginOpen(true)
                     }}>
                     <BookmarkIcon style={{ color }} /> 
                   </IconButton>
@@ -449,6 +466,15 @@ const Detail = (props) => {
             )}
 
             {menuShare()}
+
+            {dialogLoginOpen && (
+                <DialogLogin
+                open={dialogLoginOpen}
+                onClose={() => {
+                    setDialogLoginOpen(false);
+                }}
+                />
+            )}
         </div>
     );
 };

@@ -30,18 +30,18 @@ import PopupSnackbar from "./PopupSnackbar";
 import Footer from "./Footer";
 import SearchBar from "./SearchBar";
 import Pagination from "./Pagination";
-import Detail from "./Detail";
 import { socket } from "../../SocketioClient";
-import DialogLogin from "./DialogLogin";
+import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
+import {gqlHomes, gqlCreateContactUs } from "../../gqlQuery"
 
-import {gqlHomes, gqlUser, gqlCreateContactUs, gqlCreateBookmark} from "../../gqlQuery"
-
-import {checkAuth, getPermissions} from "../../AuthProvider"
+import { isAuth } from "../../AuthProvider"
 
 const Home = (props) => {
   let history = useHistory();
+
+  let userId = "62a2c0cecf7946010d3c743f";
 
   const [keywordSearch, setKeywordSearch] = useState("");
   const [category, setCategory] = useState([0,1]);
@@ -72,6 +72,8 @@ const Home = (props) => {
     700: 1
   };
 
+  console.log("isAuth :", isAuth())
+
   const [onCreateContactUs, resultCreateContactUsValues] = useMutation(gqlCreateContactUs
     , {
         onCompleted({ data }) {
@@ -80,75 +82,12 @@ const Home = (props) => {
       }
   );
 
-  console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
-
-
-  // 
-  const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
-    , {
-        update: (cache, {data: {createBookmark}}) => {
-          // Update the cache as an approximation of server-side mutation effects
-          // console.log("update :", cache, createBookmark)
-
-          /*
-          const data = cache.readQuery({
-            query: gqlHomes,
-            variables: {
-              page, 
-              perPage: rowsPerPage, 
-              keywordSearch: keywordSearch, 
-              category: category.join()
-            }
-          });
-
-          console.log("data :", data)
-
-          let new_data = [...data.Homes.data]
-          
-          new_data[0] = {...new_data[0], title: "11111xxxx"}
-          // xxx[0] = xxx1
-
-          let new_homes = {...data.Homes, data: new_data}
-
-          console.log("data.Homes : ", new_homes)
-          cache.writeQuery({
-            query: gqlHomes,
-            data: {
-              Homes: new_homes
-            },
-            variables: {
-              page, 
-              perPage: rowsPerPage, 
-              keywordSearch: keywordSearch, 
-              category: category.join()
-            }
-          });
-
-          console.log("> update :", cache, createBookmark, data.Homes.data)
-          */
-        },
-        onCompleted({ data }) {
-          // history.push("/");
-          console.log("onCompleted > onCreateBookmark")
-        },
-      },
-      
-  );
+  // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
-
-  console.log("homesValues :", homesValues)
-
-  useEffect(async() => {
-
-    let permissions = await getPermissions()
-    let auth = await checkAuth()
-
-    console.log("Home : ", permissions, auth)
-  }, []);
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -293,52 +232,23 @@ const Home = (props) => {
                               onPanelComment={(data)=>{
                                 setPanelComment(data)
                               }}
-                              // onSnackbar={async(data)=>{
-                              //   // setSnackbar(data)
-
-                              //   setSnackbar({open: true, message:"Follow"});
-
-                              //   // await socket().emit('follow', {test: "1234"}, (values)=>{
-                              //   //   // console.log(error);
-                              //   //   console.log(values);
-
-                              //   //   setSnackbar({open: true, message:"Follow"});
-                              //   // });
-                              // }}
-
-                              onBookmark={(e)=>{
-
-                                console.log("onBookmark : ", e)
-
-                                onCreateBookmark({ variables: { input: {
-                                      postId: "62a31ce2ca4789003e5f5123",
-                                      userId: "62a2f65ecf7946010d3c75da",
-                                      status: false
-                                    }
-                                  }
-                                }); 
-                              }}
                               onLightbox={(data)=>{
                                 setLightbox(data)
                               }}
-
                               onAnchorElShareOpen={(index, e)=>{
                                 handleAnchorElShareOpen(index, e)
                               }}
-                            
                               onAnchorElSettingOpen={(index, e)=>{
                                 handleAnchorElSettingOpen(index, e)
                               }}
-
                               onDialogProfileOpen={(index, e)=>{
-                                setDialogProfile({open:true, id:11})
+                                  setDialogProfile({open:true, id:e.ownerId})
                               }}
-                              />
-
+                              onDialogLogin={(status)=>{
+                                setDialogLoginOpen(status)
+                              }}/>
                               {menuShare(index)}
                               {menuSetting(n, index)}
-
-                              
                           </div>
                         );
                       }
@@ -433,10 +343,8 @@ const Home = (props) => {
                         open={report.open} 
                         postId={report.postId} 
                         onReport={(e)=>{
-                          console.log("onReport :", e)
-
                           onCreateContactUs({ variables: { input: {
-                                  userId: "62a2c0cecf7946010d3c743f",
+                                  userId: userId,
                                   postId: e.postId,     
                                   categoryId: e.categoryId,
                                   description: e.description

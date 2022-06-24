@@ -25,7 +25,7 @@ import { useQuery } from "@apollo/client";
 
 import {gqlBookmarks, gqlPost, gqlUser} from "../../gqlQuery"
 
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
 
   
 const BookmarkList = (props) => {
@@ -71,10 +71,11 @@ const BookmarkList = (props) => {
             notifyOnNetworkStatusChange: true,
           });
 
+          console.log("value.data.User.data :", value.loading ? "" : value.data.User.data)
           return  value.loading 
                   ? <LinearProgress sx={{width:"100px"}} />
                   : <Typography variant="overline" display="block" gutterBottom>
-                      {value.data.User.data.displayName}
+                      { value.data.User.data === null ? "" : value.data.User.data.displayName}
                     </Typography>
           
         }

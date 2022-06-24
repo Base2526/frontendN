@@ -25,7 +25,7 @@ import { useQuery } from "@apollo/client";
 
 // import { getList } from "../../components/provider/DataProvider";
 import {gqlThemeMails} from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../home/Footer";
 
 const ThemeMailList = (props) => {
   let history = useHistory();

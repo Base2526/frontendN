@@ -117,19 +117,30 @@ const getRoles = () => {
 
 const checkAuth = () => {
     let user =localStorage.getItem("user");
-    if(!_.isEmpty(user)){
+    if(user != null){
         user =  JSON.parse(user)
         return Promise.resolve(user)
     }
 
-    console.log("checkAuth :", user)
-    return Promise.resolve();
+    // console.log("checkAuth :", user)
+    return Promise.resolve({status: false});
 }
 
+// anonymous, authenticated, administrator
 const getPermissions =() => {
-    const role = localStorage.getItem('permissions');
-    console.log("role :", role)
-    return role ? Promise.resolve(role) : Promise.resolve(['guest']);
+    localStorage.setItem('permissions', JSON.stringify(['authenticated']))
+    const role = JSON.parse(localStorage.getItem('permissions'));
+    // console.log("role :", role)
+    return role ;//? Promise.resolve(role) : Promise.resolve(['anonymous', 'administrator']);
 }
 
-export {login, register, getRoles, getPermissions, checkAuth};
+const isAuth = () =>{
+    let permissions =  getPermissions();
+    if( permissions && permissions.includes("anonymous")){
+       return false
+    }else{
+        return true
+    }
+}
+
+export {login, register, getRoles, getPermissions, checkAuth, isAuth};

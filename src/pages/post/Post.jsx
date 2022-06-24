@@ -35,12 +35,14 @@ import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
 import RadioGroupField from "./RadioGroupField";
 import TelInputField from "./TelInputField";
-import PopupSnackbar from "../home2/PopupSnackbar";
-import Footer from "../home2/Footer";
+import PopupSnackbar from "../home/PopupSnackbar";
+import Footer from "../home/Footer";
 import Editor from "../../components/editor/Editor";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId} from "../../gqlQuery"
+import {  gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, 
+          gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId,
+          gqlPostsByOwner } from "../../gqlQuery"
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
@@ -225,17 +227,6 @@ const Post = (props) => {
         history.push("/posts");
       }
     }
-    // {
-    // variables: {
-    //   taskId: 1,
-    // },
-    // refetchQueries: () => [{
-    //   query: gqlUsers,
-    //   variables: { 
-    //     // status: 'OPEN',
-    //   },
-    // }],
-  // }
   );
   console.log("resultUpdatePost :", resultUpdatePost)
 

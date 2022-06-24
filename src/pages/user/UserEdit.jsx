@@ -1,0 +1,713 @@
+import React, { useState, useEffect, withStyles } from "react";
+import {
+  NewUserContainer,
+  NewUserForm,
+  FormItem,
+  GenderContainer,
+  NewUserButton,
+  ButtonWrapper
+} from "./User.styled";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import { styled } from "@mui/material/styles";
+import IconButton from "@mui/material/IconButton";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import Avatar from "@mui/material/Avatar";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import Autocomplete from "@mui/material/Autocomplete";
+import InputAdornment from "@mui/material/InputAdornment";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useParams, Link } from "react-router-dom";
+import { DataGrid } from "@mui/x-data-grid";
+import { DeleteOutline } from "@material-ui/icons";
+
+import _ from "lodash";
+import deepdash from "deepdash";
+deepdash(_);
+
+import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import { useHistory, useLocation } from "react-router-dom";
+
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import Divider from "@mui/material/Divider";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+// import Avatar from "@mui/material/Avatar";
+// import Typography from "@mui/material/Typography";
+// import IconButton from "@mui/material/IconButton";
+import CommentIcon from "@mui/icons-material/Comment";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import CardHeader from "@material-ui/core/CardHeader";
+
+
+
+import { useQuery, useMutation } from "@apollo/client";
+import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser, gqlUpdateUser, gqlPostsByOwner, gqlConversations, gqlCreateConversation } from "../../gqlQuery"
+
+import {convertFileToBase64} from "../../util"
+
+import Tabs from "../../components/tab/Tabs";
+import Panel from "../../components/tab/Panel";
+import ReadMoreMaster from "../../utils/ReadMoreMaster"
+
+const Input = styled("input")({
+  display: "none"
+});
+
+const columns = [
+  {
+    field: "files",
+    headerName: "Image",
+    width: 130,
+    renderCell: (params) => {
+
+      if(params.row.files.length < 1){
+        return <div />
+      }
+      return (
+        <div style={{ position: "relative" }}>
+          <Avatar
+            sx={{
+              height: 100,
+              width: 100
+            }}
+            variant="rounded"
+            alt="Example Alt"
+            src={params.row.files[0].base64}
+          />
+          <div
+              style={{
+                  position: "absolute",
+                  bottom: "5px",
+                  right: "5px",
+                  padding: "5px",
+                  backgroundColor: "#e1dede",
+                  color: "#919191"
+              }}
+              >{params.row.files.length}</div>
+        </div>
+      );
+    }
+  },
+  {
+    field: "title",
+    headerName: "Title",
+    width: 150,
+    renderCell: (params) => {
+      console.log("title :", params.row.title)
+      return <Link to={`/detail/${params.row.id}`}>{params.row.title}</Link>
+    }
+  },
+  {
+    field: "body",
+    headerName: "Detail",
+    width: 200,
+    renderCell: (params) => {
+      return (
+        <Box
+          sx={{
+            maxHeight: "inherit",
+            width: "100%",
+            whiteSpace: "initial",
+            lineHeight: "16px"
+          }}>
+          <ReadMoreMaster
+            byWords={true}
+            length={10}
+            ellipsis="...">{params.row.description}</ReadMoreMaster>
+        </Box>
+      );
+    }
+  },
+  {
+    field: "createdAt",
+    headerName: "Created at",
+    width: 200
+  },
+  // {
+  //   field: 'comments',
+  //   headerName: 'Comments',
+  //   width: 150,
+  //   disableClickEventBubbling: false,
+  //   renderCell: (params) => {
+   
+  //     let commentValues = useQuery(gqlComment, {
+  //       variables: {postId: params.row.id},
+  //       notifyOnNetworkStatusChange: true,
+  //     });
+  
+  //     if(!commentValues.loading){
+  //       if(commentValues.data.Comment.data.length == 0){
+  //         return <div />
+  //       }
+  
+  //       let count = 0;
+  //       _.map(commentValues.data.Comment.data, (v) => {
+  //         if (v.replies) {
+  //           count += v.replies.length;
+  //         }
+  //       });
+  
+  //       return  <ButtonWrapper><Link to={`/comments`}>
+  //                 <button className="editBtn">{commentValues.data.Comment.data.length + count}</button>
+  //               </Link></ButtonWrapper>
+  //     }
+  //     return <div />
+  //   }
+  // },
+  // {
+  //   field: "bookmark",
+  //   headerName: "Bookmark",
+  //   width: 120,
+  //   renderCell: (params) => {
+  //     const bmValus = useQuery(gqlBookmarksByPostId, {
+  //       variables: { postId: params.row.id },
+  //       notifyOnNetworkStatusChange: true,
+  //     });
+
+  //     // console.log("gqlBookmarksByPostId : ", bmValus)
+
+  //     return  bmValus.loading 
+  //             ? <LinearProgress sx={{width:"100px"}} />
+  //             : bmValus.data.bookmarksByPostId.data.length == 0 
+  //                 ? <div /> 
+  //                 : <ButtonWrapper><Link to={`/comments`}>
+  //                     <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
+  //                   </Link></ButtonWrapper>
+      
+  //   }
+  // },
+  // {
+  //   field: "share",
+  //   headerName: "Share",
+  //   width: 120,
+  //   renderCell: (params) => {
+  //     // console.log("share : ", params)
+
+  //     const shareValus = useQuery(gqlShareByPostId, {
+  //       variables: {postId: params.row.id, page: 0, perPage: 10000},
+  //       notifyOnNetworkStatusChange: true,
+  //     });
+
+  //     return  shareValus.loading 
+  //             ? <LinearProgress sx={{width:"100px"}} />
+  //             : shareValus.data.ShareByPostId.data.length == 0 
+  //                 ? <div /> 
+  //                 : <ButtonWrapper><Link to={`/comments`}>
+  //                     <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
+  //                   </Link></ButtonWrapper>
+      
+  //   }
+  // },
+  // {
+  //   field: "action",
+  //   headerName: "Action",
+  //   width: 150,
+  //   renderCell: (params) => {
+  //     return (
+  //       <ButtonWrapper>
+  //         <Link to={`/post/${params.row.id}/edit`}>
+  //           <button className="editBtn">Edit</button>
+  //         </Link>
+  //         <DeleteOutline
+  //           className="deleteBtn"
+  //           onClick={() => {
+  //             // handleDelete(params.row.id);
+  //             // setOpen(true);
+  //             // setOpenDialogDelete({ isOpen: true, id: params.row.id });
+  //           }}
+  //         />
+  //       </ButtonWrapper>
+  //     );
+  //   }
+  // }
+];
+
+
+
+let editValues = undefined;
+let initValues =  {
+                    username: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    profile: undefined,
+                    roles: [],
+                    isActive: false
+                  }
+
+const UserEdit = (props) => {
+  let history = useHistory();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCofirmPassword, setShowCofirmPassword] = useState(false);
+  const [input, setInput] = useState(initValues);
+  const [pageOptions, setPageOptions] = useState([20, 100]);  
+  const [page, setPage] = useState(0);  
+  const [perPage, setPerPage] = useState(pageOptions[0])
+  const { pathname } = useLocation();
+
+  let userId= "62a2f65dcf7946010d3c7547";
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+
+  const [error, setError] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    profile: "",
+    roles: "",
+    isActive: ""
+  });
+
+  const rolesValue = useQuery(gqlRoles, {
+    variables: {page: 0, perPage: 20},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  let { id } = useParams();
+
+  editValues = useQuery(gqlUser, {
+    variables: {id},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("editValues : ", editValues, input)
+
+  if(_.isEqual(input, initValues)) {
+    if(!_.isEmpty(editValues)){
+      let {loading}  = editValues
+      
+      if(!loading){
+        let {status, data} = editValues.data.User
+
+        console.log("edit editValues : ", data)
+        if(status){
+          setInput({
+            username: data.username,
+            email: data.email,
+            profile: _.isEmpty(data.image) ? undefined : data.image[0] ,
+            roles: data.roles,
+            isActive: data.isActive
+          })
+        }
+      }
+    }
+  }
+ 
+  const [onUpdateUser, resultUpdateUser] = useMutation(gqlUpdateUser, 
+    {
+      onCompleted({ data }) {
+        history.push("/users");
+      }
+    }
+  );
+  console.log("resultUpdateUser :", resultUpdateUser)
+
+  const postsByOwner = useQuery(gqlPostsByOwner, {
+    variables: { ownerId: id },
+    notifyOnNetworkStatusChange: true,
+  });
+  console.log("postsByOwner :", postsByOwner)
+
+
+  const [onCreateConversation, resultCreateConversation] = useMutation(gqlCreateConversation
+    , {
+        update: (cache, {data: {createConversation}}) => {
+          // Update the cache as an approximation of server-side mutation effects
+          console.log("update > createConversation", createConversation)
+
+          
+          const data = cache.readQuery({
+            query: gqlConversations,
+            variables: {
+              userId: userId
+            }
+          });
+
+          console.log("data > createConversation :", data, createConversation)
+
+          if(data != null){
+            if(_.find(data.conversations.data, (v)=>v.id === createConversation.id) == null){
+              let new_data = {...data.conversations}
+          
+              new_data = [...new_data.data, createConversation]
+              let new_conversations = {...data.conversations, data: new_data}
+  
+              cache.writeQuery({
+                query: gqlConversations,
+                data: {
+                  conversations: new_conversations
+                },
+                variables: {
+                  userId: userId
+                }
+              });
+            }
+
+          }
+        },
+        onCompleted({ data }) {
+          // history.push("/");
+          console.log("onCompleted > onCreateConversation")
+
+          history.push("/message")
+        },
+      },  
+  );
+  
+
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
+
+  const handleClickShowCofirmPassword = () =>
+    setShowCofirmPassword(!showCofirmPassword);
+  const handleMouseDownCofirmPassword = () =>
+    setShowCofirmPassword(!showCofirmPassword);
+
+  const validateInput = (e) => {
+    let { name, value } = e.target;
+    setError((prev) => {
+      const stateObj = { ...prev, [name]: "" };
+
+      switch (name) {
+        case "username": {
+          if (!value) {
+            stateObj[name] = "Please enter Username.";
+          }
+          break;
+        }
+
+        case "email": {
+          if (!value) {
+            stateObj[name] = "Please enter Email.";
+          }
+          break;
+        }
+
+        case "password": {
+          if (!value) {
+            stateObj[name] = "Please enter Password.";
+          } else if (input.confirmPassword && value !== input.confirmPassword) {
+            stateObj["confirmPassword"] =
+              "Password and Confirm Password does not match.";
+          } else {
+            stateObj["confirmPassword"] = input.confirmPassword
+              ? ""
+              : error.confirmPassword;
+          }
+          break;
+        }
+
+        case "confirmPassword": {
+          if (!value) {
+            stateObj[name] = "Please enter Confirm Password.";
+          } else if (input.password && value !== input.password) {
+            stateObj[name] = "Password and Confirm Password does not match.";
+          }
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      return stateObj;
+    });
+  };
+
+  const rolesView = () =>{
+    let value = _.filter(rolesValue.data.Roles.data, v => input.roles.includes(v.id))
+    
+    return  <Autocomplete
+              multiple
+              id="user-roles"
+              name="userRoles"
+              options={ rolesValue.data.Roles.data }
+              getOptionLabel={(option) => option.name}
+              value={ value }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="User roles"
+                  placeholder="role"
+                  required={ input.roles.length === 0 ? true : false }
+                />
+              )}
+              onChange={(event, values)=>{
+                let newRoles = _.map(values, v=>v.id)
+                setInput({...input, roles:newRoles})
+              }}
+            />
+  }
+
+  const isActiveView = () =>{
+
+    let optionsIsactive = [
+      { name: "Active", id: "active" },
+      { name: "Unactive", id: "unactive" }
+    ]
+
+    let value = undefined
+    if(input.isActive === undefined) {
+      value = optionsIsactive[1]
+    }else{
+      value = _.find(optionsIsactive, v=> v.id === input.isActive )
+    }
+
+    return  <Autocomplete
+              id="user-isactive"
+              name="isActive"
+              options={optionsIsactive}
+              getOptionLabel={(option) => option.name}
+              value={value}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Unactive"
+                  placeholder="Unactive"
+                  required={ input.isActive === undefined ? true : false }
+                />
+              )}
+              onChange={(event, value)=>{
+                setInput({...input, isActive: value.id})
+              }}
+            />
+  }
+  
+  const submitForm = async(event) => {
+    event.preventDefault();
+
+    console.log("submitForm : onSubmitForm ", input);
+
+    let image = []
+    if(input.profile !== undefined){
+      if( input.profile.base64 ){
+        image = [_.omitDeep(input.profile, ['__typename', 'id'])]
+      }else{
+        image = [await convertFileToBase64(input.profile)]
+      }
+    }
+
+    let newInput = {
+      username: input.username,
+      email: input.email,
+      password: input.password,
+      roles: input.roles,
+      isActive: input.isActive,
+      image
+    }
+
+    onUpdateUser({ variables: { 
+      id: editValues.data.User.data.id,
+      input: newInput
+    }});
+  };
+
+  const mainView = () =>{
+    return  <Tabs>
+              <Panel title="Detail">
+                <Box
+                    component="form"
+                    sx={{
+                      "& .MuiTextField-root": { m: 1, width: "50ch" }
+                    }}
+                    onSubmit={submitForm}
+                  >
+                    <div>
+                      <Typography variant="overline" display="block" gutterBottom>
+                        Profile
+                      </Typography>
+                      <Stack direction="row" spacing={2}>
+                        <Avatar
+                          className={"user-profile"}
+                          sx={{
+                            height: 80,
+                            width: 80
+                          }}
+                          variant="rounded"
+                          alt="Example Alt"
+                          src={input.profile == undefined ? "" : input.profile.base64 ? input.profile.base64: URL.createObjectURL(input.profile)}
+                        />
+                      </Stack>
+                      <label htmlFor="profile">
+                        <Input
+                          accept="image/*"
+                          id="profile"
+                          name="file"
+                          // multiple
+                          type="file"
+                          onChange={(e) => {
+                            setInput({...input, profile:e.target.files[0]})
+                          }}
+                        />
+                        <IconButton
+                          color="primary"
+                          aria-label="upload picture"
+                          component="span"
+                        >
+                          <PhotoCamera />
+                        </IconButton>
+                      </label>
+                    </div>
+                    <TextField
+                      id="user-username"
+                      name="username"
+                      label="Username"
+                      variant="filled"
+                      required
+                      value={input.username}
+                      onChange={(e)=>{
+                        setInput({...input, username:e.target.value})
+                      }}
+                      onBlur={validateInput}
+                      // helperText={_.isEmpty(error.username)? "Input username" : error.username}
+                      helperText={error.username}
+                      error={_.isEmpty(error.username) ? false : true}
+                    />
+                    <TextField
+                      id="user-email"
+                      name="email"
+                      label="Email"
+                      variant="filled"
+                      required
+                      value={input.email}
+                      onChange={(e)=>{
+                        setInput({...input, email:e.target.value})
+                      }}
+                      onBlur={validateInput}
+                      helperText={error.email}
+                      error={_.isEmpty(error.email) ? false : true}
+                    />
+                    <TextField
+                      id="user-password"
+                      name="password"
+                      label="Password"
+                      variant="filled"
+                      type={showPassword ? "text" : "password"} // <-- This is where the magic happens
+                      required
+                      value={input.password}
+                      onChange={(e)=>{
+                        setInput({...input, password:e.target.value})
+                      }}
+                      onBlur={validateInput}
+                      helperText={error.password}
+                      error={_.isEmpty(error.password) ? false : true}
+                      InputProps={{
+                        // <-- This is where the toggle button is added.
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                            >
+                              {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                    <TextField
+                      id="filled-basic"
+                      name="confirmPassword"
+                      label="Confirm password"
+                      variant="filled"
+                      type={showCofirmPassword ? "text" : "password"}
+                      required
+                      value={input.confirmPassword}
+                      onChange={(e)=>{
+                        setInput({...input, confirmPassword:e.target.value})
+                      }}
+                      onBlur={validateInput}
+                      helperText={error.confirmPassword}
+                      error={_.isEmpty(error.confirmPassword) ? false : true}
+                      InputProps={{
+                        // <-- This is where the toggle button is added.
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowCofirmPassword}
+                              onMouseDown={handleMouseDownCofirmPassword}
+                            >
+                              {showCofirmPassword ? (
+                                <VisibilityIcon />
+                              ) : (
+                                <VisibilityOffIcon />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                    
+                    {
+                      rolesValue.loading
+                      ? <LinearProgress sx={{width:"100px"}} /> 
+                      : rolesView()
+                    }
+
+                    {
+                      isActiveView()
+                    }
+                    <Button type="submit" variant="contained" color="primary">
+                      Create
+                    </Button>
+                </Box>
+              </Panel>
+              {/*  <Panel title={bookmarksByPostIdValues.loading ? "Bookmarks" : "Bookmarks (" + bookmarksByPostIdValues.data.bookmarksByPostId.data.length  +")"}> */}
+              <Panel  title={postsByOwner.loading ? "Post" : "Post (" + postsByOwner.data.postsByOwner.data.length  +")"}>
+                  {
+                    postsByOwner.loading 
+                    ? <div><CircularProgress /></div> 
+                    : <div style={{ height: 700, width: "1000px" }}>
+                        <DataGrid 
+                          rows={postsByOwner.data.postsByOwner.data} 
+                          columns={columns} 
+                          rowHeight={80}
+
+                          pageSize={perPage}
+                          onPageSizeChange={(newPerPage) => {
+                            setPerPage(newPerPage)
+                            setPage(0)
+                          }}
+                          rowsPerPageOptions={pageOptions}
+                          page={page}
+                          onPageChange={(newPage) =>{
+                            setPage(newPage)
+                          }}/>
+
+                          
+                      </div>
+                  }
+              </Panel>
+
+              {/* Followers */}
+              <Panel  title={"Followers"}>
+
+              </Panel>
+            </Tabs>
+  }
+
+  return (
+    <div>
+      {
+        editValues != null && editValues.loading
+        ? <div><CircularProgress /></div> 
+        : mainView()
+      }
+    </div>
+  );
+};
+
+export default UserEdit;

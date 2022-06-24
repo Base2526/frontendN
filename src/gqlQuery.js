@@ -116,6 +116,44 @@ export const gqlPost = gql`
         }
     }`;
 
+export const gqlPostsByOwner =  gql`
+    query PostsByOwner($ownerId: ID!) {
+        postsByOwner(
+            ownerId: $ownerId
+        ){
+            status
+            total
+            executionTime
+            data {
+                id: _id
+                title
+                nameSubname
+                idCard
+                amount
+                dateTranfer
+                description
+                tels
+                follows
+                isPublish
+                createdAt
+                updatedAt
+                banks{
+                    bankAccountName
+                    bankId
+                }
+                files {
+                    id:_id
+                    base64
+                    fileName
+                    lastModified
+                    size
+                    type
+                }
+                ownerId
+            }
+        }
+    }`;
+
 export const gqlUsers = gql`
     query Users($page: Int, $perPage: Int){
         Users(
@@ -463,6 +501,79 @@ export const gqlDblog = gql`
         }
     }`;
 
+export const gqlConversations = gql`
+    query Conversations($userId: ID!){
+        conversations(
+            userId: $userId
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                members
+            }
+        }
+    }`;
+
+export const gqlMessage = gql`
+    query Message($id: ID!){
+        message(
+            _id: $id
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                conversationId
+                avatar
+                date
+                forwarded
+                meeting
+                position
+                removeButton
+                reply
+                replyButton
+                retracted
+                status
+                text
+                theme
+                title
+                titleColor
+                type
+                view
+            }
+        }
+    }`;
+
+export const gqlBasicContent =  gql`
+    query BasicContent($id: ID!){
+        basicContent(_id: $id){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+            }
+        }
+    }`;
+
+export const gqlBasicContents  = gql`
+    query BasicContent($page: Int, $perPage: Int){
+        basicContents(
+            page: $page
+            perPage: $perPage
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                name
+                description
+            }
+        }
+    }`;
+
 //////////////////  mutation  ///////////////////
 export const gqlCreateUser = gql`
   mutation CreateUser($input: UserInput) {
@@ -496,6 +607,13 @@ export const gqlCreateRole = gql`
 export const gqlCreateBank = gql`
     mutation CreateBank($input: BankInput) {
         createBank(input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlCreateBasicContent = gql`
+    mutation CreateBasicContent($input: BasicContentInput) {
+        createBasicContent(input: $input) {
             id: _id
         }
     }`;
@@ -543,6 +661,38 @@ export const gqlCreateShare = gql`
         }
     }`;
 
+export const gqlCreateConversation = gql`
+    mutation CreateConversation($input: ConversationInput) {
+        createConversation(input: $input) {
+            id: _id
+            members
+        }
+    }`;
+
+export const gqlAddMessage = gql`
+    mutation AddMessage($input: MessageInput) {
+        addMessage(input: $input) {
+            id: _id
+            conversationId
+            avatar
+            date
+            forwarded
+            meeting
+            position
+            removeButton
+            reply
+            replyButton
+            retracted
+            status
+            text
+            theme
+            title
+            titleColor
+            type
+            view
+        }
+    }`;
+
 export const gqlUpdateUser = gql`
   mutation UpdateUser($id: ID!, $input: UserInput) {
     updateUser(_id: $id, input: $input) {
@@ -567,6 +717,13 @@ export const gqlUpdateRole = gql`
 export const gqlUpdateBank = gql`
     mutation UpdateBank($id: ID!, $input: BankInput) {
         updateBank(_id: $id, input: $input) {
+            id: _id
+        }
+    }`;
+
+export const gqlUpdateBasicContent = gql`
+    mutation UpdateBasicContent($id: ID!, $input: BasicContentInput) {
+        updateBasicContent(_id: $id, input: $input) {
             id: _id
         }
     }`;
