@@ -1,4 +1,4 @@
-import React, { useState, useEffect, withStyles } from "react";
+import React, { useState, useContext, useEffect, useMemo, useRef } from "react";
 import {
   NewUserContainer,
   NewUserForm,
@@ -23,7 +23,6 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useParams, Link } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
 
 import _ from "lodash";
 import deepdash from "deepdash";
@@ -33,203 +32,32 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useHistory, useLocation } from "react-router-dom";
 
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-// import Avatar from "@mui/material/Avatar";
-// import Typography from "@mui/material/Typography";
-// import IconButton from "@mui/material/IconButton";
-import CommentIcon from "@mui/icons-material/Comment";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import CardHeader from "@material-ui/core/CardHeader";
-
-
-
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser, gqlUpdateUser, gqlPostsByOwner, gqlConversations, gqlCreateConversation } from "../../gqlQuery"
-
+import {  gqlUsers, 
+          gqlUser, 
+          gqlRoles, 
+          gqlCreateUser, 
+          gqlUpdateUser, 
+          gqlPostsByUserId, 
+          gqlConversations, 
+          gqlCreateConversation,
+          gqlBookmarksByUserId,
+          gqlFollowerByUserId,
+          gqlFollowingByUserId,
+           } from "../../gqlQuery"
 import {convertFileToBase64} from "../../util"
-
 import Tabs from "../../components/tab/Tabs";
 import Panel from "../../components/tab/Panel";
-import ReadMoreMaster from "../../utils/ReadMoreMaster"
+import ReadMoreMaster from "../../utils/ReadMoreMaster";
+
+import UserEditPanelPosts from "./UserEditPanelPosts";
+import UserEditPanelBookmark from "./UserEditPanelBookmark";
+import UserEditPanelFollower from "./UserEditPanelFollower";
+import UserEditPanelFollowing from "./UserEditPanelFollowing";
 
 const Input = styled("input")({
   display: "none"
 });
-
-const columns = [
-  {
-    field: "files",
-    headerName: "Image",
-    width: 130,
-    renderCell: (params) => {
-
-      if(params.row.files.length < 1){
-        return <div />
-      }
-      return (
-        <div style={{ position: "relative" }}>
-          <Avatar
-            sx={{
-              height: 100,
-              width: 100
-            }}
-            variant="rounded"
-            alt="Example Alt"
-            src={params.row.files[0].base64}
-          />
-          <div
-              style={{
-                  position: "absolute",
-                  bottom: "5px",
-                  right: "5px",
-                  padding: "5px",
-                  backgroundColor: "#e1dede",
-                  color: "#919191"
-              }}
-              >{params.row.files.length}</div>
-        </div>
-      );
-    }
-  },
-  {
-    field: "title",
-    headerName: "Title",
-    width: 150,
-    renderCell: (params) => {
-      console.log("title :", params.row.title)
-      return <Link to={`/detail/${params.row.id}`}>{params.row.title}</Link>
-    }
-  },
-  {
-    field: "body",
-    headerName: "Detail",
-    width: 200,
-    renderCell: (params) => {
-      return (
-        <Box
-          sx={{
-            maxHeight: "inherit",
-            width: "100%",
-            whiteSpace: "initial",
-            lineHeight: "16px"
-          }}>
-          <ReadMoreMaster
-            byWords={true}
-            length={10}
-            ellipsis="...">{params.row.description}</ReadMoreMaster>
-        </Box>
-      );
-    }
-  },
-  {
-    field: "createdAt",
-    headerName: "Created at",
-    width: 200
-  },
-  // {
-  //   field: 'comments',
-  //   headerName: 'Comments',
-  //   width: 150,
-  //   disableClickEventBubbling: false,
-  //   renderCell: (params) => {
-   
-  //     let commentValues = useQuery(gqlComment, {
-  //       variables: {postId: params.row.id},
-  //       notifyOnNetworkStatusChange: true,
-  //     });
-  
-  //     if(!commentValues.loading){
-  //       if(commentValues.data.Comment.data.length == 0){
-  //         return <div />
-  //       }
-  
-  //       let count = 0;
-  //       _.map(commentValues.data.Comment.data, (v) => {
-  //         if (v.replies) {
-  //           count += v.replies.length;
-  //         }
-  //       });
-  
-  //       return  <ButtonWrapper><Link to={`/comments`}>
-  //                 <button className="editBtn">{commentValues.data.Comment.data.length + count}</button>
-  //               </Link></ButtonWrapper>
-  //     }
-  //     return <div />
-  //   }
-  // },
-  // {
-  //   field: "bookmark",
-  //   headerName: "Bookmark",
-  //   width: 120,
-  //   renderCell: (params) => {
-  //     const bmValus = useQuery(gqlBookmarksByPostId, {
-  //       variables: { postId: params.row.id },
-  //       notifyOnNetworkStatusChange: true,
-  //     });
-
-  //     // console.log("gqlBookmarksByPostId : ", bmValus)
-
-  //     return  bmValus.loading 
-  //             ? <LinearProgress sx={{width:"100px"}} />
-  //             : bmValus.data.bookmarksByPostId.data.length == 0 
-  //                 ? <div /> 
-  //                 : <ButtonWrapper><Link to={`/comments`}>
-  //                     <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
-  //                   </Link></ButtonWrapper>
-      
-  //   }
-  // },
-  // {
-  //   field: "share",
-  //   headerName: "Share",
-  //   width: 120,
-  //   renderCell: (params) => {
-  //     // console.log("share : ", params)
-
-  //     const shareValus = useQuery(gqlShareByPostId, {
-  //       variables: {postId: params.row.id, page: 0, perPage: 10000},
-  //       notifyOnNetworkStatusChange: true,
-  //     });
-
-  //     return  shareValus.loading 
-  //             ? <LinearProgress sx={{width:"100px"}} />
-  //             : shareValus.data.ShareByPostId.data.length == 0 
-  //                 ? <div /> 
-  //                 : <ButtonWrapper><Link to={`/comments`}>
-  //                     <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
-  //                   </Link></ButtonWrapper>
-      
-  //   }
-  // },
-  // {
-  //   field: "action",
-  //   headerName: "Action",
-  //   width: 150,
-  //   renderCell: (params) => {
-  //     return (
-  //       <ButtonWrapper>
-  //         <Link to={`/post/${params.row.id}/edit`}>
-  //           <button className="editBtn">Edit</button>
-  //         </Link>
-  //         <DeleteOutline
-  //           className="deleteBtn"
-  //           onClick={() => {
-  //             // handleDelete(params.row.id);
-  //             // setOpen(true);
-  //             // setOpenDialogDelete({ isOpen: true, id: params.row.id });
-  //           }}
-  //         />
-  //       </ButtonWrapper>
-  //     );
-  //   }
-  // }
-];
-
-
 
 let editValues = undefined;
 let initValues =  {
@@ -257,7 +85,6 @@ const UserEdit = (props) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
 
   const [error, setError] = useState({
     username: "",
@@ -313,12 +140,34 @@ const UserEdit = (props) => {
   );
   console.log("resultUpdateUser :", resultUpdateUser)
 
-  const postsByOwner = useQuery(gqlPostsByOwner, {
-    variables: { ownerId: id },
+  const postsByUserId = useQuery(gqlPostsByUserId, {
+    variables: { userId: id },
     notifyOnNetworkStatusChange: true,
   });
-  console.log("postsByOwner :", postsByOwner)
+  console.log("postsByUserId :", postsByUserId)
 
+  // gqlBookmarksByUserId
+  const bookmarksByUserId = useQuery(gqlBookmarksByUserId, {
+    variables: { userId: userId },
+    notifyOnNetworkStatusChange: true,
+  });
+  console.log("bookmarksByUserId :", bookmarksByUserId)
+
+  const followerByUserId = useQuery(gqlFollowerByUserId, {
+    variables: { userId: userId },
+    notifyOnNetworkStatusChange: true,
+  });
+  console.log("followerByUserId :", followerByUserId)
+
+  const followingByUserId = useQuery(gqlFollowingByUserId, {
+    variables: { userId: userId },
+    notifyOnNetworkStatusChange: true,
+  });
+  console.log("followingByUserId :", followingByUserId)
+
+  /*
+  followerByUserId.data.followerByUserId.data
+  */
 
   const [onCreateConversation, resultCreateConversation] = useMutation(gqlCreateConversation
     , {
@@ -364,7 +213,6 @@ const UserEdit = (props) => {
         },
       },  
   );
-  
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = () => setShowPassword(!showPassword);
@@ -665,37 +513,47 @@ const UserEdit = (props) => {
                     </Button>
                 </Box>
               </Panel>
-              {/*  <Panel title={bookmarksByPostIdValues.loading ? "Bookmarks" : "Bookmarks (" + bookmarksByPostIdValues.data.bookmarksByPostId.data.length  +")"}> */}
-              <Panel  title={postsByOwner.loading ? "Post" : "Post (" + postsByOwner.data.postsByOwner.data.length  +")"}>
-                  {
-                    postsByOwner.loading 
-                    ? <div><CircularProgress /></div> 
-                    : <div style={{ height: 700, width: "1000px" }}>
-                        <DataGrid 
-                          rows={postsByOwner.data.postsByOwner.data} 
-                          columns={columns} 
-                          rowHeight={80}
+              
+              {
+                postsByUserId.loading 
+                ? <div /> 
+                : <Panel  title={ "Post (" + postsByUserId.data.postsByUserId.data.length  +")" }>
+                    <UserEditPanelPosts posts={ postsByUserId.data.postsByUserId.data }/>
+                  </Panel>
+              }
+              
 
-                          pageSize={perPage}
-                          onPageSizeChange={(newPerPage) => {
-                            setPerPage(newPerPage)
-                            setPage(0)
-                          }}
-                          rowsPerPageOptions={pageOptions}
-                          page={page}
-                          onPageChange={(newPage) =>{
-                            setPage(newPage)
-                          }}/>
+              {/* <Panel  title={"Following"}>
+                UserEditPanelFollowing
 
-                          
-                      </div>
-                  }
-              </Panel>
+              </Panel> */}
 
-              {/* Followers */}
-              <Panel  title={"Followers"}>
+              {/* followingByUserId */}
 
-              </Panel>
+              {
+                followingByUserId.loading
+                ? <div />
+                : <Panel  title={ "Following (" + followingByUserId.data.followingByUserId.data.length  +")" }>
+                    <UserEditPanelFollowing followings={ followingByUserId.data.followingByUserId.data }/>
+                  </Panel>
+
+              }
+
+
+              {
+                followerByUserId.loading
+                ? <div />
+                : <Panel  title={ "Follower (" + followerByUserId.data.followerByUserId.data.length  +")" }>
+                    <UserEditPanelFollower followers={ followerByUserId.data.followerByUserId.data }/>
+                  </Panel>
+              }
+              {
+                bookmarksByUserId.loading
+                ? <div />
+                : <Panel  title={ "Bookmark (" + bookmarksByUserId.data.bookmarksByUserId.data.length  +")" }>
+                    <UserEditPanelBookmark bookmarks={ bookmarksByUserId.data.bookmarksByUserId.data }/>
+                  </Panel>
+              }
             </Tabs>
   }
 

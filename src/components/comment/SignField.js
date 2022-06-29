@@ -1,15 +1,16 @@
 import React, { useContext } from 'react'
 import { ActionContext } from './ActionContext'
 
-const SignField = () => {
+const SignField = ({onSignin}) => {
   const actions = useContext(ActionContext)
 
   const handleDivClick = (e) => {
-    if (e.target.name === 'login') {
-      window.location.href = actions.signinUrl
-    } else if (e.target.name === 'signup') {
-      window.location.href = actions.signupUrl
-    }
+    onSignin(e)
+    // if (e.target.name === 'login') {
+    //   window.location.href = actions.signinUrl
+    // } else if (e.target.name === 'signup') {
+    //   window.location.href = actions.signupUrl
+    // }
   }
 
   return (
@@ -25,13 +26,13 @@ const SignField = () => {
         >
           Log In
         </button>
-        <button
+        {/* <button
           className={"signBtn"}
           name='signup'
           onClick={(e) => handleDivClick(e)}
         >
           Sign Up
-        </button>
+        </button> */}
       </div>
     </div>
   )

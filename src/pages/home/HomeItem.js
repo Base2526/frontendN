@@ -25,6 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ShowMoreText from "react-show-more-text";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
+import Masonry from "react-masonry-css";
 
 
 import Accordion from "@mui/material/Accordion";
@@ -37,7 +38,7 @@ import { useHistory } from "react-router-dom";
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
-import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlIsBookmark} from "../../gqlQuery"
+import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlIsBookmark, gqlBanks} from "../../gqlQuery"
 
 // import { getPermissions } from "../../AuthProvider"
 import { isAuth } from "../../AuthProvider"
@@ -65,11 +66,22 @@ const useStyles = makeStyles({
   }
 });
 
-const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogLogin }) => {
+const HomeItem =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogLogin }) => {
   const classes = useStyles(n);
   let history = useHistory();
 
   let userId = "62a2c0cecf7946010d3c743f";
+
+  const breakpoints = {
+    default: 3,
+    1100: 2,
+    700: 1
+  };
+
+  let valueBanks = useQuery(gqlBanks, {
+    variables: {page: 0, perPage: 100},
+    notifyOnNetworkStatusChange: true,
+  });
 
   const [expand, setExpand] = useState(false);
 
@@ -105,7 +117,6 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
   );
 
   const handleCreateBookmark = (status) =>{
-    
     if( !isAuth() ){
       onDialogLogin(true)
     }else{
@@ -167,6 +178,14 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
     if(userValue.loading){
       return <div><CircularProgress /></div> 
     }else{
+
+      // console.log("viewHeader :", userValue.data.User)
+
+      if(userValue.data.User.data == null){
+
+        return <div />
+      }
+
       return  <CardHeader
                 avatar={<Avatar 
                           className={"card-header-title"} 
@@ -255,12 +274,12 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
     });
 
     if(!commentValues.loading){
-      if(commentValues.data.Comment.data.length == 0){
+      if(commentValues.data.comment.data.length == 0){
         return <CommentIcon />
       }
 
       let count = 0;
-      _.map(commentValues.data.Comment.data, (v) => {
+      _.map(commentValues.data.comment.data, (v) => {
         if (v.replies) {
           count += v.replies.length;
         }
@@ -276,11 +295,19 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
                   borderColor: "red",
                   borderWidth: "1px",
                   fontSize: "10px"
-                }}>{commentValues.data.Comment.data.length + count}</div>
+                }}>{commentValues.data.comment.data.length + count}</div>
               </div>
     }
 
     return <CommentIcon />
+  }
+
+  const bankView = (item) =>{
+    if(valueBanks.loading){
+        return <div />
+    }
+    let bank = _.find(valueBanks.data.Banks.data, (v) => v.id === item.bankId)
+    return <li><Typography variant="subtitle2" color="textSecondary">{item.bankAccountName} [{bank === null ? "" : bank.name}]</Typography></li>
   }
 
   return (
@@ -288,59 +315,68 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
       <Card elevation={1} className={classes.test}>
         {viewHeader()}
         <CardContent>
-
-          {/* <div>
-          <Accordion 
-          // expanded={false}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-              onClick={(e)=>{
-                console.log("expanded")
-              }}
-            >
-              <Typography>text</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-                malesuada lacus ex, sit amet blandit leo lobortis eget.
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-
-          </div> */}
           <div>
             {renderMedia(n)}
             <CardActionArea style={{}}>
-                <Typography variant="subtitle2" color="textSecondary">
-                    หัวข้อร้องเรียน : {n.title}
-                </Typography>
-                
-                <Typography
-                  style={{ cursor: "pointer" }}
-                  variant="subtitle2"
-                  color="textSecondary"
-                >
-                  ชื่อ-นามสกุล : {n.nameSubname}
-                </Typography>
-           
-                <Typography variant="subtitle2" color="textSecondary">
-                  ยอดเงิน : {n.amount}
-                </Typography>
-                <Typography variant="subtitle2" color="textSecondary">
-                  วันที่โอน : {moment(n.dateTranfer).format('MMMM Do YYYY')}
-                </Typography>
-                     
-                <ReadMoreMaster
-                  parentClass={"read-more-master"}
-                  byWords={true}
-                  length={15}
-                  readMore="See More"
-                  readLess="See less" 
-                  ellipsis="...">{"รายละเอียด :" + n.description}</ReadMoreMaster>
+              <Accordion expanded={expand} >
+                <AccordionSummary
+                  aria-controls="panel1a-content"
+                  id="panel1a-header">
+                  <div>
+                    <Typography variant="subtitle2" color="textSecondary">
+                        หัวข้อร้องเรียน : {n.title}
+                    </Typography>
+                    
+                    <Typography
+                      style={{ cursor: "pointer" }}
+                      variant="subtitle2"
+                      color="textSecondary"
+                    >
+                      ชื่อ-นามสกุล : {n.nameSubname}
+                    </Typography>
+              
+                    <Typography variant="subtitle2" color="textSecondary">
+                      ยอดเงิน : {n.amount}
+                    </Typography>
+
+                  
+                    <Typography variant="subtitle2" color="textSecondary">
+                      วันที่โอน : {moment(n.dateTranfer).format('MMMM Do YYYY')}
+                    </Typography>
+                        
+                    <ReadMoreMaster
+                      parentClass={"read-more-master"}
+                      byWords={true}
+                      length={15}
+                      readMore="See More"
+                      readLess="See less" 
+                      ellipsis="...">{"รายละเอียด :" + n.description}</ReadMoreMaster>
+                  </div>
+                </AccordionSummary>
+                <AccordionDetails>
+
+                  <Typography variant="subtitle2" color="textSecondary">เบอร์โทร : 
+                    <ul>
+                      {
+                        _.map(n.tels, (v)=>{
+                            return <li><Typography variant="subtitle2" color="textSecondary">{v}</Typography></li>
+                        })
+                      }
+                    </ul>
+                  </Typography>
+
+                  <Typography variant="subtitle2" color="textSecondary">ธนาคาร : 
+                    <ul>
+                      {
+                        _.map(n.banks, (v)=>{
+                          return bankView(v)
+                        })
+                      }
+                    </ul>
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+
             </CardActionArea>
           </div>
           <Divider light />
@@ -363,9 +399,9 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
               <OpenInNewIcon /> 
             </IconButton>
             <IconButton onClick={(e) => {
-              console.log("ExpandMoreIcon")
+              setExpand(!expand)
             }}>
-              <ExpandMoreIcon />
+              { expand ? <ExpandLessIcon /> : <ExpandMoreIcon /> }
             </IconButton>
           </div>
         </CardContent>
@@ -374,4 +410,4 @@ const MasonryCard =({ n, index, onPanelComment, onLightbox, onAnchorElShareOpen,
   );
 }
 
-export default MasonryCard
+export default HomeItem

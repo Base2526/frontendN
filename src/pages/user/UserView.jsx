@@ -7,23 +7,12 @@ import {
   NewUserButton,
   ButtonWrapper
 } from "./User.styled";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import { styled } from "@mui/material/styles";
-import IconButton from "@mui/material/IconButton";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import Autocomplete from "@mui/material/Autocomplete";
-import InputAdornment from "@mui/material/InputAdornment";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useParams, Link } from "react-router-dom";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
 
 import _ from "lodash";
 import deepdash from "deepdash";
@@ -32,52 +21,26 @@ deepdash(_);
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useHistory, useLocation } from "react-router-dom";
-
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-// import Avatar from "@mui/material/Avatar";
-// import Typography from "@mui/material/Typography";
-// import IconButton from "@mui/material/IconButton";
-import CommentIcon from "@mui/icons-material/Comment";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import CardHeader from "@material-ui/core/CardHeader";
-
-
-
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser, gqlUpdateUser, gqlPostsByOwner, gqlConversations, gqlCreateConversation } from "../../gqlQuery"
 
-import {convertFileToBase64} from "../../util"
+import {  gqlUsers, 
+          gqlUser, 
+          gqlRoles, 
+          gqlConversations, 
+          gqlCreateConversation,
 
-import Tabs from "../../components/tab/Tabs";
-import Panel from "../../components/tab/Panel";
-import ReadMoreMaster from "../../utils/ReadMoreMaster"
+          gqlCreateAndUpdateFollow, 
+          gqlIsFollow } from "../../gqlQuery"
 
 import UserPostList from "./UserPostList"
-
-const Input = styled("input")({
-  display: "none"
-});
-
-
-let editValues = undefined;
-let initValues =  {
-                    username: "",
-                    email: "",
-                    password: "",
-                    confirmPassword: "",
-                    profile: undefined,
-                    roles: [],
-                    isActive: false
-                  }
+import { isAuth } from "../../AuthProvider"
+import DialogLogin from "../../DialogLogin";
 
 const UserView = (props) => {
   let history = useHistory();
-
   const { pathname } = useLocation();
+
+  const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
   let userId= "62a2f65dcf7946010d3c7547";
 
@@ -86,34 +49,18 @@ const UserView = (props) => {
   }, [pathname]);
 
 
-  const [error, setError] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    profile: "",
-    roles: "",
-    isActive: ""
-  });
+  let { id } = useParams();
 
-  const rolesValue = useQuery(gqlRoles, {
-    variables: {page: 0, perPage: 20},
+  let isFollowValues = useQuery(gqlIsFollow, {
+    variables: {userId: userId, friendId: id},
     notifyOnNetworkStatusChange: true,
   });
 
-  let { id } = useParams();
-
-  editValues = useQuery(gqlUser, {
+  let userValues = useQuery(gqlUser, {
     variables: {id},
     notifyOnNetworkStatusChange: true,
   });
-
-  const postsByOwner = useQuery(gqlPostsByOwner, {
-    variables: { ownerId: id },
-    notifyOnNetworkStatusChange: true,
-  });
-  console.log("postsByOwner :", postsByOwner)
-
+  
   const [onCreateConversation, resultCreateConversation] = useMutation(gqlCreateConversation
     , {
         update: (cache, {data: {createConversation}}) => {
@@ -155,11 +102,50 @@ const UserView = (props) => {
         },
       },  
   );
+
+  const [onCreateAndUpdateFollow, resultCreateAndUpdateFollow] = useMutation(gqlCreateAndUpdateFollow
+    , {
+        update: (cache, {data: {createAndUpdateFollow}}) => {
+          // Update the cache as an approximation of server-side mutation effects
+          // console.log("update > onCreateAndUpdateFollow", createAndUpdateFollow)
+
+          const data = cache.readQuery({
+            query: gqlIsFollow,
+            variables: {
+              userId: userId, friendId: id
+            }
+          });
+
+          let newData = {...data.isFollow}
+          newData = {...newData, data: createAndUpdateFollow}
+        
+          cache.writeQuery({
+            query: gqlIsFollow,
+            data: {
+              isFollow: newData
+            },
+            variables: {
+              userId: userId, friendId: id
+            }
+          });
+        },
+        onCompleted({ data }) {
+          // console.log("onCompleted > onCreateAndUpdateFollow")
+        },
+      },  
+  );
+
+  const isFollow = () =>{
+    if(!isFollowValues.loading){
+      if(isFollowValues.data.isFollow.data != null && isFollowValues.data.isFollow.data.status){
+        return true
+      }
+    }
+    return false
+  }
   
   const mainView = () =>{
-    console.log("view :", editValues)
-
-    let user = editValues.data.User.data
+    let user = userValues.data.User.data
     let imageSrc =  _.isEmpty(user.image) ? "" : user.image[0].base64
 
     return  <div>
@@ -184,34 +170,49 @@ const UserView = (props) => {
               <Typography variant="overline" display="block" gutterBottom>
                 Email : {user.email}
               </Typography>
+
+              <div>
+              <Button
+                variant="contained" 
+                color="primary">Follower(0)</Button>
+              </div>
+              <div>
               <Button
                 variant="contained" 
                 color="primary"
                 onClick={(e)=>{
-                  // history.push("/message");
-
-                  // onCreateConversation({ variables: { input: {
-                  //       userId: userId,
-                  //       friendId: id
-                  //     }
-                  //   }
-                  // }); 
+                  isAuth()
+                  ? onCreateAndUpdateFollow({ variables: { input: {
+                          userId: userId,
+                          friendId: id,
+                          status: !isFollow()
+                        }
+                      }
+                    })
+                  : setDialogLoginOpen(true)
                 }}>
-                Follow
+
+                {isFollow() ? "Following" : "Follow"}
+                
               </Button>
+              </div>
+              <div>
               <Button 
                 variant="contained" 
                 color="primary"
                 onClick={(e)=>{
-                  onCreateConversation({ variables: { input: {
-                        userId: userId,
-                        friendId: id
+                  isAuth()
+                  ? onCreateConversation({ variables: { input: {
+                          userId: userId,
+                          friendId: id
+                        }
                       }
-                    }
-                  }); 
+                    })
+                  : setDialogLoginOpen(true)
                 }}>
                 Chat
               </Button>
+              </div>
               <>
                 <UserPostList id={id}/>                  
               </>
@@ -222,10 +223,19 @@ const UserView = (props) => {
   return (
     <div>
       {
-        editValues != null && editValues.loading
+        userValues != null && userValues.loading
         ? <div><CircularProgress /></div> 
         : mainView()
       }
+
+      {dialogLoginOpen && (
+        <DialogLogin
+          open={dialogLoginOpen}
+          onClose={() => {
+            setDialogLoginOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

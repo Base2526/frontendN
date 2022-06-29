@@ -115,6 +115,12 @@ const MenuAdministrator = [
     Name: "Recent log messages",
     Icon: <AdbIcon className="icon" />,
     Path: "/dblog"
+  },
+  {
+    Id: 21,
+    Name: "Help",
+    Icon: <HelpIcon className="icon" />,
+    Path: "/help"
   }
 ];
 
@@ -214,6 +220,12 @@ const MenuAuthenticated = [
     Name: "Recent log messages",
     Icon: <AdbIcon className="icon" />,
     Path: "/dblog"
+  },
+  {
+    Id: 21,
+    Name: "Help",
+    Icon: <HelpIcon className="icon" />,
+    Path: "/help"
   }
 ];
 

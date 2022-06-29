@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import styled from 'styled-components'
 import {
   useTable,
@@ -41,7 +41,7 @@ const IndeterminateCheckbox = React.forwardRef(
     const defaultRef = React.useRef()
     const resolvedRef = ref || defaultRef
 
-    React.useEffect(() => {
+    useEffect(() => {
     resolvedRef.current.indeterminate = indeterminate
     }, [resolvedRef, indeterminate])
 
@@ -54,7 +54,7 @@ const IndeterminateCheckbox = React.forwardRef(
 
   
 // Be sure to pass our updateMyData and the skipReset option
-const Table = ({ columns, data, updateMyData, skipReset, isDebug = false }) => {
+const Table = ({ columns, data, fetchData, rowsPerPage, updateMyData, skipReset, isDebug = false }) => {
     const filterTypes = React.useMemo(
       () => ({
         // Add a new fuzzyTextFilterFn filter type.
@@ -116,6 +116,7 @@ const Table = ({ columns, data, updateMyData, skipReset, isDebug = false }) => {
                   {
                     columns,
                     data,
+                    initialState: { pageSize: rowsPerPage[0] } ,
                     defaultColumn,
                     filterTypes,
                     // updateMyData isn't part of the API, but
@@ -165,6 +166,12 @@ const Table = ({ columns, data, updateMyData, skipReset, isDebug = false }) => {
                     })
                   }
                 )
+
+    useEffect(() => {
+
+      console.log("fetchData is being called #2 : ", pageIndex, pageSize)
+      fetchData && fetchData({ pageIndex, pageSize });
+    }, [fetchData, pageIndex, pageSize]);
   
     // Render the UI for your table
     return (
@@ -240,7 +247,7 @@ const Table = ({ columns, data, updateMyData, skipReset, isDebug = false }) => {
         */}
 
         {
-            data.length < 10
+            data.length <  rowsPerPage[0] 
             ?   <></>
             :   <div className="pagination">
                     <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
@@ -264,22 +271,20 @@ const Table = ({ columns, data, updateMyData, skipReset, isDebug = false }) => {
                     <span>
                     | Go to page:{' '}
                     <input
-                        type="number"
-                        defaultValue={pageIndex + 1}
-                        onChange={e => {
+                      type="number"
+                      defaultValue={pageIndex + 1}
+                      onChange={e => {
                         const page = e.target.value ? Number(e.target.value) - 1 : 0
                         gotoPage(page)
-                        }}
-                        style={{ width: '100px' }}
-                    />
+                      }}
+                      style={{ width: '100px' }}/>
                     </span>{' '}
                     <select
                     value={pageSize}
                     onChange={e => {
                         setPageSize(Number(e.target.value))
-                    }}
-                    >
-                    {[10, 20, 30, 40, 50].map(pageSize => (
+                    }}>
+                    {rowsPerPage.map(pageSize => (
                         <option key={pageSize} value={pageSize}>
                         Show {pageSize}
                         </option>

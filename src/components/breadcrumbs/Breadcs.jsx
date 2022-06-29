@@ -65,6 +65,7 @@ const Breadcs = ({ title }) => {
   const newBasicContentMatches = useRouteMatch("/basic-content/new");
   const basicContentMatches = useRouteMatch("/basic-content/:id/edit");
 
+  const profileMatches = useRouteMatch("/profile")
 
   const handleClick = () => {};
   return (
@@ -274,6 +275,15 @@ const Breadcs = ({ title }) => {
             to={`/basic-content/${basicContentMatches.params.id}/edit`}
           >
             Edit Basis content {/*({bankMatches.params.jobid}) */}
+          </MuiLink>
+        )}
+
+        {profileMatches && (
+          <MuiLink
+            component={Link}
+            to={`/profile`}
+          >
+            Profile
           </MuiLink>
         )}
 

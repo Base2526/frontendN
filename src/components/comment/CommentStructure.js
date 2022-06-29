@@ -116,13 +116,18 @@ const CommentStructure = ({ i, reply, parentId }) => {
           <Avatar className={classes.link} src={i.avatarUrl} sx={{ width: 24, height: 24 }} alt="userIcon" />
           <Typography className={classes.link} variant="subtitle2" gutterBottom component="div">{i.fullName}</Typography>
           
-          <IconButton aria-label="reply" className={"replyBtn"}
-            onClick={() => actions.handleAction(i.comId)}
-            disabled={!actions.user}>
-            <ReplyIcon
-              
-            />Reply
-          </IconButton>
+          {
+            actions.user 
+            ? <IconButton aria-label="reply" className={"replyBtn"}
+                onClick={() => actions.handleAction(i.comId)}
+                disabled={!actions.user}>
+                <ReplyIcon
+                  
+                />Reply
+              </IconButton>
+            : <div />
+          }
+          
         </div>
         <Typography variant="subtitle1" gutterBottom component="div">{i.text} </Typography>
       </div>

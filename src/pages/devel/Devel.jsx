@@ -4,15 +4,12 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PopupSnackbar from "../home/PopupSnackbar";
 import { useQuery, useMutation } from "@apollo/client";
-
-
 import { gqlUsers, gqlUser, gqlPosts, gqlRoles, 
         gqlCreatePost, 
         gqlBanks, 
         gqlCreateBookmark, 
         gqlCreateUser,
         gqlCreateRole,
-      
         gqlCreateShare } from "../../gqlQuery"
 
 const { faker } = require("@faker-js/faker");
@@ -34,7 +31,6 @@ const Devel = (props) => {
   });
 
   console.log("valueBanks :", valueBanks)
-
 
   const valuePosts = useQuery(gqlPosts, {
     variables: {page: 0, perPage: 100},
@@ -256,7 +252,7 @@ const Devel = (props) => {
 
           {
             
-            for (var i = 0; i < 1000; i++) {
+            for (var i = 0; i < 2000; i++) {
 
                     //////////// bank
                     const min = 0;

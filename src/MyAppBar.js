@@ -43,14 +43,19 @@ export const TopIconBadge = styled.span`
   font-size: 10px;
 `;
 
-const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose, onDialogLogin}) =>{
+const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
   let history = useHistory();
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const handleClose = () =>{
+    setAnchorEl(null)
+  }
 
   return  <AppBar
             position="fixed"
             className={classes.appBar}
             fooJon={classNames(classes.appBar, {
-              [classes.appBarShift]: open
+              [classes.appBarShift]: Boolean(anchorEl)
             })}>
             <Toolbar disableGutters={true}>
               <IconButton
@@ -61,7 +66,7 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose, onDialogLogin
               >
                 <MenuIcon
                   classes={{
-                    root: open
+                    root: Boolean(anchorEl)
                       ? classes.menuButtonIconOpen
                       : classes.menuButtonIconClosed
                   }}
@@ -74,7 +79,6 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose, onDialogLogin
                 onClick={(e)=>history.push("/")}>
                 BANLIST.INFO
               </Typography>
-
               {
                 isAuth()
                 ? <TopRight>
@@ -92,31 +96,37 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose, onDialogLogin
                     </Link>
                     <IconContainer>
                       <IconButton
-                        aria-owns={open ? "menu-appbar" : undefined}
+                        aria-owns={Boolean(anchorEl) ? "menu-appbar" : undefined}
                         aria-haspopup="true"
-                        onClick={handleMenu}
+                        onClick={(event)=>{
+                          setAnchorEl(event.currentTarget)
+                        }}
                         color="inherit"
                       >
                         <AccountCircle />
                       </IconButton>
+                      <Menu
+                        id="menu-appbar"
+                        anchorEl={anchorEl}
+                        anchorOrigin={{
+                          vertical: "top",
+                          horizontal: "right"
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "right"
+                        }}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}
+                      >
+                        <MenuItem onClick={()=>{
+                          history.push("/profile")
+                          handleClose()
+                        }}>Profile</MenuItem>
+                        <MenuItem onClick={handleClose}>My account</MenuItem>
+                      </Menu>
                     </IconContainer>
-                    <Menu
-                      id="menu-appbar"
-                      // anchorEl={anchorEl}
-                      anchorOrigin={{
-                        vertical: "top",
-                        horizontal: "right"
-                      }}
-                      transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right"
-                      }}
-                      // open={open}
-                      onClose={handleClose}
-                    >
-                      <MenuItem onClick={handleClose}>Profile</MenuItem>
-                      <MenuItem onClick={handleClose}>My account</MenuItem>
-                    </Menu>
+                   
                   </TopRight>
                 : <Button 
                     style={{marginRight:"10px"}} 
@@ -126,7 +136,6 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose, onDialogLogin
                       onDialogLogin(true)
                     }}>Login</Button>
               }
-              
             </Toolbar>
           </AppBar>
 }

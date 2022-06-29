@@ -1,3 +1,4 @@
+import "./BasicContentList.css";
 import {
   UserListContainer,
   UserWrapper,
@@ -5,13 +6,9 @@ import {
   ButtonWrapper
 } from "./BasicContentList.styled";
 
-import "./BasicContentList.css";
-
 import React from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
 import { Link } from "react-router-dom";
-import { useState, useContext, useEffect, useMemo, useRef } from "react";
+import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -29,19 +26,40 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 
 
-
 import {gqlBasicContents} from "../../gqlQuery"
-import Footer from "../home/Footer";
-
-import makeData from './makeData'
+import Footer from "../footer";
 import Table from "../../TableContainer"
 
 const BasicContentList = (props) => {
   let history = useHistory();
 
-  const [pageOptions, setPageOptions] = useState([20, 100]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
+
+  //////////////////////
+
+  const [openDialogDelete, setOpenDialogDelete] = useState({
+    isOpen: false,
+    id: ""
+  });
+
+  const basicContentsValues = useQuery(gqlBasicContents, {
+    variables: {page: pageIndex, perPage: pageSize},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("basicContentsValues :", basicContentsValues)
+
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
+
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
 
 
   ///////////////////////
@@ -101,8 +119,8 @@ const BasicContentList = (props) => {
     []
   )
 
-  const [data, setData] = useState(() => makeData(10000))
-  const [originalData] = useState(data)
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
 
   // We need to keep the table from resetting the pageIndex when we
   // Update data. So we can keep track of that flag with a ref.
@@ -131,29 +149,11 @@ const BasicContentList = (props) => {
   // After data changes, we turn the flag back off
   // so that if data actually changes when we're not
   // editing it, the page is reset
-  useEffect(() => {
-    skipResetRef.current = false
+  // useEffect(() => {
+  //   skipResetRef.current = false
 
-    console.log("data :", data)
-  }, [data])
-
-
-  //////////////////////
-
-  const [openDialogDelete, setOpenDialogDelete] = useState({
-    isOpen: false,
-    id: ""
-  });
-
-  const basicContentsValues = useQuery(gqlBasicContents, {
-    variables: {page: page, perPage: perPage},
-    notifyOnNetworkStatusChange: true,
-  });
-
-  /*
-  basicContentsValues.data.basicContents.data
-  */
-  console.log("basicContentsValues :", basicContentsValues)
+  //   console.log("data :", data)
+  // }, [data])
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -267,6 +267,8 @@ const BasicContentList = (props) => {
         : <Table
             columns={columns}
             data={basicContentsValues.data.basicContents.data}
+            fetchData={fetchData}
+            rowsPerPage={pageOptions}
             updateMyData={updateMyData}
             skipReset={skipResetRef.current}
             isDebug={false}

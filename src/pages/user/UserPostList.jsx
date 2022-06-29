@@ -16,30 +16,26 @@ import { useQuery, useMutation } from "@apollo/client";
 import moment from "moment";
 
 import _ from "lodash"
-import { gqlPostsByOwner } from "../../gqlQuery"
+import { gqlPostsByUserId } from "../../gqlQuery"
 
 const UserPostList = ({id}) => {
 
-    const postsByOwner = useQuery(gqlPostsByOwner, {
-        variables: { ownerId: id },
+    const postsByUserId = useQuery(gqlPostsByUserId, {
+        variables: { userId: id },
         notifyOnNetworkStatusChange: true,
     });
-    console.log("postsByOwner :", postsByOwner)
-
-    /*
-    
-    */
+    console.log("postsByUserId :", postsByUserId)
 
     return (
         <>
         {
-            postsByOwner.loading
+            postsByUserId.loading
             ?   <div><CircularProgress /></div> 
             :   <div>
-                    <>Post {postsByOwner.data.postsByOwner.data.length}</> 
+                    <>Post {postsByUserId.data.postsByUserId.data.length}</> 
                     <List sx={{ width: "100%", bgcolor: "background.paper" }}>
                         {
-                            _.map(postsByOwner.data.postsByOwner.data, (item)=>{
+                            _.map(postsByUserId.data.postsByUserId.data, (item)=>{
                                 return  <div key={item.id}>
                                             <CardHeader
                                                 
@@ -95,8 +91,6 @@ const UserPostList = ({id}) => {
                                         </div>
                             })
                         }
-
-                       
                     </List>
                 </div>
         } 

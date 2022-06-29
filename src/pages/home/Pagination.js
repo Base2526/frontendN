@@ -19,7 +19,7 @@ const Pagination = ({
         onPageChange={onPageChange}
         rowsPerPage={rowsPerPage}
         labelRowsPerPage={"Rows per page :"}
-        rowsPerPageOptions={[10, 50, 100]}
+        rowsPerPageOptions={[30, 50, 100]}
         onRowsPerPageChange={onRowsPerPageChange}
       />
     </Container>

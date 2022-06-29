@@ -116,10 +116,10 @@ export const gqlPost = gql`
         }
     }`;
 
-export const gqlPostsByOwner =  gql`
-    query PostsByOwner($ownerId: ID!) {
-        postsByOwner(
-            ownerId: $ownerId
+export const gqlPostsByUserId =  gql`
+    query PostsByUserId($userId: ID!) {
+        postsByUserId(
+            userId: $userId
         ){
             status
             total
@@ -392,6 +392,22 @@ export const gqlBookmarksByPostId = gql`
         }
     }`;
 
+export const gqlBookmarksByUserId = gql`
+    query BookmarksByUserId($userId: ID!){
+        bookmarksByUserId(
+            userId: $userId
+        ){
+            status
+            executionTime
+            data {
+                id: _id
+                userId
+                postId
+                status
+            }
+        }
+    }`;
+
 export const gqlIsBookmark = gql`
     query IsBookmark($userId: ID!, $postId: ID!){
         isBookmark(
@@ -427,7 +443,7 @@ export const gqlContactUs = gql`
 
 export const gqlComment = gql`
     query Comment($postId: ID!) {
-        Comment(
+        comment(
             postId: $postId
         ){
             status
@@ -559,7 +575,7 @@ export const gqlBasicContent =  gql`
     }`;
 
 export const gqlBasicContents  = gql`
-    query BasicContent($page: Int, $perPage: Int){
+    query BasicContents($page: Int, $perPage: Int){
         basicContents(
             page: $page
             perPage: $perPage
@@ -570,6 +586,53 @@ export const gqlBasicContents  = gql`
                 id: _id
                 name
                 description
+            }
+        }
+    }`;
+    
+
+export const gqlIsFollow = gql`
+    query IsFollow($userId: ID!, $friendId: ID!){
+        isFollow(
+            userId: $userId
+            friendId: $friendId
+        ){
+            status
+            executionTime
+            data{
+                _id
+                status
+            }
+        }
+    }`;
+
+export const gqlFollowerByUserId = gql`
+    query FollowerByUserId($userId: ID!){
+        followerByUserId(
+            userId: $userId
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                status
+            }
+        }
+    }`;
+
+export const gqlFollowingByUserId = gql`
+    query FollowingByUserId($userId: ID!){
+        followingByUserId(
+            userId: $userId
+        ){
+            status
+            executionTime
+            data{
+                id: _id
+                userId
+                friendId
+                status
             }
         }
     }`;
@@ -584,15 +647,41 @@ export const gqlCreateUser = gql`
 
 export const gqlCreatePost = gql`
   mutation CreatePost($input: PostInput) {
-    createPost(input: $input) {
-      id: _id
-    }
+        createPost(input: $input) {
+            id: _id
+            title
+            nameSubname
+            idCard
+            amount
+            dateTranfer
+            description
+            tels
+            follows
+            isPublish
+            createdAt
+            updatedAt
+            banks{
+                bankAccountName
+                bankId
+            }
+            files {
+                id:_id
+                base64
+                fileName
+                lastModified
+                size
+                type
+            }
+            ownerId
+        }
     }`;
 
 export const gqlCreateBookmark = gql`
     mutation CreateBookmark($input: BookmarkInput) {
         createBookmark(input: $input) {
             _id
+            userId
+            postId
             status
         }
     }`;
@@ -669,6 +758,14 @@ export const gqlCreateConversation = gql`
         }
     }`;
 
+export const gqlCreateAndUpdateFollow = gql`
+    mutation CreateAndUpdateFollow($input: FollowInput) {
+        createAndUpdateFollow(input: $input) {
+            _id
+            status
+        }
+    }`;
+
 export const gqlAddMessage = gql`
     mutation AddMessage($input: MessageInput) {
         addMessage(input: $input) {
@@ -702,9 +799,9 @@ export const gqlUpdateUser = gql`
 
 export const gqlUpdatePost = gql`
   mutation UpdatePost($id: ID!, $input: PostInput) {
-    updatePost(_id: $id, input: $input) {
-      id: _id
-    }
+        updatePost(_id: $id, input: $input) {
+            id: _id
+        }
     }`;
  
 export const gqlUpdateRole = gql`

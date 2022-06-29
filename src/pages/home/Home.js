@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container } from "@material-ui/core";
-import MasonryCard from "./MasonryCard";
+import HomeItem from "./HomeItem";
 import Masonry from "react-masonry-css";
-
-import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
@@ -11,31 +9,20 @@ import { FacebookIcon, TwitterIcon } from "react-share";
 import { useHistory } from "react-router-dom";
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
-import Link from "@mui/material/Link";
 import _ from "lodash";
-import moment from "moment";
 import CircularProgress from '@mui/material/CircularProgress';
-
 import { useQuery, useMutation } from "@apollo/client";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import PrintIcon from '@mui/icons-material/Print';
-import ShareIcon from '@mui/icons-material/Share';
-
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
-import Footer from "./Footer";
+import Footer from "../footer";
 import SearchBar from "./SearchBar";
 import Pagination from "./Pagination";
-import { socket } from "../../SocketioClient";
 import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
 import {gqlHomes, gqlCreateContactUs } from "../../gqlQuery"
-
 import { isAuth } from "../../AuthProvider"
 
 const Home = (props) => {
@@ -48,6 +35,9 @@ const Home = (props) => {
   const [page, setPage] = useState(0);                             // Page number
   const [rowsPerPage, setRowsPerPage] = useState(30);              // Number per page
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+
+  useEffect(()=>{
+  }, [keywordSearch])
 
   const [lightbox, setLightbox] = useState({
     isOpen: false,
@@ -72,8 +62,6 @@ const Home = (props) => {
     700: 1
   };
 
-  console.log("isAuth :", isAuth())
-
   const [onCreateContactUs, resultCreateContactUsValues] = useMutation(gqlCreateContactUs
     , {
         onCompleted({ data }) {
@@ -81,13 +69,14 @@ const Home = (props) => {
         }
       }
   );
-
   // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
+
+  console.log("homesValues :", homesValues )
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -103,10 +92,6 @@ const Home = (props) => {
 
   const handleAnchorElShareClose = () => {
     setAnchorElShare(null);
-  };
-
-  const snackbarClick = () => {
-    setSnackbar({...snackbar, open: true});
   };
 
   const menuShare = (index) =>{
@@ -193,29 +178,26 @@ const Home = (props) => {
   }
 
   return (
-    <div>
+    <div style={{flex:1}}>
       <div>
         <SearchBar
           keyword={keywordSearch}
           onChange={(data, topic) => {
-            setKeywordSearch(data);
             setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
+            setKeywordSearch(data);
           }}
-          onKeyDown={(ev) => {
-            // key enter
+          onKeyDown={(ev, topic) => {
             if (ev.keyCode == 13) {
-              console.log("onKeyDown value", ev.target.value);
-              // put the login here
+              setKeywordSearch(ev.target.value)
             }
           }}
         />
 
         <div>
           {
-            homesValues.loading
+            homesValues.loading || homesValues.data == undefined
             ? <div><CircularProgress /></div> 
-            : 
-              <div>
+            : <div>
                 <Container>
                   <Masonry
                     breakpointCols={breakpoints}
@@ -226,7 +208,7 @@ const Home = (props) => {
                       (n, index) => {
                         return (
                           <div key={n.id}>
-                            <MasonryCard 
+                            <HomeItem 
                               n={n} 
                               index={index} 
                               onPanelComment={(data)=>{
@@ -255,7 +237,6 @@ const Home = (props) => {
                     )}
                   </Masonry>
                 </Container>
-
                 <Container sx={{ py: 2 }} maxWidth="xl">
                   <Pagination
                     page={page}
@@ -266,7 +247,6 @@ const Home = (props) => {
                       //   search: "?sort=date&order=newest"
                       // });
 
-                      // console.log("onPageChange :", event,  newPage)
                     }}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event) => {
@@ -299,6 +279,9 @@ const Home = (props) => {
           onRequestClose={() => {
             let newPanelComment = { ...panelComment, isOpen: false };
             setPanelComment(newPanelComment);
+          }}
+          onSignin={(e)=>{
+            setDialogLoginOpen(true);
           }}
         />
       )}
@@ -338,8 +321,7 @@ const Home = (props) => {
         />
       )}
 
-      {
-        report.open && <ReportDialog 
+      {report.open && <ReportDialog 
                         open={report.open} 
                         postId={report.postId} 
                         onReport={(e)=>{
@@ -359,20 +341,27 @@ const Home = (props) => {
                         onClose={()=>setReport({open: false, postId:""})}/>
       }
 
-      {
-
-        dialogProfile.open &&  <DialogProfile open={dialogProfile.open} id={dialogProfile.id} onClose={()=>setDialogProfile({open: false, id:""})}/>
+      {dialogProfile.open &&  <DialogProfile 
+                                open={dialogProfile.open} 
+                                id={dialogProfile.id} 
+                                onClose={()=>setDialogProfile({open: false, id:""})}/>
       }
 
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
-          history.push("/post/new");
-        }}
-      >
-      </SpeedDial>
+      {
+        isAuth() 
+        ? <SpeedDial
+            ariaLabel="SpeedDial basic example"
+            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+            icon={<SpeedDialIcon />}
+            onClick={(e)=>{
+              history.push({
+                pathname: "/post/new",
+                state: {from: "/"},
+              });
+            }} />
+        : <div />
+      }
+      
     </div>
   );
 }

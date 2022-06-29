@@ -4,15 +4,11 @@ import {
   EditButton,
   ButtonWrapper
 } from "./PostList.styled";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
 import { Link } from "react-router-dom";
-import { useState, useContext, useEffect } from "react";
-import { UserContext, PostContext } from "../../Store";
+import { useState, useCallback, useEffect, useMemo, useRef  } from "react";
 import Box from "@mui/material/Box";
 import { useQuery } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -23,41 +19,57 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 import _ from "lodash"
 import Avatar from "@mui/material/Avatar";
-import ShowMoreText from "react-show-more-text";
-import ExpandMore from "@material-ui/icons/ExpandMore";
-
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import LinearProgress from '@mui/material/LinearProgress';
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
+import CardActionArea from "@material-ui/core/CardActionArea";
 
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-
-import Footer from "../home/Footer";
+import Footer from "../footer";
 import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment, gqlUser} from "../../gqlQuery"
-
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
+import Table from "../../TableContainer"
 
 const PostList = (props) => {
   let history = useHistory();
 
   let userId = "62a31ce2ca4789003e5f5123";
 
-  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
+
+  const [lightbox, setLightbox] = useState({
+    isOpen: false,
+    photoIndex: 0,
+    images: []
+  });
+
   
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  const { error, data, loading, networkStatus } = useQuery(gqlPosts, {
-    variables: {page: page, perPage: perPage},
+  const postsValue = useQuery(gqlPosts, {
+    variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus, gqlPosts :", error, data, loading, networkStatus)
+  console.log("postsValue :", postsValue)
+
+
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
+
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
+
 
   const handleClickOpen = () => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: true });
@@ -72,212 +84,240 @@ const PostList = (props) => {
     // setUserData(userData.filter((user) => user.id !== id));
   };
 
-  const columns = [
-    {
-      field: "files",
-      headerName: "Image",
-      width: 130,
-      renderCell: (params) => {
-
-        if(params.row.files.length < 1){
-          return <div />
-        }
-        return (
-          <div style={{ position: "relative" }}>
-            <Avatar
-              sx={{
-                height: 100,
-                width: 100
-              }}
-              variant="rounded"
-              alt="Example Alt"
-              src={params.row.files[0].base64}
-            />
-            <div
-                style={{
-                    position: "absolute",
-                    bottom: "5px",
-                    right: "5px",
-                    padding: "5px",
-                    backgroundColor: "#e1dede",
-                    color: "#919191"
-                }}
-                >{params.row.files.length}</div>
-          </div>
-        );
-      }
-    },
-    {
-      field: "title",
-      headerName: "Title",
-      width: 150
-    },
-    {
-      field: "body",
-      headerName: "Detail",
-      width: 200,
-      renderCell: (params) => {
-        return (
-          <Box
-            sx={{
-              maxHeight: "inherit",
-              width: "100%",
-              whiteSpace: "initial",
-              lineHeight: "16px"
-            }}>
-            <ReadMoreMaster
-              byWords={true}
-              length={10}
-              ellipsis="...">{params.row.description}</ReadMoreMaster>
-          </Box>
-        );
-      }
-    },
-    {
-      field: 'ownerId',
-      headerName: 'Owner',
-      width: 150,
-      disableClickEventBubbling: false,
-      renderCell: (params) => {
-        
-
-        let userValue = useQuery(gqlUser, {
-          variables: {id: params.row.ownerId},
-          notifyOnNetworkStatusChange: true,
-        });
-
-        // console.log("Owner Id :", userValue )
-
-        // /user/62a2c0cecf7946010d3c743f/view
-        return userValue.loading 
-              ? <LinearProgress sx={{width:"100px"}} />
-              : userValue != null ? <Link to={`/user/${userValue.data.User.data.id}/view`}>{userValue.data.User.data.displayName}</Link> : <></>
-      }
-    },
-    {
-      field: 'comments',
-      headerName: 'Comments',
-      width: 150,
-      disableClickEventBubbling: false,
-      renderCell: (params) => {
-     
-        let commentValues = useQuery(gqlComment, {
-          variables: {postId: params.row.id},
-          notifyOnNetworkStatusChange: true,
-        });
-    
-        if(!commentValues.loading){
-          if(commentValues.data.Comment.data.length == 0){
-            return <div />
-          }
-    
-          let count = 0;
-          _.map(commentValues.data.Comment.data, (v) => {
-            if (v.replies) {
-              count += v.replies.length;
+  ///////////////////////
+  const columns = useMemo(
+    () => [
+      // 
+      {
+        Header: 'Username',
+        accessor: 'id',
+        columns: [
+          {
+            Header: 'Profile',
+            accessor: 'files',
+            Cell: props =>{
+              
+              if(props.value.length < 1){
+                return <div />
+              }
+              return (
+                <div style={{ position: "relative" }}>
+                  <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
+                    <Avatar
+                      sx={{
+                        height: 100,
+                        width: 100
+                      }}
+                      variant="rounded"
+                      alt="Example Alt"
+                      src={props.value[0].base64}
+                      onClick={(e) => {
+                        console.log("files props: ", props.value)
+                        setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
+                      }}
+                    />
+                  </CardActionArea>
+                  
+                  <div
+                      style={{
+                          position: "absolute",
+                          bottom: "5px",
+                          right: "5px",
+                          padding: "5px",
+                          backgroundColor: "#e1dede",
+                          color: "#919191"
+                      }}
+                      >{props.value.length}</div>
+                </div>
+              );
             }
-          });
-    
-          return  <ButtonWrapper><Link to={`/comments`}>
-                    <button className="editBtn">{commentValues.data.Comment.data.length + count}</button>
-                  </Link></ButtonWrapper>
-        }
-        return <div />
-      }
-    },
-    {
-      field: "bookmark",
-      headerName: "Bookmark",
-      width: 120,
-      renderCell: (params) => {
-        const bmValus = useQuery(gqlBookmarksByPostId, {
-          variables: { postId: params.row.id },
-          notifyOnNetworkStatusChange: true,
-        });
+          },
+          {
+            Header: 'Title',
+            accessor: 'title',
+            Cell: props =>{
+              return <Link to={`/detail/${props.row.original.id}`}>{props.value}</Link>
+            }
+          }, 
+          {
+            Header: 'Detail',
+            accessor: 'description',
+            Cell: props => {
 
-        // console.log("gqlBookmarksByPostId : ", bmValus)
+              return <Box
+                      sx={{
+                        maxHeight: "inherit",
+                        width: "100%",
+                        whiteSpace: "initial",
+                        lineHeight: "16px"
+                      }}>
+                      <ReadMoreMaster
+                        byWords={true}
+                        length={10}
+                        ellipsis="...">{props.value}
+                      </ReadMoreMaster>
+                    </Box>
+            }
+          },
+          {
+            Header: 'Owner',
+            accessor: 'ownerId',
+            Cell: props =>{
 
-        return  bmValus.loading 
-                ? <LinearProgress sx={{width:"100px"}} />
-                : bmValus.data.bookmarksByPostId.data.length == 0 
-                    ? <div /> 
-                    : <ButtonWrapper><Link to={`/comments`}>
-                        <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
-                      </Link></ButtonWrapper>
-        
-      }
-    },
-    {
-      field: "share",
-      headerName: "Share",
-      width: 120,
-      renderCell: (params) => {
-        // console.log("share : ", params)
+              
+              let userValue = useQuery(gqlUser, {
+                variables: {id: props.value},
+                notifyOnNetworkStatusChange: true,
+              });
+      
+              console.log("Owner Id userValue :", userValue )
+      
+              // /user/62a2c0cecf7946010d3c743f/view
+              return userValue.loading 
+                    ? <LinearProgress sx={{width:"100px"}} />
+                    : userValue.data.User.data != null ? <Link to={`/user/${userValue.data.User.data.id}/view`}>{userValue.data.User.data.displayName}</Link> : <div />
+            } 
+          },
+          {
+            Header: 'Comments',
+            // accessor: 'id',
+            Cell: props =>{
+              let commentValues = useQuery(gqlComment, {
+                variables: {postId: props.row.original.id},
+                notifyOnNetworkStatusChange: true,
+              });
 
-        const shareValus = useQuery(gqlShareByPostId, {
-          variables: {postId: params.row.id, page: 0, perPage: 10000},
-          notifyOnNetworkStatusChange: true,
-        });
+              if(!commentValues.loading){
+                if(commentValues.data.comment.data.length == 0){
+                  return <div />
+                }
+          
+                let count = 0;
+                _.map(commentValues.data.comment.data, (v) => {
+                  if (v.replies) {
+                    count += v.replies.length;
+                  }
+                });
+          
+                return  <ButtonWrapper><Link to={`/comments`}>
+                          <button className="editBtn">{commentValues.data.comment.data.length + count}</button>
+                        </Link></ButtonWrapper>
+              }
+              
+              return <div />
+            } 
+          },
+          {
+            Header: 'Bookmark',
+            // accessor: 'id',
+            Cell: props =>{
+              const bmValus = useQuery(gqlBookmarksByPostId, {
+                variables: { postId: props.row.original.id},
+                notifyOnNetworkStatusChange: true, 
+              });
+      
+              // console.log("gqlBookmarksByPostId : ", bmValus)
+      
+              return  bmValus.loading 
+                      ? <LinearProgress sx={{width:"100px"}} />
+                      : bmValus.data.bookmarksByPostId.data.length == 0 
+                          ? <div /> 
+                          : <ButtonWrapper><Link to={`/comments`}>
+                              <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
+                            </Link></ButtonWrapper>
+            } 
+          }, // 
+          {
+            Header: 'Share',
+            // accessor: 'id',
+            Cell: props =>{
+              const shareValus = useQuery(gqlShareByPostId, {
+                variables: {postId: props.row.original.id, page: 0, perPage: 10000},
+                notifyOnNetworkStatusChange: true,
+              });
+      
+              return  shareValus.loading 
+                      ? <LinearProgress sx={{width:"100px"}} />
+                      : shareValus.data.ShareByPostId.data.length == 0 
+                          ? <div /> 
+                          : <ButtonWrapper><Link to={`/comments`}>
+                              <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
+                            </Link></ButtonWrapper>
+            } 
+          },
+          {
+            Header: 'Action',
+            Cell: props => {
+              // console.log("Cell :", props.row.original.id)
+              return  <div>
+                        <Link to={`/post/${props.row.original.id}/edit`}>
+                          <button>Edit</button>
+                        </Link>
+                        <button>Delete</button>
+                      </div>
+            }
+          },
+        ],
+      }
+    ],
+    []
+  )
 
-        return  shareValus.loading 
-                ? <LinearProgress sx={{width:"100px"}} />
-                : shareValus.data.ShareByPostId.data.length == 0 
-                    ? <div /> 
-                    : <ButtonWrapper><Link to={`/comments`}>
-                        <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
-                      </Link></ButtonWrapper>
-        
-      }
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 150,
-      renderCell: (params) => {
-        return (
-          <ButtonWrapper>
-            <Link to={`/post/${params.row.id}/edit`}>
-              <button className="editBtn">Edit</button>
-            </Link>
-            <DeleteOutline
-              className="deleteBtn"
-              onClick={() => {
-                // handleDelete(params.row.id);
-                // setOpen(true);
-                setOpenDialogDelete({ isOpen: true, id: params.row.id });
-              }}
-            />
-          </ButtonWrapper>
-        );
-      }
-    }
-  ];
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
+
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
+  }
+
+  // After data changes, we turn the flag back off
+  // so that if data actually changes when we're not
+  // editing it, the page is reset
+  // useEffect(() => {
+  //   skipResetRef.current = false
+
+  //   console.log("data :", data)
+  // }, [data])
+  //////////////////////
 
   return (
     <Box style={{
       flex: 4
     }}>
-        {
-          loading
-          ? <div><CircularProgress /></div> 
-          : <DataGrid
-              rows={data.Posts.data}
-              columns={columns}
-              rowHeight={80}
-              pageSize={perPage}
-              onPageSizeChange={(newPerPage) => {
-                setPerPage(newPerPage)
-                setPage(0)
-              }}
-              rowsPerPageOptions={pageOptions}
-              page={page}
-              onPageChange={(newPage) =>{
-                setPage(newPage)
-              }}
-              rowCount={data.Posts.total}
-            />
-        }
-    
+      {
+        postsValue.loading
+        ? <div><CircularProgress /></div> 
+        : <Table
+            columns={columns}
+            data={postsValue.data.Posts.data}
+            fetchData={fetchData}
+            rowsPerPage={pageOptions}
+            updateMyData={updateMyData}
+            skipReset={skipResetRef.current}
+            isDebug={false}
+          />
+      }
+  
       {openDialogDelete.isOpen && (
         <Dialog
           open={openDialogDelete.isOpen}
@@ -309,18 +349,42 @@ const PostList = (props) => {
         </Dialog>
       )}
 
-       
-
-        <SpeedDial
-          ariaLabel="SpeedDial basic example"
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}
-          icon={<SpeedDialIcon />}
-          onClick={(e)=>{
-            history.push("/post/new");
+      {lightbox.isOpen && (
+        <Lightbox
+          mainSrc={lightbox.images[lightbox.photoIndex].base64}
+          nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].base64}
+          prevSrc={
+            lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].base64
+          }
+          onCloseRequest={() => {
+            setLightbox({ ...lightbox, isOpen: false });
           }}
-        >
-         
-        </SpeedDial>
+          onMovePrevRequest={() => {
+            setLightbox({
+              ...lightbox,
+              photoIndex:
+                (lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length
+            });
+          }}
+          onMoveNextRequest={() => {
+            setLightbox({
+              ...lightbox,
+              photoIndex: (lightbox.photoIndex + 1) % lightbox.images.length
+            });
+          }}
+        />
+      )}
+
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClick={(e)=>{
+          history.push({
+            pathname: "/post/new",
+            state: {from: "/posts"},
+          });
+        }}/>
       <Footer />
     </Box>
   );

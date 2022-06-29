@@ -3,7 +3,7 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 
-const Footer = () => {
+const index = () => {
   return (
     <Box sx={{ bgcolor: "background.paper", p: 6 }} component="footer">
       <Typography variant="h6" align="center" gutterBottom>
@@ -29,4 +29,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default index;

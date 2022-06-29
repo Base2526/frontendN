@@ -35,6 +35,8 @@ import UserEdit from "./pages/user/UserEdit";
 import BasicContentList from "./pages/basicContentList/BasicContentList"
 import BasicContent from "./pages/basicContent/BasicContent"
 
+import Profile from "./pages/profile"
+
 import { isAuth } from "./AuthProvider";
 
 const PrivatePage =(props) => {
@@ -45,6 +47,10 @@ const PrivatePage =(props) => {
   return isAuth() 
         ?   <div>
                 <Switch>
+                    <Route path="/profile">
+                        <Profile />
+                    </Route>
+
                     <Route path="/users">
                         <UserList />
                     </Route>

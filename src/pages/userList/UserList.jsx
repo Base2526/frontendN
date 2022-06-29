@@ -4,9 +4,7 @@ import {
   EditButton,
   ButtonWrapper
 } from "./UserList.styled";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { Link, useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -23,41 +21,38 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
 
-import {gqlUsers, gqlManyRoles, gqlPostsByOwner} from "../../gqlQuery"
-
-import Footer from "../home/Footer";
+import {gqlUsers, gqlManyRoles, gqlPostsByUserId} from "../../gqlQuery"
+import Footer from "../footer";
+import Table from "../../TableContainer"
 
 const UserList = (props) => {
   let history = useHistory();
 
-  // const [userData, setUserData] = useState(userRows);
-  // const [userData, setUserData] = useContext(UserContext);
-
-  // const [datas, setDatas] = useState({data: null, total: 0});
-
-  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  const { error, data, loading, networkStatus } = useQuery(gqlUsers, {
-    variables: {page: page, perPage: perPage},
+  const usersValue = useQuery(gqlUsers, {
+    variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
+  console.log("usersValue :", usersValue)
 
-  // const { dataDemo } = useDemoData({
-  //   rowLength: 100
-  // });
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
 
-  // useEffect(async()=>{
-  //   setDatas( await getList("users", {}) )
-  // }, [])
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
 
   const handleDelete = (id) => {
     setUserData(userData.filter((user) => user.id !== id));
@@ -68,136 +63,138 @@ const UserList = (props) => {
     setOpenDialogDelete({ ...openDialogDelete, isOpen: false });
   };
 
-  const columns = [
-    {
-      field: "image",
-      headerName: "Image",
-      width: 130,
-      renderCell: (params) => {
-        console.log("params.row.image :", params.row.image)
-        if(params.row.image.length < 1){
-          return <Avatar
-                  sx={{
-                    height: 100,
-                    width: 100
-                  }}>A</Avatar>
-        }
-        return (
-          <div style={{ position: "relative" }}>
-            <Avatar
-              sx={{
-                height: 100,
-                width: 100
-              }}
-              variant="rounded"
-              alt="Example Alt"
-              src={params.row.image[0].base64}
-            />
-          </div>
-        );
-      }
-    },
-    { field: "displayName", 
-      headerName: "Display name", 
-      width: 150, 
-      renderCell: (params) =>{
-
-        return  <Link to={`/user/${params.row.id}/view`}>
-                  {params.row.displayName}
-                </Link>
-      }
-    },
-    { field: "email", headerName: "Email", width: 180 },
-    {
-      field: "posts",
-      headerName: "Posts",
-      width: 120,
-      renderCell: (params) => {
-        const postsByOwner = useQuery(gqlPostsByOwner, {
-          variables: { ownerId: params.row.id },
-          notifyOnNetworkStatusChange: true,
-        });
-
-        return postsByOwner.loading
-              ? <LinearProgress sx={{width:"100px"}} />
-              : <>{postsByOwner.data.postsByOwner.data.length }</>        
-      }
-    },
-    /*
-    { field: "username", headerName: "User name", width: 150 },
-    { 
-      field: "roles", 
-      headerName: "Roles", 
-      width: 150,
-      renderCell: (params) => {
-        let values = useQuery(gqlManyRoles, {
-          variables: { ids: params.row.roles },
-          notifyOnNetworkStatusChange: true,
-        });
-
-        return  values.loading 
-                ? <LinearProgress sx={{width:"100px"}} />
-                : <div>
-                  {
-                    _.map(values.data.getManyRoles.data, (v)=>{
-                      return  <Typography variant="overline" display="block" gutterBottom>
-                              {v.name}
-                            </Typography>
-                    })
-                  }
+  ///////////////////////
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Name',
+        columns: [
+          {
+            Header: 'Image',
+            accessor: 'image',
+            Cell: props =>{
+              if(props.row.original.image.length < 1){
+                return <Avatar
+                        sx={{
+                          height: 100,
+                          width: 100
+                        }}>A</Avatar>
+              }
+              return (
+                <div style={{ position: "relative" }}>
+                  <Avatar
+                    sx={{
+                      height: 100,
+                      width: 100
+                    }}
+                    variant="rounded"
+                    alt="Example Alt"
+                    src={props.row.original.image[0].base64}
+                  />
                 </div>
-        
+              );
+            }
+          },
+          {
+            Header: 'Display name',
+            accessor: 'displayName',
+            Cell: props => {
+              return  <Link to={`/user/${props.row.original.id}/view`}>
+                        {props.row.original.displayName}
+                      </Link>
+            }
+          },
+          {
+            Header: 'Email',
+            accessor: 'email',
+          },
+          {
+            Header: 'Posts',
+            accessor: 'posts',
+            Cell: props => {
+              const postsByUserId = useQuery(gqlPostsByUserId, {
+                variables: { userId: props.row.original.id },
+                notifyOnNetworkStatusChange: true,
+              });
+
+              return postsByUserId.loading
+                    ? <LinearProgress sx={{width:"100px"}} />
+                    : <>{postsByUserId.data.postsByUserId.data.length }</>  
+            }
+          },
+          {
+            Header: 'Last access',
+            accessor: 'lastAccess',
+          },
+          {
+            Header: 'Action',
+            Cell: props => {
+              console.log("Cell :", props)
+              return  <div>
+                        <Link to={`/user/${props.row.original.id}/edit`}>
+                          <button>Edit</button>
+                        </Link>
+                        <button>Delete</button>
+                      </div>
+            }
+          },
+        ],
       }
-    },
-  */
-    {
-      field: "lastAccess",
-      headerName: "Last access",
-      width: 200
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 140,
-      renderCell: (params) => {
-        return (
-          <ButtonWrapper>
-            <Link to={`/user/${params.row.id}/edit`}>
-              <button className="editBtn">Edit</button>
-            </Link>
-            <DeleteOutline
-              className="deleteBtn"
-              onClick={() => {
-                setOpenDialogDelete({ isOpen: true, id: params.row.id });
-              }}
-            />
-          </ButtonWrapper>
-        );
-      }
-    }
-  ];
+    ],
+    []
+  )
+
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
+
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
+  }
+
+  // After data changes, we turn the flag back off
+  // so that if data actually changes when we're not
+  // editing it, the page is reset
+  // useEffect(() => {
+  //   skipResetRef.current = false
+
+  //   console.log("data :", data)
+  // }, [data])
+
+  //////////////////////
 
   return (
     <UserListContainer>
       {
-        loading
+        usersValue.loading
         ? <div><CircularProgress /></div> 
-        : <DataGrid
-            rows={data.Users.data}
+        : <Table
             columns={columns}
-            rowHeight={80}
-
-            pageSize={perPage}
-            onPageSizeChange={(newPerPage) => {
-              setPerPage(newPerPage)
-              setPage(0)
-            }}
-            rowsPerPageOptions={pageOptions}
-            page={page}
-            onPageChange={(newPage) =>{
-              setPage(newPage)
-            }}
-            rowCount={data.Users.total}
+            data={usersValue.data.Users.data}
+            fetchData={fetchData}
+            rowsPerPage={pageOptions}
+            updateMyData={updateMyData}
+            skipReset={skipResetRef.current}
+            isDebug={false}
           />
       }
     

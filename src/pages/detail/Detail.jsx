@@ -406,23 +406,30 @@ const Detail = (props) => {
                         </div>
                         <div className="col4">
                             {
-                                 commentValues.loading 
-                                 ?  <div><CircularProgress /></div> 
-                                 :  <CommentSection
-                                        currentUser={
-                                            userId && { userId: userId, avatarUrl: avatarUrl, name: name }
-                                        }
-                                        commentsArray={commentValues.data.Comment.data}
-                                        setComment={(data) => {
-        
-                                            let input = { postId: id, data: _.omitDeep(data, ['__typename']) }
-                                            console.log("onComment input :", input);
-        
-                                            onCreateComment({ variables: { input: input }});
-        
-                                        }}
-                                        signinUrl={signinUrl}
-                                        signupUrl={signupUrl}/>
+                                commentValues.loading 
+                                ?  <div><CircularProgress /></div> 
+                                :  <CommentSection
+                                    // currentUser={
+                                    //     userId && { userId: userId, avatarUrl: avatarUrl, name: name }
+                                    // }
+                                    currentUser={null}
+                                    commentsArray={commentValues.data.comment.data}
+                                    setComment={(data) => {
+    
+                                        let input = { postId: id, data: _.omitDeep(data, ['__typename']) }
+                                        console.log("onComment input :", input);
+    
+                                        onCreateComment({ variables: { input: input }});
+    
+                                    }}
+                                    signinUrl={signinUrl}
+                                    signupUrl={signupUrl}
+                                    onSignin={(e)=>{
+                                        console.log("onSignin :", e)
+
+                                        setDialogLoginOpen(true)
+                                    }}/>
+                                    
                             }
                            
                         </div>

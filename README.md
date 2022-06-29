@@ -31,3 +31,13 @@ https://www.means-business.info/%E0%B9%84%E0%B8%AD%E0%B8%97%E0%B8%B5/%E0%B9%80%E
 react-table
 https://codesandbox.io/s/gw0ih?file=/package.json:191-203
 https://codesandbox.io/s/gw0ih?file=/package.json:355-372
+
+https://codesandbox.io/s/serverless-snow-8muy6y?file=/src/App.js
+
+Implementing React table pagination handling one million records
+https://cloudnweb.dev/2021/06/react-table-pagination/
+
+
+search bar Autocomplete
+https://codesandbox.io/s/recursing-monad-06g3xh?file=/src/100movies.js
+https://codesandbox.io/s/445h05?file=/demo.tsx:790-802
