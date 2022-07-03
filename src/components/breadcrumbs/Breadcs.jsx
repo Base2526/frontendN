@@ -8,64 +8,39 @@ const Breadcs = ({ title }) => {
   const postsMatches = useRouteMatch("/posts");
   const newPostMatches = useRouteMatch("/post/new");
   const postMatches = useRouteMatch("/post/:jobid/edit");
-
   const commentsMatches = useRouteMatch("/comments");
   const newCommentMatches = useRouteMatch("/comment/new");
   const commentMatches = useRouteMatch("/comment/:jobid/edit");
-
   const usersMatches = useRouteMatch("/users");
   const newUserMatches = useRouteMatch("/user/new");
   const userMatches = useRouteMatch("/user/:jobid/:mode");
-
   const socketsMatches = useRouteMatch("/sockets");
   const newSocketMatches = useRouteMatch("/newSocket");
   const socketMatches = useRouteMatch("/socket/:jobid");
-
   const rolesMatches = useRouteMatch("/roles");
   const newRoleMatches = useRouteMatch("/role/new");
   const roleMatches = useRouteMatch("/role/:jobid/edit");
-
   const banksMatches = useRouteMatch("/banks");
   const newBankMatches = useRouteMatch("/bank/new");
   const bankMatches = useRouteMatch("/bank/:jobid/edit");
-
   const themeMailsMatches = useRouteMatch("/theme-mails");
   const newThemeMailMatches = useRouteMatch("/theme-mail/new");
   const themeMailMatches = useRouteMatch("/theme-mail/:jobid/edit");
-
   const develMatches = useRouteMatch("/devel");
-
   const notificationMatches =useRouteMatch("/notification")
-
   const messengerMatches =useRouteMatch("/message")
-
-  // bookmarks
   const bookmarksMatches =useRouteMatch("/bookmarks")
-
-  // reports
   const reportsMatches =useRouteMatch("/reports")
-
-  // 
   const sharesMatches =useRouteMatch("/shares")
-
-  // 
   const contactUsMatches =useRouteMatch("/contact-us")
-
-  // 
   const tcontactusListMatches =useRouteMatch("/tcontactus-list")
-
   const dblogMatches =useRouteMatch("/dblog")
-
   const detailMatches =useRouteMatch("/detail")
-
   const helpMatches =useRouteMatch("/help")
-
-
   const basicContentsMatches = useRouteMatch("/basic-contents");
   const newBasicContentMatches = useRouteMatch("/basic-content/new");
   const basicContentMatches = useRouteMatch("/basic-content/:id/edit");
-
-  const profileMatches = useRouteMatch("/profile")
+  const profileMatches = useRouteMatch("/me")
 
   const handleClick = () => {};
   return (
@@ -281,7 +256,7 @@ const Breadcs = ({ title }) => {
         {profileMatches && (
           <MuiLink
             component={Link}
-            to={`/profile`}
+            to={`/me`}
           >
             Profile
           </MuiLink>

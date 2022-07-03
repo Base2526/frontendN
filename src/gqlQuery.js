@@ -638,6 +638,41 @@ export const gqlFollowingByUserId = gql`
     }`;
 
 //////////////////  mutation  ///////////////////
+
+export const gqlLogin = gql`
+    mutation Login($input: LoginInput) {
+        login(input: $input) {
+            status
+            messages
+            executionTime
+            data {
+                id: _id
+                username
+                password
+                email
+                displayName
+                isActive
+                roles
+                image {
+                    _id
+                    base64
+                    fileName
+                    lastModified
+                    size
+                    type
+                }
+                lastAccess
+            }
+        }
+    }`;
+
+export const gqlLoginWithSocial = gql`
+    mutation LoginWithSocial($input: LoginWithSocialInput) {
+        loginWithSocial(input: $input) {
+        id: _id
+        }
+    }`;
+
 export const gqlCreateUser = gql`
   mutation CreateUser($input: UserInput) {
     createUser(input: $input) {

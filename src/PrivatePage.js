@@ -47,21 +47,16 @@ const PrivatePage =(props) => {
   return isAuth() 
         ?   <div>
                 <Switch>
-                    <Route path="/profile">
+                    <Route path="/me">
                         <Profile />
                     </Route>
-
                     <Route path="/users">
                         <UserList />
                     </Route>
-                    {/* <Route path="/user/:id/view">
-                        <UserView />
-                    </Route> */}
                     <Route path="/user/:id/edit">
                         <UserEdit />
                     </Route>
                     <Route path="/user/new"> 
-                    {/* new  */}
                         <UserNew />
                     </Route>
                     <Route path="/posts">
@@ -145,15 +140,6 @@ const PrivatePage =(props) => {
                     <Route path="/dblog">
                         <DblogList />
                     </Route>
-
-                    {/* BasicContent */}
-                    {/* <Route path="/basic-contents">
-                        <BasicContent />
-                    </Route> */}
-                    {/* <Route path="/banks">
-                        <BankList />
-                    </Route> */}
-
                     <Route path="/basic-contents">
                         <BasicContentList />
                     </Route>

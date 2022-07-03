@@ -16,6 +16,8 @@ const LeftMenu = (props) => {
   const menuL = () =>{
     let permissions = getPermissions()
 
+    console.log("permissions :", permissions)
+
     let listMenu = MenuAnonymous
     if( permissions && permissions.includes("authenticated")){
       listMenu = MenuAuthenticated

@@ -46,13 +46,13 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const PanelComment = ({ commentId, isOpen, onRequestClose, onSignin }) => {
+const PanelComment = ({ user, commentId, isOpen, onRequestClose, onSignin }) => {
   const classes = useStyles();
 
   const [comment, setComment] = useState([]);
-  const userId = "01a";
-  const avatarUrl = "https://ui-avatars.com/api/name=Riya&background=random";
-  const name = "xyz";
+  const userId =  user == null ? "" : user.id;
+  const avatarUrl = user == null ? "" : _.isEmpty(user.image) ? "" : user.image[0].base64 ;
+  const name = user == null ? "" : user.displayName;
   const signinUrl = "/signin";
   const signupUrl = "/signup";
   let count = 0;
@@ -104,6 +104,10 @@ const PanelComment = ({ commentId, isOpen, onRequestClose, onSignin }) => {
   commentValues.data.Comment.data
   */
 
+  useEffect(()=>{
+
+  }, [])
+
   useEffect(() => {
     console.log("comment :", comment, commentId);
   }, [comment]);
@@ -137,10 +141,9 @@ const PanelComment = ({ commentId, isOpen, onRequestClose, onSignin }) => {
             ? <div><CircularProgress /></div> 
             : <div>
                 <CommentSection
-                  // currentUser={
-                  //   userId && { userId: userId, avatarUrl: avatarUrl, name: name }
-                  // }
-                  currentUser={null}
+                  currentUser={
+                    userId && { userId: userId, avatarUrl: avatarUrl, name: name }
+                  }
                   commentsArray={commentValues.data.comment.data}
                   setComment={(data) => {
 

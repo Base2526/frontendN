@@ -23,10 +23,12 @@ import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
 import {gqlHomes, gqlCreateContactUs } from "../../gqlQuery"
-import { isAuth } from "../../AuthProvider"
+import { isAuth, checkAuth } from "../../AuthProvider"
 
 const Home = (props) => {
   let history = useHistory();
+
+  console.log("checkAuth :", checkAuth())
 
   let userId = "62a2c0cecf7946010d3c743f";
 
@@ -36,9 +38,6 @@ const Home = (props) => {
   const [rowsPerPage, setRowsPerPage] = useState(30);              // Number per page
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
-  useEffect(()=>{
-  }, [keywordSearch])
-
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     photoIndex: 0,
@@ -47,7 +46,7 @@ const Home = (props) => {
 
   const [panelComment, setPanelComment] = useState({
     isOpen: false,
-    commentId: 1234
+    commentId: ""
   });
 
   const [anchorElSetting, setAnchorElSetting] = useState(null);
@@ -94,7 +93,7 @@ const Home = (props) => {
     setAnchorElShare(null);
   };
 
-  const menuShare = (index) =>{
+  const menuShare = (item, index) =>{
     return  <Menu
               anchorEl={anchorElShare && anchorElShare[index]}
               keepMounted
@@ -119,20 +118,20 @@ const Home = (props) => {
               >
               <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
                   <FacebookShareButton
-                  url={"https://peing.net/ja/"}
-                  quote={"quotequotequotequote"}
-                  hashtag={"#hashtag"}
-                  description={"aiueo"}
-                  className="Demo__some-network__share-button"
+                    url={window.location.href + "detail/" + item.id}
+                    quote={item.title}
+                    hashtag={"#hashtag"}
+                    description={item.title}
+                    className="Demo__some-network__share-button"
                   >
                   <FacebookIcon size={32} round /> Facebook
                   </FacebookShareButton>
               </MenuItem>{" "}
               <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
                   <TwitterShareButton
-                  title={"test"}
-                  url={"https://peing.net/ja/"}
-                  hashtags={["hashtag1", "hashtag2"]}
+                    title={item.title}
+                    url={window.location.href + "detail/" + item.id}
+                    hashtags={["hashtag1", "hashtag2"]}
                   >
                   <TwitterIcon size={32} round />
                   Twitter
@@ -205,11 +204,11 @@ const Home = (props) => {
                     columnClassName="my-masonry-grid_column"
                   >
                     {homesValues.data.Homes.data.map(
-                      (n, index) => {
+                      (item, index) => {
                         return (
-                          <div key={n.id}>
+                          <div key={item.id}>
                             <HomeItem 
-                              n={n} 
+                              item={item} 
                               index={index} 
                               onPanelComment={(data)=>{
                                 setPanelComment(data)
@@ -224,13 +223,13 @@ const Home = (props) => {
                                 handleAnchorElSettingOpen(index, e)
                               }}
                               onDialogProfileOpen={(index, e)=>{
-                                  setDialogProfile({open:true, id:e.ownerId})
+                                setDialogProfile({open:true, id:e.ownerId})
                               }}
                               onDialogLogin={(status)=>{
                                 setDialogLoginOpen(status)
                               }}/>
-                              {menuShare(index)}
-                              {menuSetting(n, index)}
+                              {menuShare(item, index)}
+                              {menuSetting(item, index)}
                           </div>
                         );
                       }
@@ -274,6 +273,7 @@ const Home = (props) => {
 
       {panelComment.isOpen && (
         <PanelComment
+          user={checkAuth()}
           commentId={panelComment.commentId}
           isOpen={panelComment.isOpen}
           onRequestClose={() => {

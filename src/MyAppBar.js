@@ -14,7 +14,7 @@ import { Link, useHistory } from "react-router-dom";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
 
-import { isAuth } from "./AuthProvider"
+import { isAuth, logout} from "./AuthProvider"
 
 export const TopRight = styled.div`
   display: flex;
@@ -117,13 +117,16 @@ const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
                           horizontal: "right"
                         }}
                         open={Boolean(anchorEl)}
-                        onClose={handleClose}
-                      >
-                        <MenuItem onClick={()=>{
-                          history.push("/profile")
-                          handleClose()
-                        }}>Profile</MenuItem>
-                        <MenuItem onClick={handleClose}>My account</MenuItem>
+                        onClose={handleClose}>
+                          <MenuItem onClick={()=>{
+                            history.push("/me")
+                            handleClose()
+                          }}>Profiles</MenuItem>
+                          {/* <MenuItem onClick={()=>{
+                            logout()
+                            history.push("/")
+                            handleClose()
+                          }}>Logout</MenuItem> */}
                       </Menu>
                     </IconContainer>
                    
