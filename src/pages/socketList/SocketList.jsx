@@ -2,10 +2,7 @@ import {
   UserListContainer,
   ButtonWrapper
 } from "./SocketList.styled";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
-import { Link } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -14,33 +11,44 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import _ from "lodash"
 import Box from "@mui/material/Box";
-
 import { useQuery } from "@apollo/client";
 
 import {gqlSockets} from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../footer";
+import Table from "../../TableContainer"
 
 const SocketList = (props) => {
   let history = useHistory();
  
-  const [pageOptions, setPageOptions] = useState([20, 100]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  const { error, data, loading, networkStatus } = useQuery(gqlSockets, {
-    variables: {page: page, perPage: perPage},
+  const socketsValue = useQuery(gqlSockets, {
+    variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
+  console.log("socketsValue :", socketsValue)
+
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
+
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
 
   const handleClickOpen = () => {
     // setOpen(true);
@@ -57,61 +65,101 @@ const SocketList = (props) => {
     setUserData(userData.filter((user) => user.id !== id));
   };
 
-  const columns = [
-    {
-      field: "socketId",
-      headerName: "Socket Id",
-      width: 170
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      width: 170
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 140,
-      renderCell: (params) => {
-        return (
-          <ButtonWrapper>
-            <DeleteOutline
-              className="deleteBtn"
-              onClick={() => {
-                // handleDelete(params.row.id);
-                // setOpen(true);
-                setOpenDialogDelete({ isOpen: true, id: params.row.id });
-              }}
-            />
-          </ButtonWrapper>
-        );
+  ///////////////////////
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Name',
+        columns: [
+          {
+            Header: 'socketId',
+            accessor: 'Socket Id',
+          },
+          {
+            Header: 'Description',
+            accessor: 'description',
+            Cell: props => {
+
+              return (
+                <Box
+                  sx={{
+                    maxHeight: "inherit",
+                    width: "100%",
+                    whiteSpace: "initial",
+                    lineHeight: "16px"
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    dangerouslySetInnerHTML={{
+                      __html: props.row.original.description
+                    }}
+                  />
+                </Box>
+              );
+            }
+          }
+        ],
       }
-    }
-  ];
+    ],
+    []
+  )
+
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
+
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
+  }
+
+  // After data changes, we turn the flag back off
+  // so that if data actually changes when we're not
+  // editing it, the page is reset
+  // useEffect(() => {
+  //   skipResetRef.current = false
+
+  //   console.log("data :", data)
+  // }, [data])
+
+  //////////////////////
 
   return (
     <Box style={{
       flex: 4
     }}>
       {
-         loading
+         socketsValue.loading
          ?  <div><CircularProgress /></div> 
-         :  <DataGrid
-              rows={data.Sockets.data}
+         :  <Table
               columns={columns}
-              rowHeight={80}
-
-              pageSize={perPage}
-              onPageSizeChange={(newPerPage) => {
-                setPerPage(newPerPage)
-                setPage(0)
-              }}
-              rowsPerPageOptions={pageOptions}
-              page={page}
-              onPageChange={(newPage) =>{
-                setPage(newPage)
-              }}
-            />
+              data={ socketsValue.data.Sockets.data }
+              fetchData={fetchData}
+              rowsPerPage={pageOptions}
+              updateMyData={updateMyData}
+              skipReset={skipResetRef.current}
+              isDebug={false}
+            /> 
       }
 
       {openDialogDelete.isOpen && (

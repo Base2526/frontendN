@@ -48,6 +48,7 @@ button {
   flex-direction: column;
   border-style: dotted;
   margin-left: 5px;
+  max-width: 700px;
 }
 
 .message-list {
@@ -63,4 +64,12 @@ button {
 
 .rce-container-mlist{
   max-height: 500px;
+}
+
+.rce-container-input{
+  border-style: dotted;
+}
+
+.rce-input{
+  border-radius: 0px;
 }

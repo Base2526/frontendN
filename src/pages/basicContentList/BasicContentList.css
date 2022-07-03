@@ -1,0 +1,12 @@
+table, td, th {
+    border: 1px dashed;
+}
+
+table {
+    width: 100%;
+    /* border-collapse: collapse; */
+}
+
+/* th[role="columnheader"]{
+    display:none;
+} */

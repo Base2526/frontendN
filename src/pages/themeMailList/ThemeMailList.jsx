@@ -4,10 +4,9 @@ import {
   EditButton,
   ButtonWrapper
 } from "./ThemeMailList.styled";
-import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { Link } from "react-router-dom";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -23,34 +22,38 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 
-// import { getList } from "../../components/provider/DataProvider";
 import {gqlThemeMails} from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../footer";
+import Table from "../../TableContainer"
 
 const ThemeMailList = (props) => {
   let history = useHistory();
 
-  const [pageOptions, setPageOptions] = useState([5, 10, 20]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
   });
 
-  const { error, data, loading, networkStatus } = useQuery(gqlThemeMails, {
-    variables: {page: page, perPage: perPage},
+  const themeMailsValue = useQuery(gqlThemeMails, {
+    variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("error, data, loading, networkStatus :", error, data, loading, networkStatus)
+  console.log("themeMailsValue :", themeMailsValue)
 
-  const handleClickOpen = () => {
-    // setOpen(true);
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
 
-    setOpenDialogDelete({ ...openDialogDelete, isOpen: true });
-  };
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
 
   const handleClose = () => {
     // setOpen(false);
@@ -61,95 +64,120 @@ const ThemeMailList = (props) => {
     setUserData(userData.filter((user) => user.id !== id));
   };
 
-  const columns = [
-    // { field: "id", headerName: "ID", width: 100 },
-    {
-      field: "name",
-      headerName: "Name",
-      width: 170
-      // renderCell: (params) => {
-      //   return (
-      //     <UserWrapper>
-      //       <img src={params.row.avatar} alt="" />
-      //       {params.row.userName}
-      //     </UserWrapper>
-      //   );
-      // }
-    },
-    {
-      field: "description",
-      headerName: "Description",
-      width: 250,
-      renderCell: (params) => {
-        return (
-          <Box
-            sx={{
-              maxHeight: "inherit",
-              width: "100%",
-              whiteSpace: "initial",
-              lineHeight: "16px"
-            }}
-          >
-            <Typography
-              variant="body1"
-              gutterBottom
-              dangerouslySetInnerHTML={{
-                __html: params.row.description
-              }}
-            >
-            </Typography>
-          </Box>
-        );
+  
+  ///////////////////////
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Name',
+        columns: [
+          {
+            Header: 'Username',
+            accessor: 'name',
+          },
+          {
+            Header: 'Description',
+            accessor: 'description',
+            Cell: props => {  
+              return (
+                <Box
+                  sx={{
+                    maxHeight: "inherit",
+                    width: "100%",
+                    whiteSpace: "initial",
+                    lineHeight: "16px"
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    dangerouslySetInnerHTML={{
+                      __html: props.value
+                    }}
+                  >
+                  </Typography>
+                </Box>
+              );
+            }
+          },
+          {
+            Header: 'Action',
+            Cell: props => {
+              return (
+                <ButtonWrapper>
+                  <Link to={`/theme-mail/${props.row.original.id}/edit`}>
+                    <button className="editBtn">Edit</button>
+                  </Link>
+                  <DeleteOutline
+                    className="deleteBtn"
+                    onClick={() => {
+                      setOpenDialogDelete({ isOpen: true, id: props.row.original.id });
+                    }}
+                  />
+                </ButtonWrapper>
+              );
+            }
+          }
+        ],
       }
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 140,
-      renderCell: (params) => {
-        return (
-          <ButtonWrapper>
-            <Link to={`/theme-mail/${params.row.id}/edit`}>
-              <button className="editBtn">Edit</button>
-            </Link>
-            <DeleteOutline
-              className="deleteBtn"
-              onClick={() => {
-                // handleDelete(params.row.id);
-                // setOpen(true);
-                setOpenDialogDelete({ isOpen: true, id: params.row.id });
-              }}
-            />
-          </ButtonWrapper>
-        );
-      }
-    }
-  ];
+    ],
+    []
+  )
+
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
+
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
+  }
+
+  // After data changes, we turn the flag back off
+  // so that if data actually changes when we're not
+  // editing it, the page is reset
+  // useEffect(() => {
+  //   skipResetRef.current = false
+
+  //   console.log("data :", data)
+  // }, [data])
+
+  //////////////////////
 
   return (
     <UserListContainer>
    
      {
-        loading
+        themeMailsValue.loading
         ? <div><CircularProgress /></div> 
-        : <DataGrid
-            rows={data.Mails.data}
+        : <Table
             columns={columns}
-            rowHeight={80}
-
-            pageSize={perPage}
-            onPageSizeChange={(newPerPage) => {
-              setPerPage(newPerPage)
-              setPage(0)
-            }}
-            rowsPerPageOptions={pageOptions}
-            page={page}
-            onPageChange={(newPage) =>{
-              setPage(newPage)
-            }}
-          />
+            data={ themeMailsValue.data.Mails.data }
+            fetchData={fetchData}
+            rowsPerPage={pageOptions}
+            updateMyData={updateMyData}
+            skipReset={skipResetRef.current}
+            isDebug={false}
+          /> 
       }
-
 
       {openDialogDelete.isOpen && (
         <Dialog

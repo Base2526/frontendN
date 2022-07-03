@@ -11,12 +11,67 @@ import CommentIcon from "@mui/icons-material/Comment";
 import { useHistory } from "react-router-dom";
 
 import Avatar from "@material-ui/core/Avatar";
+import { useQuery, useMutation } from "@apollo/client";
+
+import {gqlConversations, gqlCreateConversation} from "../../gqlQuery"
 
 const index =({open, id, onClose})=> {
-    const navigate = useHistory();
+  
+  const navigate = useHistory();
+
+  let userId= "62a2f65dcf7946010d3c7547";
+
+  const [onCreateConversation, resultCreateConversation] = useMutation(gqlCreateConversation
+    , {
+        update: (cache, {data: {createConversation}}) => {
+          // Update the cache as an approximation of server-side mutation effects
+          console.log("update > createConversation", createConversation)
+
+          
+          const data = cache.readQuery({
+            query: gqlConversations,
+            variables: {
+              userId: userId
+            }
+          });
+
+          console.log("data > createConversation :", data, createConversation)
+
+          if(data != null){
+            if(_.find(data.conversations.data, (v)=>v.id === createConversation.id) == null){
+              let new_data = {...data.conversations}
+          
+              new_data = [...new_data.data, createConversation]
+              let new_conversations = {...data.conversations, data: new_data}
+  
+              cache.writeQuery({
+                query: gqlConversations,
+                data: {
+                  conversations: new_conversations
+                },
+                variables: {
+                  userId: userId
+                }
+              });
+            }
+
+          }
+        },
+        onCompleted({ data }) {
+          // history.push("/");
+          console.log("onCompleted > onCreateConversation")
+
+          navigate.push("/message")
+        },
+      },  
+  );
+  
+
+  // gqlCreateConversation
+
   return (
       <Dialog open={open}>
-        <DialogTitle>REPORT</DialogTitle>
+        <DialogTitle>Dialog Profile</DialogTitle>
         <DialogContent>
           <DialogContentText>
           <Avatar>H</Avatar>
@@ -25,8 +80,12 @@ const index =({open, id, onClose})=> {
         <DialogActions>
           <Button onClick={onClose}>CLOSE</Button>
           <IconButton onClick={() => {
-                // onPanelComment({ isOpen: true, commentId: 3456 })
-                navigate.push("/message")
+              onCreateConversation({ variables: { input: {
+                    userId: userId,
+                    friendId: id
+                  }
+                }
+              }); 
             }}>
               <CommentIcon />
             </IconButton>

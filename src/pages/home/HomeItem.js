@@ -25,6 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ShowMoreText from "react-show-more-text";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
+import Masonry from "react-masonry-css";
 
 
 import Accordion from "@mui/material/Accordion";
@@ -37,19 +38,21 @@ import { useHistory } from "react-router-dom";
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 
-import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlBookmarksByPostId, gqlIsBookmark} from "../../gqlQuery"
+import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlIsBookmark, gqlBanks} from "../../gqlQuery"
 
+// import { getPermissions } from "../../AuthProvider"
+import { isAuth } from "../../AuthProvider"
 
 const useStyles = makeStyles({
   avatar: {
-    backgroundColor: (n) => {
-      if (n.category === "work") {
+    backgroundColor: (item) => {
+      if (item.category === "work") {
         return yellow[700];
       }
-      if (n.category === "money") {
+      if (item.category === "money") {
         return green[500];
       }
-      if (n.category === "todos") {
+      if (item.category === "todos") {
         return pink[500];
       }
       return blue[500];
@@ -63,14 +66,24 @@ const useStyles = makeStyles({
   }
 });
 
-const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogProfileOpen }) => {
-  const classes = useStyles(n);
+const HomeItem =({ item, index, onPanelComment, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogLogin }) => {
+  const classes = useStyles(item);
   let history = useHistory();
 
-  let userId = "62a31ce2ca4789003e5f5123";
+  let userId = "62a2c0cecf7946010d3c743f";
+
+  const breakpoints = {
+    default: 3,
+    1100: 2,
+    700: 1
+  };
+
+  let valueBanks = useQuery(gqlBanks, {
+    variables: {page: 0, perPage: 100},
+    notifyOnNetworkStatusChange: true,
+  });
 
   const [expand, setExpand] = useState(false);
-
 
   const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
     , {
@@ -79,7 +92,7 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
             query: gqlIsBookmark,
             variables: {
               userId: userId,
-              postId: n.id
+              postId: item.id
             }
           });
 
@@ -93,7 +106,7 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
             },
             variables: {
               userId: userId,
-              postId: n.id
+              postId: item.id
             }
           });
         },
@@ -102,6 +115,20 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
         },
       },  
   );
+
+  const handleCreateBookmark = (status) =>{
+    if( !isAuth() ){
+      onDialogLogin(true)
+    }else{
+      onCreateBookmark({ variables: { input: {
+            postId: item.id,
+            userId: userId,
+            status
+          }
+        }
+      }); 
+    }
+  }
 
   const renderMedia = (m) =>{
     if( !_.isEmpty(m.files) ){
@@ -143,7 +170,7 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
   const viewHeader = ()=>{
 
     let userValue = useQuery(gqlUser, {
-      variables: {id: n.ownerId},
+      variables: {id: item.ownerId},
       notifyOnNetworkStatusChange: true,
     });
 
@@ -151,8 +178,19 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
     if(userValue.loading){
       return <div><CircularProgress /></div> 
     }else{
+
+      // console.log("viewHeader :", userValue.data.User)
+
+      if(userValue.data.User.data == null){
+
+        return <div />
+      }
+
       return  <CardHeader
-                avatar={<Avatar className={"card-header-title"} src={userValue.data.User.data.image[0].base64}  />}
+                avatar={<Avatar 
+                          className={"card-header-title"} 
+                          src={userValue.data.User.data.image[0].base64}
+                          onClick={(e)=> history.push("/user/" + userValue.data.User.data.id +"/view") }  />}
                 action={
                   <IconButton  onClick={(e) => {
                       onAnchorElSettingOpen(index, e);
@@ -160,33 +198,25 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
                     <MoreVertIcon />
                   </IconButton>
                 }
-                // onDialogProfileOpen
-                title={ <Typography className={"card-header-title"} onClick={onDialogProfileOpen} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
-                subheader={moment(n.createdAt).format('MMMM Do YYYY')}
+                title={ <Typography className={"card-header-title"} onClick={(e)=>{
+                  history.push("/user/" + userValue.data.User.data.id +"/view");
+                }} variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
+                subheader={moment(item.createdAt).format('MMMM Do YYYY')}
                 />
-
     }
-
-   
   }
 
   const iconBookmark =()=>{
 
     const bmValus = useQuery(gqlIsBookmark, {
-      variables: {userId: userId, postId: n.id},
+      variables: {userId: userId, postId: item.id},
       notifyOnNetworkStatusChange: true,
     });
 
     if(!bmValus.loading){
       if(bmValus.data.isBookmark.data === null){
         return  <IconButton onClick={(e) => {
-                    onCreateBookmark({ variables: { input: {
-                          postId: n.id,
-                          userId: userId,
-                          status: true
-                        }
-                      }
-                    }); 
+                    handleCreateBookmark(true)
                   }}>
                   <BookmarkIcon style={{ color:"" }} /> 
                 </IconButton>
@@ -195,26 +225,14 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
       let color = bmValus.data.isBookmark.data.status === null ? "" : bmValus.data.isBookmark.data.status ? "blue" : ""
 
       return  <IconButton onClick={(e) => {
-                  onCreateBookmark({ variables: { input: {
-                        postId: n.id,
-                        userId: userId,
-                        status: !bmValus.data.isBookmark.data.status
-                      }
-                    }
-                  }); 
+                  handleCreateBookmark(!bmValus.data.isBookmark.data.status)
                 }}>
                 <BookmarkIcon style={{ color }} /> 
               </IconButton>
         
     }
     return  <IconButton onClick={(e) => {
-                onCreateBookmark({ variables: { input: {
-                      postId: n.id,
-                      userId: userId,
-                      status: true
-                    }
-                  }
-                }); 
+                handleCreateBookmark(true)
               }}>
               <BookmarkIcon style={{ color:"" }} /> 
             </IconButton>
@@ -224,16 +242,22 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
     // gqlShareByPostId
 
     let shareValues = useQuery(gqlShareByPostId, {
-      variables: {postId: n.id, page: 0, perPage: 1000},
+      variables: {postId: item.id, page: 0, perPage: 1000},
       notifyOnNetworkStatusChange: true,
     });
 
+    
+
     if(!shareValues.loading){
       if(shareValues.data.ShareByPostId.data.length == 0){
-        return <ShareIcon />
+        return <IconButton onClick={(e) => {onAnchorElShareOpen(index, e); }}>
+                  <ShareIcon />
+                </IconButton> 
       }
 
-      return  <div>
+      return  <IconButton onClick={(e) => {
+                onAnchorElShareOpen(index, e);
+              }}>
                 <ShareIcon />
                 <div style={{
                     position: "absolute",
@@ -244,24 +268,26 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
                     borderWidth: "1px",
                     fontSize: "10px"
                 }}>{shareValues.data.ShareByPostId.data.length}</div>
-              </div>
+              </IconButton>
     }
-    return <ShareIcon />
+    return  <IconButton onClick={(e) => {onAnchorElShareOpen(index, e); }}>
+              <ShareIcon />
+            </IconButton> 
   }
 
   const iconComment = () =>{
     let commentValues = useQuery(gqlComment, {
-      variables: {postId: n.id},
+      variables: {postId: item.id},
       notifyOnNetworkStatusChange: true,
     });
 
     if(!commentValues.loading){
-      if(commentValues.data.Comment.data.length == 0){
+      if(commentValues.data.comment.data.length == 0){
         return <CommentIcon />
       }
 
       let count = 0;
-      _.map(commentValues.data.Comment.data, (v) => {
+      _.map(commentValues.data.comment.data, (v) => {
         if (v.replies) {
           count += v.replies.length;
         }
@@ -277,11 +303,19 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
                   borderColor: "red",
                   borderWidth: "1px",
                   fontSize: "10px"
-                }}>{commentValues.data.Comment.data.length + count}</div>
+                }}>{commentValues.data.comment.data.length + count}</div>
               </div>
     }
 
     return <CommentIcon />
+  }
+
+  const bankView = (item) =>{
+    if(valueBanks.loading){
+        return <div />
+    }
+    let bank = _.find(valueBanks.data.Banks.data, (v) => v.id === item.bankId)
+    return <li><Typography variant="subtitle2" color="textSecondary">{item.bankAccountName} [{bank === null ? "" : bank.name}]</Typography></li>
   }
 
   return (
@@ -289,84 +323,91 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
       <Card elevation={1} className={classes.test}>
         {viewHeader()}
         <CardContent>
-
-          {/* <div>
-          <Accordion 
-          // expanded={false}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-              onClick={(e)=>{
-                console.log("expanded")
-              }}
-            >
-              <Typography>text</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-                malesuada lacus ex, sit amet blandit leo lobortis eget.
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-
-          </div> */}
           <div>
-            {renderMedia(n)}
+            {renderMedia(item)}
             <CardActionArea style={{}}>
-                <Typography variant="subtitle2" color="textSecondary">
-                    หัวข้อร้องเรียน : {n.title}
-                </Typography>
-                
-                <Typography
-                  style={{ cursor: "pointer" }}
-                  variant="subtitle2"
-                  color="textSecondary"
-                >
-                  ชื่อ-นามสกุล : {n.nameSubname}
-                </Typography>
-           
-                <Typography variant="subtitle2" color="textSecondary">
-                  ยอดเงิน : {n.amount}
-                </Typography>
-                <Typography variant="subtitle2" color="textSecondary">
-                  วันที่โอน : {moment(n.dateTranfer).format('MMMM Do YYYY')}
-                </Typography>
-                     
-                <ReadMoreMaster
-                  parentClass={"read-more-master"}
-                  byWords={true}
-                  length={15}
-                  readMore="See More"
-                  readLess="See less" 
-                  ellipsis="...">{"รายละเอียด :" + n.description}</ReadMoreMaster>
+              <Accordion expanded={expand} >
+                <AccordionSummary
+                  aria-controls="panel1a-content"
+                  id="panel1a-header">
+                  <div>
+                    <Typography variant="subtitle2" color="textSecondary">
+                        หัวข้อร้องเรียน : {item.title}
+                    </Typography>
+                    
+                    <Typography
+                      style={{ cursor: "pointer" }}
+                      variant="subtitle2"
+                      color="textSecondary"
+                    >
+                      ชื่อ-นามสกุล : {item.nameSubname}
+                    </Typography>
+              
+                    <Typography variant="subtitle2" color="textSecondary">
+                      ยอดเงิน : {item.amount}
+                    </Typography>
+
+                  
+                    <Typography variant="subtitle2" color="textSecondary">
+                      วันที่โอน : {moment(item.dateTranfer).format('MMMM Do YYYY')}
+                    </Typography>
+                        
+                    <ReadMoreMaster
+                      parentClass={"read-more-master"}
+                      byWords={true}
+                      length={15}
+                      readMore="See More"
+                      readLess="See less" 
+                      ellipsis="...">{"รายละเอียด :" + item.description}</ReadMoreMaster>
+                  </div>
+                </AccordionSummary>
+                <AccordionDetails>
+
+                  <Typography variant="subtitle2" color="textSecondary">เบอร์โทร : 
+                    <ul>
+                      {
+                        _.map(item.tels, (v)=>{
+                            return <li><Typography variant="subtitle2" color="textSecondary">{v}</Typography></li>
+                        })
+                      }
+                    </ul>
+                  </Typography>
+
+                  <Typography variant="subtitle2" color="textSecondary">ธนาคาร : 
+                    <ul>
+                      {
+                        _.map(item.banks, (v)=>{
+                          return bankView(v)
+                        })
+                      }
+                    </ul>
+                  </Typography>
+                </AccordionDetails>
+              </Accordion>
+
             </CardActionArea>
           </div>
           <Divider light />
           <div>
             
             {iconBookmark()}
+
+            {iconShare()}
+           
             <IconButton onClick={(e) => {
-              onAnchorElShareOpen(index, e);
-            }}>
-              {iconShare()}
-            </IconButton>
-            <IconButton onClick={(e) => {
-              onPanelComment({ isOpen: true, commentId: n.id })
+              onPanelComment({ isOpen: true, commentId: item.id })
             }}>
               {iconComment()}
             </IconButton>
             <IconButton onClick={(e) => {
-              history.push("/detail/" + n.id);
+              history.push("/detail/" + item.id);
             }}>
               <OpenInNewIcon /> 
             </IconButton>
             <IconButton onClick={(e) => {
-              console.log("ExpandMoreIcon")
+              setExpand(!expand)
             }}>
-              <ExpandMoreIcon />
+              { expand ? <ExpandLessIcon /> : <ExpandMoreIcon /> }
             </IconButton>
           </div>
         </CardContent>
@@ -375,4 +416,4 @@ const MasonryCard =({ n, index, onPanelComment, onBookmark, onLightbox, onAnchor
   );
 }
 
-export default MasonryCard
+export default HomeItem

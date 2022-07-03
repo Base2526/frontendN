@@ -99,16 +99,18 @@ const _  = require('lodash')
 //     }
 // };
 
-const login= async({ username, password }) => {
-    return Promise.resolve({"login" : 'bn'}) 
+const auth= (data) => {
+    localStorage.setItem('user',  JSON.stringify(data));
+    return true; 
 }
 
-const register= async({ username, password }) => {
-    return Promise.resolve({"register" : 'bn'}) 
-}
+// const register= async({ username, password }) => {
+//     return Promise.resolve({"register" : 'bn'}) 
+// }
 
 const logout = () => {
-
+    localStorage.removeItem('user')
+    return true;
 }
 
 const getRoles = () => {
@@ -116,20 +118,43 @@ const getRoles = () => {
 }
 
 const checkAuth = () => {
-    let user =localStorage.getItem("user");
-    if(!_.isEmpty(user)){
-        user =  JSON.parse(user)
-        return Promise.resolve(user)
+    let user = localStorage.getItem("user");
+    if(user != null){
+        return JSON.parse(user);
     }
-
-    console.log("checkAuth :", user)
-    return Promise.resolve();
+    return null;
 }
 
+// anonymous, authenticated, administrator
 const getPermissions =() => {
-    const role = localStorage.getItem('permissions');
-    console.log("role :", role)
-    return role ? Promise.resolve(role) : Promise.resolve(['guest']);
+    // localStorage.setItem('permissions', JSON.stringify(['anonymous']))
+    // const role = JSON.parse(localStorage.getItem('permissions'));
+    // console.log("role :", role)
+
+    let user = checkAuth();
+    if(user != null){
+       return user.roles;
+    }else{
+        return [];
+    }
+    //? Promise.resolve(role) : Promise.resolve(['anonymous', 'administrator']);
 }
 
-export {login, register, getRoles, getPermissions, checkAuth};
+const isAuth = () =>{
+
+    /*
+    62a2ccfbcf7946010d3c74a4: anonymous
+    62a2ccfbcf7946010d3c74a6: authenticated
+    62a2ccfbcf7946010d3c74a2: administrator
+    */
+    let permissions =  getPermissions();
+    if( permissions && ( permissions.includes("administrator") || permissions.includes("authenticated") )){
+       return true;
+    }
+    
+    if( permissions && permissions.includes("anonymous")){
+        return false;
+    }
+}
+
+export {auth, logout, getRoles, getPermissions, checkAuth, isAuth};

@@ -8,12 +8,13 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import Typography from "@material-ui/core/Typography";
 import styled from "styled-components";
 import classNames from "classnames";
+import Button from "@mui/material/Button";
 import { NotificationsNone, Language, Settings, Comment as CommentIcon } from "@material-ui/icons";
-
 import { Link, useHistory } from "react-router-dom";
-
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
+
+import { isAuth, logout} from "./AuthProvider"
 
 export const TopRight = styled.div`
   display: flex;
@@ -42,17 +43,20 @@ export const TopIconBadge = styled.span`
   font-size: 10px;
 `;
 
-const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose}) =>{
-
+const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
   let history = useHistory();
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const handleClose = () =>{
+    setAnchorEl(null)
+  }
 
   return  <AppBar
             position="fixed"
             className={classes.appBar}
             fooJon={classNames(classes.appBar, {
-              [classes.appBarShift]: open
-            })}
-          >
+              [classes.appBarShift]: Boolean(anchorEl)
+            })}>
             <Toolbar disableGutters={true}>
               <IconButton
                 color="inherit"
@@ -62,7 +66,7 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose}) =>{
               >
                 <MenuIcon
                   classes={{
-                    root: open
+                    root: Boolean(anchorEl)
                       ? classes.menuButtonIconOpen
                       : classes.menuButtonIconClosed
                   }}
@@ -72,52 +76,69 @@ const MyAppBar = ({classes, onDrawerOpen, handleMenu, handleClose}) =>{
                 variant="h6"
                 color="inherit"
                 className={classes.grow}
-                // noWrap
-                onClick={(e)=>history.push("/")}
-              >
+                onClick={(e)=>history.push("/")}>
                 BANLIST.INFO
               </Typography>
-              <TopRight>
-              <Link to="/notification">
-                <IconContainer >
-                  <NotificationsNone />
-                  <TopIconBadge>2</TopIconBadge>
-                </IconContainer>
-                </Link>
-                <Link to="/message">
-                  <IconContainer>
-                    <CommentIcon />
-                    <TopIconBadge>2</TopIconBadge>
-                  </IconContainer>
-                </Link>
-                <IconContainer>
-                  <IconButton
-                    aria-owns={open ? "menu-appbar" : undefined}
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                  >
-                    <AccountCircle />
-                  </IconButton>
-                </IconContainer>
-                <Menu
-                  id="menu-appbar"
-                  // anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right"
-                  }}
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right"
-                  }}
-                  // open={open}
-                  onClose={handleClose}
-                >
-                  <MenuItem onClick={handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={handleClose}>My account</MenuItem>
-                </Menu>
-              </TopRight>
+              {
+                isAuth()
+                ? <TopRight>
+                    <Link to="/notification">
+                      <IconContainer >
+                        <NotificationsNone />
+                        <TopIconBadge>2</TopIconBadge>
+                      </IconContainer>
+                    </Link>
+                    <Link to="/message">
+                      <IconContainer>
+                        <CommentIcon />
+                        <TopIconBadge>2</TopIconBadge>
+                      </IconContainer>
+                    </Link>
+                    <IconContainer>
+                      <IconButton
+                        aria-owns={Boolean(anchorEl) ? "menu-appbar" : undefined}
+                        aria-haspopup="true"
+                        onClick={(event)=>{
+                          setAnchorEl(event.currentTarget)
+                        }}
+                        color="inherit"
+                      >
+                        <AccountCircle />
+                      </IconButton>
+                      <Menu
+                        id="menu-appbar"
+                        anchorEl={anchorEl}
+                        anchorOrigin={{
+                          vertical: "top",
+                          horizontal: "right"
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "right"
+                        }}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}>
+                          <MenuItem onClick={()=>{
+                            history.push("/me")
+                            handleClose()
+                          }}>Profiles</MenuItem>
+                          {/* <MenuItem onClick={()=>{
+                            logout()
+                            history.push("/")
+                            handleClose()
+                          }}>Logout</MenuItem> */}
+                      </Menu>
+                    </IconContainer>
+                   
+                  </TopRight>
+                : <Button 
+                    style={{marginRight:"10px"}} 
+                    variant="contained" 
+                    color="primary"
+                    onClick={(e)=>{
+                      onDialogLogin(true)
+                    }}>Login</Button>
+              }
             </Toolbar>
           </AppBar>
 }

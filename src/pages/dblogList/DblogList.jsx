@@ -4,10 +4,8 @@ import {
   EditButton,
   ButtonWrapper
 } from "./DblogList.styled";
-import { DataGrid } from "@mui/x-data-grid";
-import { DeleteOutline } from "@material-ui/icons";
 import { Link } from "react-router-dom";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import moment from "moment";
 import {
   BrowserRouter as Router,
@@ -26,18 +24,18 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import _ from "lodash"
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import { gqlDblog } from "../../gqlQuery"
-import Footer from "../home2/Footer";
+import Footer from "../footer";
+
+import Table from "../../TableContainer"
 
 const DblogList = (props) => {
   let history = useHistory();
 
-  const [pageOptions, setPageOptions] = useState([50, 100]);  
-  const [page, setPage] = useState(0);  
-  const [perPage, setPerPage] = useState(pageOptions[0])
+  const [pageOptions, setPageOptions] = useState([100, 500, 1000]);  
+  const [pageIndex, setPageIndex] = useState(0);  
+  const [pageSize, setPageSize] = useState(pageOptions[0])
 
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
@@ -45,11 +43,21 @@ const DblogList = (props) => {
   });
 
   const dblogValues = useQuery(gqlDblog, {
-    variables: {page: page, perPage: perPage},
+    variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
   console.log("dblogValues :", dblogValues)
+
+  ///////////////
+  const fetchData = useCallback(
+    ({ pageSize, pageIndex }) => {
+    console.log("fetchData is being called #1")
+
+    setPageSize(pageSize)
+    setPageIndex(pageIndex)
+  })
+  ///////////////
 
   const handleClose = () => {
     // setOpen(false);
@@ -60,61 +68,67 @@ const DblogList = (props) => {
     // setUserData(userData.filter((user) => user.id !== id));
   };
 
-  /*
-  level: String
-    meta: String
-    message: String
-    timestamp: String
-  */
+ 
+  ///////////////////////
 
-  const columns = [
-    {
-      field: "level",
-      headerName: "Level",
-      width: 100
-    },
-    {
-      field: "message",
-      headerName: "Message",
-      width: 500,
-    },
-    // {
-    //   field: "meta",
-    //   headerName: "Meta",
-    //   width: 250,
-    // },
-    {
-      field: "timestamp",
-      headerName: "Create at",
-      width: 200,
-      renderCell: (params) => {
-        console.log("params.row.timestamp :", params.row.timestamp/1000)
-        return  <Typography variant="overline" display="block" gutterBottom>
-                  {moment.unix(params.row.timestamp/1000).format('DD/MM/YYYY hh:mm:ss A')}
-                </Typography>
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Name',
+        columns: [
+          {
+            Header: 'Name',
+            accessor: 'level',
+          },
+          {
+            Header: 'Description',
+            accessor: 'message',
+            Cell: props => <Typography dangerouslySetInnerHTML={{ __html: props.value }} />
+          }
+        ],
       }
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 140,
-      renderCell: (params) => {
-        return (
-          <ButtonWrapper>
-            {/* <Link to={`/role/${params.row.id}/edit`}>
-              <button className="editBtn">Edit</button>
-            </Link> */}
-            <DeleteOutline
-              className="deleteBtn"
-              onClick={() => {
-                setOpenDialogDelete({ isOpen: true, id: params.row.id });
-              }}
-            />
-          </ButtonWrapper>
-        );
-      }
-    }
-  ];
+    ],
+    []
+  )
+
+  // const [data, setData] = useState(() => makeData(10000))
+  // const [originalData] = useState(data)
+
+  // We need to keep the table from resetting the pageIndex when we
+  // Update data. So we can keep track of that flag with a ref.
+  const skipResetRef = useRef(false)
+
+  // When our cell renderer calls updateMyData, we'll use
+  // the rowIndex, columnId and new value to update the
+  // original data
+  const updateMyData = (rowIndex, columnId, value) => {
+    console.log("updateMyData")
+    // We also turn on the flag to not reset the page
+    skipResetRef.current = true
+    // setData(old =>
+    //   old.map((row, index) => {
+    //     if (index === rowIndex) {
+    //       return {
+    //         ...row,
+    //         [columnId]: value,
+    //       }
+    //     }
+    //     return row
+    //   })
+    // )
+  }
+
+  // After data changes, we turn the flag back off
+  // so that if data actually changes when we're not
+  // editing it, the page is reset
+  // useEffect(() => {
+  //   skipResetRef.current = false
+
+  //   console.log("data :", data)
+  // }, [data])
+
+
+  //////////////////////
 
   return (
     <Box style={{
@@ -123,21 +137,14 @@ const DblogList = (props) => {
       {
          dblogValues.loading
          ?  <div><CircularProgress /></div> 
-         :  <DataGrid
-              rows={dblogValues.data.Dblog.data}
+         :  <Table
               columns={columns}
-              rowHeight={80}
-
-              pageSize={perPage}
-              onPageSizeChange={(newPerPage) => {
-                setPerPage(newPerPage)
-                setPage(0)
-              }}
-              rowsPerPageOptions={pageOptions}
-              page={page}
-              onPageChange={(newPage) =>{
-                setPage(newPage)
-              }}
+              data={dblogValues.data.Dblog.data}
+              fetchData={fetchData}
+              rowsPerPage={pageOptions}
+              updateMyData={updateMyData}
+              skipReset={skipResetRef.current}
+              isDebug={false}
             />
       }
 
@@ -171,17 +178,6 @@ const DblogList = (props) => {
           </DialogActions>
         </Dialog>
       )}
-
-      
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClick={(e)=>{
-          history.push("/role/new");
-        }}
-      />
-
       <Footer />
     </Box>
   );

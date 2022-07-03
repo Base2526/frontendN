@@ -35,12 +35,14 @@ import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
 import RadioGroupField from "./RadioGroupField";
 import TelInputField from "./TelInputField";
-import PopupSnackbar from "../home2/PopupSnackbar";
-import Footer from "../home2/Footer";
+import PopupSnackbar from "../home/PopupSnackbar";
+import Footer from "../footer";
 import Editor from "../../components/editor/Editor";
 
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId} from "../../gqlQuery"
+import {  gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, 
+          gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId,
+          gqlPosts } from "../../gqlQuery"
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
@@ -49,8 +51,6 @@ import {convertFileToBase64} from "../../util"
 
 import Tabs from "../../components/tab/Tabs";
 import Panel from "../../components/tab/Panel";
-
-import BookmarkList from "../bookmarkList/BookmarkList"
 
 let editValues = undefined;
 let bookmarksByPostIdValues = undefined;
@@ -195,7 +195,10 @@ const shcolumns = [
 const Post = (props) => {
   let history = useHistory();
 
-  let userId = "62a31ce2ca4789003e5f5123";
+  // props.location.state
+  console.log("props.location.state :", history)
+
+  let userId = "62a2c0cecf7946010d3c743f";
 
   let { id, mode } = useParams();
 
@@ -208,34 +211,100 @@ const Post = (props) => {
   const [bmPerPage, setBmPerPage] = useState(bmPageOptions[0])
 
   const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
-    // variables: {
-    //   taskId: 1,
-    // },
-    // refetchQueries: () => [{
-    //   query: gqlUsers,
-    //   variables: { 
-    //     // status: 'OPEN',
-    //   },
-    // }],
-  });
+        update: (cache, {data: {createPost}}) => {
+
+          let {state} = history.location
+          switch(state.from){
+            case "/posts":{
+              const data1 = cache.readQuery({
+                query: gqlPosts,
+                variables: {
+                  page: 0, 
+                  perPage: 100
+                }
+              });
+  
+              if(data1 != null){
+                let newPosts = {...data1.Posts}
+                let newData = [...newPosts.data, createPost]
+  
+                newPosts = {...newPosts, data: newData}
+
+                cache.writeQuery({
+                  query: gqlPosts,
+                  data: {
+                    Posts: newPosts
+                  },
+                  variables: {
+                   page: 0, 
+                    perPage: 100
+                  }
+                });
+              }
+              break;
+            }
+
+            default:{
+
+              break;
+            }
+          }
+        },
+        onCompleted({ data }) {
+          // console.log("bookmark :::: onCompleted")
+
+          history.push("/posts")
+        },
+      });
 
   const [onUpdatePost, resultUpdatePost] = useMutation(gqlUpdatePost, 
     {
+      update: (cache, {data: {updatePost}}) => {
+        let {state} = history.location
+
+        if(state == undefined){
+          return;
+        }
+        switch(state.from){
+          case "/posts":{
+            const data1 = cache.readQuery({
+              query: gqlPosts,
+              variables: {
+                page: 0, 
+                perPage: 100
+              }
+            });
+
+            if(data1 != null){
+              // let newPosts = {...data1.Posts}
+              // let newData = [...newPosts.data, updatePost]
+
+              // newPosts = {...newPosts, data: newData}
+
+              // cache.writeQuery({
+              //   query: gqlPosts,
+              //   data: {
+              //     Posts: newPosts
+              //   },
+              //   variables: {
+              //   page: 0, 
+              //     perPage: 100
+              //   }
+              // });
+            }
+            break;
+          }
+
+          default:{
+
+            break;
+          }
+        }
+      },
       onCompleted({ data }) {
         history.push("/posts");
       }
     }
-    // {
-    // variables: {
-    //   taskId: 1,
-    // },
-    // refetchQueries: () => [{
-    //   query: gqlUsers,
-    //   variables: { 
-    //     // status: 'OPEN',
-    //   },
-    // }],
-  // }
   );
   console.log("resultUpdatePost :", resultUpdatePost)
 
@@ -363,7 +432,8 @@ const Post = (props) => {
             banks: input.banks, // _.omitDeep(input.banks, ['__typename']),
             description: input.description,
             dateTranfer: input.dateTranfer,
-            files: [...newAttackFilesBase64, ...oldAttackFiles]
+            files: [...newAttackFilesBase64, ...oldAttackFiles],
+            ownerId: userId
           }
         }});
         break;
@@ -379,14 +449,15 @@ const Post = (props) => {
                       banks: input.banks, //_.omitDeep(input.banks, ['__typename']),
                       description: input.description,
                       dateTranfer: input.dateTranfer,
-                      files:  _.omitDeep(_.filter([...newAttackFilesBase64, ...oldAttackFiles], (v, key) => !v.delete), ['__typename', 'id'])
+                      files:  _.omitDeep(_.filter([...newAttackFilesBase64, ...oldAttackFiles], (v, key) => !v.delete), ['__typename', 'id']),
+                      ownerId: userId
                     }
 
-        console.log("newInput : ", newInput)
+        console.log("newInput : ", _.omitDeep(newInput, ['__typename']))
 
         onUpdatePost({ variables: { 
           id: editValues.data.Post.data.id,
-          input: newInput
+          input: _.omitDeep(newInput, ['__typename'])
         }});
       }
     }

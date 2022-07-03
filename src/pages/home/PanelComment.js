@@ -46,13 +46,13 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
+const PanelComment = ({ user, commentId, isOpen, onRequestClose, onSignin }) => {
   const classes = useStyles();
 
   const [comment, setComment] = useState([]);
-  const userId = "01a";
-  const avatarUrl = "https://ui-avatars.com/api/name=Riya&background=random";
-  const name = "xyz";
+  const userId =  user == null ? "" : user.id;
+  const avatarUrl = user == null ? "" : _.isEmpty(user.image) ? "" : user.image[0].base64 ;
+  const name = user == null ? "" : user.displayName;
   const signinUrl = "/signin";
   const signupUrl = "/signup";
   let count = 0;
@@ -70,13 +70,13 @@ const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
                 variables: {postId: commentId}
             });
 
-            let newData = {...data1.Comment}
+            let newData = {...data1.comment}
             newData = {...newData, data: createComment.data}
                 
             cache.writeQuery({
                 query: gqlComment,
                 data: {
-                    Comment: newData
+                    comment: newData
                 },
                 variables: {
                     postId: commentId
@@ -103,6 +103,10 @@ const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
   /* loading
   commentValues.data.Comment.data
   */
+
+  useEffect(()=>{
+
+  }, [])
 
   useEffect(() => {
     console.log("comment :", comment, commentId);
@@ -131,7 +135,7 @@ const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
           <CancelRoundedIcon />
         </IconButton>
         <div className="commentSection">
-          
+      
           {
             commentValues.loading 
             ? <div><CircularProgress /></div> 
@@ -140,7 +144,7 @@ const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
                   currentUser={
                     userId && { userId: userId, avatarUrl: avatarUrl, name: name }
                   }
-                  commentsArray={commentValues.data.Comment.data}
+                  commentsArray={commentValues.data.comment.data}
                   setComment={(data) => {
 
                     let input = { postId: commentId, data: _.omitDeep(data, ['__typename']) }
@@ -151,6 +155,10 @@ const PanelComment = ({ commentId, isOpen, onRequestClose }) => {
                   }}
                   signinUrl={signinUrl}
                   signupUrl={signupUrl}
+                  onSignin={(e)=>{
+                    // setDialogLoginOpen(true)
+                    onSignin(e)
+                  }}
                 />
               </div>  
           }

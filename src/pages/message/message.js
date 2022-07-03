@@ -1,11 +1,15 @@
 import "./messenger.css";
 
 import React, { useEffect, useState, useRef } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+
+
 
 // RCE CSS
 import "react-chat-elements/dist/main.css";
 // MessageBox component
 import {
+  ChatItem,
   ChatList,
   MessageList,
   Input,
@@ -21,9 +25,18 @@ import FaComments from "react-icons/lib/fa/comments";
 import FaClose from "react-icons/lib/fa/close";
 import FaMenu from "react-icons/lib/md/more-vert";
 import FaSquare from "react-icons/lib/md/crop-square";
-
+import CircularProgress from '@mui/material/CircularProgress';
 import loremIpsum from "lorem-ipsum";
 import Identicon from "identicon.js";
+
+import _ from "lodash"
+
+
+import { socket } from "../../SocketioClient";
+import { gqlUser, gqlConversations, gqlMessage } from "../../gqlQuery"
+
+import ChatItemView from "./ChatItemView"
+import MessageListView from "./MessageListView"
 
 let clearRef = () => {};
 
@@ -33,6 +46,8 @@ function useForceUpdate() {
 }
 
 // https://github.com/saswatamcode/graphQLChat
+
+let _socket = socket()
 
 const message = (props) => {
   const messageListReferance = useRef();
@@ -46,22 +61,103 @@ const message = (props) => {
   const [isShowChild, setIsShowChild] = useState(false);
   const [preview, setPreview] = useState(false);
 
+  const [currentChat, setCurrentChat] = useState(null);
+
+  let userId = "62a2f65dcf7946010d3c7547"
+
+  // useEffect(() => {
+
+  //   if(currentChat !== null){
+  //     let messageValue = useQuery(gqlMessage, {
+  //       variables: {id: currentChat.id},
+  //       notifyOnNetworkStatusChange: true,
+  //     });
+  
+  //     console.log("currentChat :", currentChat, messageValue);
+  //   }
+
+  // }, [currentChat]);
+
+  
+  const conversationValues =useQuery(gqlConversations, {
+    variables: {userId: userId},
+    notifyOnNetworkStatusChange: true,
+  });
+
+  console.log("conversationValues :", conversationValues)
+
+  if(!conversationValues.loading){
+    let conversations = conversationValues.data.conversations.data
+    if(!_.isEmpty(conversations)){
+
+      console.log("")
+
+      // setCurrentChat(conversations[0]);
+
+      // let messageValue = useQuery(gqlMessage, {
+      //   variables: {id: conversations[0].id},
+      //   notifyOnNetworkStatusChange: true,
+      // });
+      // console.log("conversationValues, messageValue :", messageValue)
+    }
+  }
+  
+
+  // if(!conversationValues.loading){
+  //     let conversations = conversationValues.data.conversations.data
+  //     console.log("userValue  conversations:" , conversations)
+
+  //     // setCurrentChat(conversations[0])
+  //     // Promise.all(
+  //       // _.map(conversations, async (v) => {
+  //       //   let members = v.members
+  //       //   let member = _.filter(members, (vv)=>vv != userId)
+
+  //       //   if(!_.isEmpty(member)){
+  //       //     // let userValue = useQuery(gqlUser, {
+  //       //     //   variables: {id: member[0]},
+  //       //     //   notifyOnNetworkStatusChange: true,
+  //       //     // });
+
+  //       //     // if(!userValue.loading){
+  //       //       // console.log("userValue :" , userValue)
+  //       //     // }
+  //       //   }
+          
+
+  //       //   // return null
+  //       // })
+  //     // )
+  // }else{
+
+  //   return <CircularProgress /> 
+  // }
+  
+
+
+  // useEffect(() => {
+  //   window.scrollTo(0, 0)
+
+  //   // addMessage(9);
+
+  //   // var arr = [];
+  //   // for (var i = 0; i < 5; i++) arr.push(i);
+
+  //   // setChatSource(arr.map((x) => random("chat")));
+  //   // setMeetingSource(arr.map((x) => random("meeting")));
+  // }, []);
+
+
   useEffect(() => {
-    window.scrollTo(0, 0)
-
-    addMessage(9);
-
-    var arr = [];
-    for (var i = 0; i < 5; i++) arr.push(i);
-
-    setChatSource(arr.map((x) => random("chat")));
-    setMeetingSource(arr.map((x) => random("meeting")));
-  }, []);
-
-  useEffect(() => {
-    console.log("messageList :", messageList);
-  }, [messageList]);
-
+    // if(currentChat !== null){
+    //   console.log("currentChat :", currentChat)
+    //   let messageValue = useQuery(gqlMessage, {
+    //     variables: {id: "62aea57bf9ac37002c819c99"},
+    //     notifyOnNetworkStatusChange: true,
+    //   });
+    // }
+  }, [currentChat])
+ 
   const getRandomColor = () => {
     var letters = "0123456789ABCDEF";
     var color = "#";
@@ -303,18 +399,256 @@ const message = (props) => {
     }
   };
 
-  const forceUpdate = useForceUpdate();
+  // const forceUpdate = useForceUpdate();
 
   const addMessage = (mtype) => {
     var list = [...messageList];
     list.push(random("message", mtype));
     setMessageList(list);
     clearRef();
-    forceUpdate();
+    // forceUpdate();
+
+    console.log("_socket ", _socket)
+
+    if(_socket && _socket.connected){
+      _socket.emit("MESSAGE_SEND", {item: random("message", mtype)}, (response)=>{
+        console.log("MESSAGE_SEND callback : ", response)
+      });
+    }
   };
 
+  //
+
+  // conversationValues.loading ? [] : chatListView()
+
+  const chatItemView =(item) =>{
+    let members = item.members
+    let member = _.filter(members, (vv)=>vv != userId)
+
+    if(!_.isEmpty(member)){
+      // let userValue = useQuery(gqlUser, {
+      //   variables: {id: member[0]},
+      //   notifyOnNetworkStatusChange: true,
+      // });
+
+      // console.log("userValue :" , userValue)
+    }
+    return <div />
+
+      /*
+      let conversations = conversationValues.data.conversations.data
+      console.log("userValue  conversations:" , conversations)
+      await Promise.all(
+        _.map(conversations, async (v) => {
+          let members = v.members
+          let member = _.filter(members, (vv)=>vv != userId)
+
+          if(!_.isEmpty(member)){
+            let userValue = useQuery(gqlUser, {
+              variables: {id: member[0]},
+              notifyOnNetworkStatusChange: true,
+            });
+
+            console.log("userValue :" , userValue)
+          }
+          
+
+          return null
+        })
+      )
+      */
+      
+       
+      /*
+      _.map(conversationValues.data.conversations.data, (v)=>{
+
+        console.log("chatListView :" , v )
+
+        let members = v.members
+        let member = _.filter(members, (vv)=>vv != userId)
+
+        if(!_.isEmpty(member)){
+          // let userValue = useQuery(gqlUser, {
+          //   variables: {id: member[0]},
+          //   notifyOnNetworkStatusChange: true,
+          // });
+  
+          console.log("chatListView member[0] :" , member[0])
+  
+          // if(!userValue.loading){
+          //   let user =  userValue.data.User.data
+          //   console.log("chatListView cc  user :" , user)
+          // }
+         
+        }
+        
+        
+      })
+      */
+  } 
+
   return (
-    <div className="container">
+    <div >
+
+      {
+        conversationValues.loading 
+        ? <CircularProgress /> 
+        : <div className="container">
+            <div className="left-panel">
+
+            {
+              _.map(conversationValues.data.conversations.data, (item)=>{
+                return <ChatItemView 
+                        item={item}
+                        onCurrentChat={(e)=>{
+                          setCurrentChat(e)
+                          // let messageValue = useQuery(gqlMessage, {
+                          //   variables: {id: e.id},
+                          //   notifyOnNetworkStatusChange: true,
+                          // });
+                      
+                          // console.log("currentChat :", currentChat, messageValue);
+
+                          
+                        }}/>
+              })
+              
+            }
+
+            {/* <ChatList
+              className='chat-list'
+              onClick={(e)=>{
+                console.log("Click : ChatList")
+              }}
+              dataSource={ [
+                  {
+                    avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                    alt: 'Reactjs',
+                    title: 'Facebook',
+                    subtitle: 'What are you doing?',
+                    date: new Date(),
+                    unread: 0,
+                  },
+                  {
+                    avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                    alt: 'Reactjs',
+                    title: 'Facebook',
+                    subtitle: 'What are you doing?',
+                    date: new Date(),
+                    unread: 0,
+                  },
+                  {
+                    avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                    alt: 'Reactjs',
+                    title: 'Facebook',
+                    subtitle: 'What are you doing?',
+                    date: new Date(),
+                    unread: 0,
+                  }
+              ]} />
+               */}
+
+            </div>
+            {/* <div className="right-panel"> */}
+              <MessageListView 
+                currentChat={currentChat === null 
+                            ? _.isEmpty(conversationValues.data.conversations.data) ? null :conversationValues.data.conversations.data[0]
+                            :currentChat}/>
+              {/* <MessageList
+                referance={messageListReferance}
+                className="message-list"
+                lockable={true}
+                downButtonBadge={10}
+                dataSource={messageList}
+                sendMessagePreview={true}
+                isShowChild={isShowChild}
+                downButton={false}
+                customProps={{
+                  onDragEnter: (e) => {
+                    e.preventDefault();
+                    console.log("onDragEnter");
+                    setIsShowChild(true);
+                  }
+                }}
+                onRemoveMessageClick={(item, i, e) => {
+                  console.log("onRemoveMessageClick  : ", item, i, e);
+                }}
+                onTitleClick={(item, i, e) => {
+                  console.log("onTitleClick  : ", item, i, e);
+                }}
+                onMessageFocused={(item, i, e) => {
+                  console.log("onMessageFocused  : ", item, i, e);
+                }}
+                onClick={(item, i, e) => {
+                  console.log("onClick  : ", item, i, e);
+                }}
+                onOpen={(item, i, e) => {
+                  console.log("onOpen  : ", item, i, e);
+                }}
+                replyButton={false}
+                removeButton={false}
+              >
+                {preview ? (
+                  <div
+                    className="on-drag-mlist"
+                    onClick={() => {
+                      setIsShowChild(false);
+                      setPreview(false);
+                    }}
+                  >
+                    preview click and finish
+                  </div>
+                ) : (
+                  <div
+                    className="on-drag-mlist"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      console.log("onDragOver");
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      console.log("onDragLeave");
+                      setIsShowChild(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      console.log(e.dataTransfer.files, "onDrop");
+                      setPreview(true);
+                    }}
+                  >
+                    {loremIpsum({ count: 4, units: "words" })}
+                  </div>
+                )}
+              </MessageList>
+              <Input
+                placeholder="Input message"
+                defaultValue=""
+                referance={inputReferance}
+                clear={(clear) => (clearRef = clear)}
+                // buttonsFloat='left'
+                onKeyPress={(e) => {
+                  if (e.shiftKey && e.charCode === 13) {
+                    return true;
+                  }
+                  if (e.charCode === 13) {
+                    clearRef();
+                    addMessage();
+                  }
+                }}
+                // multiline={true}
+                rightButtons={
+                  <Button
+                    text="Send"
+                    onClick={() => {
+                      clearRef();
+                      addMessage();
+                    }}
+                  />
+                }
+              /> */}
+            {/* </div> */}
+          </div>
+      }
       {/* <div className="chat-list">
         <SideBar
           top={
@@ -406,134 +740,7 @@ const message = (props) => {
           }
         />
       </div> */}
-      <div className="left-panel">
-      <ChatList
-        className='chat-list'
-        onClick={(e)=>{
-          console.log("Click : ChatList")
-        }}
-        dataSource={[
-            {
-                avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
-                alt: 'Reactjs',
-                title: 'Facebook',
-                subtitle: 'What are you doing?',
-                date: new Date(),
-                unread: 0,
-            },
-            {
-              avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
-              alt: 'Reactjs',
-              title: 'Facebook',
-              subtitle: 'What are you doing?',
-              date: new Date(),
-              unread: 0,
-            },
-            {
-              avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
-              alt: 'Reactjs',
-              title: 'Facebook',
-              subtitle: 'What are you doing?',
-              date: new Date(),
-              unread: 0,
-            }
-        ]} />
-
-      </div>
-      <div className="right-panel">
-        <MessageList
-          referance={messageListReferance}
-          className="message-list"
-          lockable={true}
-          downButtonBadge={10}
-          dataSource={messageList}
-          sendMessagePreview={true}
-          isShowChild={isShowChild}
-          downButton={false}
-          customProps={{
-            onDragEnter: (e) => {
-              e.preventDefault();
-              console.log("onDragEnter");
-              setIsShowChild(true);
-            }
-          }}
-          onRemoveMessageClick={(item, i, e) => {
-            console.log("onRemoveMessageClick  : ", item, i, e);
-          }}
-          onTitleClick={(item, i, e) => {
-            console.log("onTitleClick  : ", item, i, e);
-          }}
-          onMessageFocused={(item, i, e) => {
-            console.log("onMessageFocused  : ", item, i, e);
-          }}
-          onClick={(item, i, e) => {
-            console.log("onClick  : ", item, i, e);
-          }}
-          onOpen={(item, i, e) => {
-            console.log("onOpen  : ", item, i, e);
-          }}
-          replyButton={false}
-          removeButton={false}
-        >
-          {preview ? (
-            <div
-              className="on-drag-mlist"
-              onClick={() => {
-                setIsShowChild(false);
-                setPreview(false);
-              }}
-            >
-              preview click and finish
-            </div>
-          ) : (
-            <div
-              className="on-drag-mlist"
-              onDragOver={(e) => {
-                e.preventDefault();
-                console.log("onDragOver");
-              }}
-              onDragLeave={(e) => {
-                e.preventDefault();
-                console.log("onDragLeave");
-                setIsShowChild(false);
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                console.log(e.dataTransfer.files, "onDrop");
-                setPreview(true);
-              }}
-            >
-              {loremIpsum({ count: 4, units: "words" })}
-            </div>
-          )}
-        </MessageList>
-        <Input
-          placeholder="Input message"
-          defaultValue=""
-          referance={inputReferance}
-          clear={(clear) => (clearRef = clear)}
-          // buttonsFloat='left'
-          onKeyPress={(e) => {
-            if (e.shiftKey && e.charCode === 13) {
-              return true;
-            }
-            if (e.charCode === 13) {
-              clearRef();
-              addMessage();
-            }
-          }}
-          // multiline={true}
-          rightButtons={
-            <Button
-              text="Send"
-              onClick={() => {
-                clearRef();
-                addMessage();
-              }}
-            />
-          }
-        />
-      </div>
+      
     </div>
   );
 }

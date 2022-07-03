@@ -1,3 +1,5 @@
+import "./styles.css";
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
@@ -13,8 +15,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
-import Home from "./pages/home2/Home";
-import "./styles.css";
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -23,60 +24,24 @@ import {
   Link,
   useLocation
 } from "react-router-dom";
-import UserList from "./pages/userList/UserList";
-import User from "./pages/user/User";
-import Store from "./Store";
-import ProductList from "./pages/productList/ProductList";
-import Product from "./pages/product/Product";
-import NewProduct from "./pages/newProduct/NewProduct";
-import PostList from "./pages/postList/PostList";
-import Post from "./pages/post/Post";
-
-import CommentList from "./pages/commentList/CommentList";
-import Comment from "./pages/comment/Comment";
-
-import SocketList from "./pages/socketList/SocketList";
-import Socket from "./pages/socket/Socket";
-
-import { socket } from "./SocketioClient";
-
-import BankList from "./pages/bankList/BankList";
-import Bank from "./pages/bank/Bank";
-
-import RoleList from "./pages/roleList/RoleList";
-import Role from "./pages/role/Role";
-
-import Devel from "./pages/devel/Devel";
-
-import Notification from "./pages/notification"
-import Message from "./pages/message/message"
-
-import BookmarkList from "./pages/bookmarkList/BookmarkList"
-
-import ContactUsList from "./pages/contactUsList/ContactUsList"
-
-import TContactUs from "./pages/taxonomy/tContactUs/TContactUs"
-import TContactUsList from "./pages/taxonomy/tContactUsList/TContactUsList"
-
-// ThemeMailList
-import ThemeMailList from "./pages/themeMailList/ThemeMailList";
-import ThemeMail from "./pages/themeMail/ThemeMail";
-
-// ShareList
-import ShareList from "./pages/shareList/ShareList"
-
-import DblogList from "./pages/dblogList/DblogList"
-
-import Detail from "./pages/detail/Detail"
-
-import _ from "lodash";
-import { MenuList } from "./menu";
-import CustomizedListItem from "./CustomizedListItem";
-import Breadcs from "./components/breadcrumbs/Breadcs";
-import { NotificationsNone, Language, Settings, Comment as CommentIcon } from "@material-ui/icons";
 import styled from "styled-components";
 
+import Store from "./Store";
+import Detail from "./pages/detail/Detail"
+import _ from "lodash";
+import Breadcs from "./components/breadcrumbs/Breadcs";
+import Home from "./pages/home/Home";
+import { socket } from "./SocketioClient";
+
 import MyAppBar from "./MyAppBar";
+import LeftMenu from "./LeftMenu"
+
+import PrivateRoute from "./PrivateRoute"
+import PrivatePage from "./PrivatePage"
+import UserView from "./pages/user/UserView";
+import DialogLogin from "./DialogLogin";
+
+import Help from "./pages/help"
 
 const drawerWidth = 220;
 
@@ -156,82 +121,19 @@ const styles = (theme) => ({
   }
 });
 
-export const TopIconBadge = styled.span`
-  position: absolute;
-  top: -5px;
-  right: 1px;
-  background-color: red;
-  color: white;
-  border-radius: 50%;
-  width: 15px;
-  height: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-`;
-export const IconContainer = styled.div`
-  position: relative;
-  cursor: pointer;
-  margin-right: 10px;
-  color: #eee;
-`;
-
-export const TopRight = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-// const theme = createMuiTheme({
-//   palette: {
-//     primary: {
-//       main: "#fafafa"
-//     },
-//     secondary: purple
-//   },
-//   typography: {
-//     fontFamily: "Quicksand",
-//     fontWeightLight: 400,
-//     fontWeightRegular: 500,
-//     fontWeightMedium: 600,
-//     fontWeightBold: 700
-//   }
-// });
-
 const App = (props) => {
   const navigate = useHistory();
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
 
-  useEffect(async () => {
-    // let socket = await socket({});
-    // console.log("socket : ", socket)
+  const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
-    console.log("useEffect : App")
+  useEffect(async () => {
     socket()
   }, [])
 
   const handleDrawerOpen = () => {
-    // this.setState({ open: !this.state.open });
     setOpen(!open)
-  };
-
-  const handleDrawerClose = () => {
-    // this.setState({ open: false });
-    setOpen(false)
-  };
-
-  const handleMenu = (event) => {
-    // this.setState({ anchorEl: event.currentTarget });
-    setAnchorEl(event.currentTarget)
-  };
-  const handleClose = () => {
-    // this.setState({ anchorEl: null });
-    setAnchorEl(null)
-  };
-
-  const handleText = () => {
-    console.log("handleText");
   };
 
   const NoMatch = () =>{
@@ -257,85 +159,15 @@ const App = (props) => {
               handleDrawerOpen
             }
             handleMenu={(e)=>{
-
+              console.log("handleMenu")
             }}
             handleClose={(e)=>{
               
             }}
+            onDialogLogin={(status)=>{
+              setDialogLoginOpen(status)
+            }}
           />
-          {/* <AppBar
-            position="fixed"
-            className={props.classes.appBar}
-            fooJon={classNames(props.classes.appBar, {
-              [props.classes.appBarShift]: open
-            })}
-          >
-            <Toolbar disableGutters={true}>
-              <IconButton
-                color="inherit"
-                aria-label="Open drawer"
-                onClick={handleDrawerOpen}
-                className={props.classes.menuButton}
-              >
-                <MenuIcon
-                  classes={{
-                    root: open
-                      ? props.classes.menuButtonIconOpen
-                      : props.classes.menuButtonIconClosed
-                  }}
-                />
-              </IconButton>
-              <Typography
-                variant="h6"
-                color="inherit"
-                className={props.classes.grow}
-                noWrap
-              >
-                BANLIST
-              </Typography>
-              <TopRight>
-              <Link to="/notification">
-                <IconContainer >
-                  <NotificationsNone />
-                  <TopIconBadge>2</TopIconBadge>
-                </IconContainer>
-                </Link>
-                <Link to="/messenger">
-                  <IconContainer>
-                    <CommentIcon />
-                    <TopIconBadge>2</TopIconBadge>
-                  </IconContainer>
-                </Link>
-                <IconContainer>
-                  <IconButton
-                    aria-owns={open ? "menu-appbar" : undefined}
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                  >
-                    <AccountCircle />
-                  </IconButton>
-                </IconContainer>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right"
-                  }}
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right"
-                  }}
-                  // open={open}
-                  onClose={handleClose}
-                >
-                  <MenuItem onClick={handleClose}>Profile</MenuItem>
-                  <MenuItem onClick={handleClose}>My account</MenuItem>
-                </Menu>
-              </TopRight>
-            </Toolbar>
-          </AppBar> */}
           <Drawer
             variant="permanent"
             className={classNames(props.classes.drawer, {
@@ -348,198 +180,50 @@ const App = (props) => {
                 [props.classes.drawerClose]: !open
               })
             }}
-            open={open}
-          >
+            open={open}>
             <div className={props.classes.toolbar} />
-            {/* <List>
-              {["Inbox", "Starred", "Send email", "Drafts"].map(
-                (text, index) => (
-                  <ListItem button key={text}>
-                    <ListItemIcon>
-                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                    </ListItemIcon>
-                    <ListItemText primary={text} />
-                  </ListItem>
-                )
-              )}
-            </List>
-            <Divider /> */}
-            <List>
-              {/* {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))} */}
-              {MenuList.map((doc) => {
-                return <CustomizedListItem key={doc.id} doc={doc} />;
-              })}
-            </List>
+            <LeftMenu />
           </Drawer>
           <main className={props.classes.content}>
             <div className={props.classes.toolbar} />
             <Breadcs title={""} />
-            {/* <Typography paragraph>
-              Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-              ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-              elementum integer enim neque volutpat ac tincidunt. Ornare
-              suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
-              volutpat consequat mauris. Elementum eu facilisis sed odio
-              morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
-              tincidunt ornare massa eget egestas purus viverra accumsan in.
-              In hendrerit gravida rutrum quisque non tellus orci ac.
-              Pellentesque nec nam aliquam sem et tortor. Habitant morbi
-              tristique senectus et. Adipiscing elit duis tristique
-              sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-              eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
-              Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
-            </Typography>
-            <Typography paragraph>foo</Typography> */}
             <div className="container">
-              {/* <Sidebar /> */}
               <Switch>
-                
                 <Route path="/" exact>
-                  <Home handleText={handleText} />
+                  <Home />
                 </Route>
-                <Route path="/users">
-                  <UserList />
-                </Route>
-                <Route path="/user/:id/:mode">
-                  <User />
-                </Route>
-                <Route path="/user/:mode">
-                  <User />
-                </Route>
-
-                <Route path="/posts">
-                  <PostList />
-                </Route>
-                <Route path="/post/:id/:mode">
-                  <Post />
-                </Route>
-                <Route path="/post/:mode">
-                  <Post />
-                </Route>
-
-                {/* comments */}
-                <Route path="/comments">
-                  <CommentList />
-                </Route>
-                <Route path="/comment/:id/:mode">
-                  <Comment />
-                </Route>
-                <Route path="/comment/:mode">
-                  <Comment />
-                </Route>
-
-                {/* sockets */}
-                <Route path="/sockets">
-                  <SocketList />
-                </Route>
-                <Route path="/socket/:id">
-                  <Socket />
-                </Route>
-                {/* <Route path="/newSocket">
-                  <NewSocket />
-                </Route> */}
-
-                {/* devel */}
-                <Route path="/devel">
-                  <Devel />
-                </Route>
-
-                {/* roles */}
-                <Route path="/roles">
-                  <RoleList />
-                </Route>
-                <Route path="/role/:id/:mode">
-                  <Role />
-                </Route>
-                <Route path="/role/:mode">
-                  <Role />
-                </Route>
-
-                {/* banks */}
-                <Route path="/banks">
-                  <BankList />
-                </Route>
-                <Route path="/bank/:id/:mode">
-                  <Bank />
-                </Route>
-                <Route path="/bank/:mode">
-                  <Bank />
-                </Route>
-
-                {/* theme mail */}
-                <Route path="/theme-mails">
-                  <ThemeMailList />
-                </Route>
-                <Route path="/theme-mail/:id/:mode">
-                  <ThemeMail />
-                </Route>
-                <Route path="/theme-mail/:mode">
-                  <ThemeMail />
-                </Route>
-
-
-                <Route path="/tcontactus-list">
-                  <TContactUsList />
-                </Route>
-                <Route path="/tcontactus/:id/:mode">
-                  <TContactUs />
-                </Route>
-                <Route path="/tcontactus/:mode">
-                  <TContactUs />
-                </Route>
-                
-
-                <Route path="/notification">
-                  <Notification />
-                </Route>
-
-                <Route path="/message">
-                  <Message />
-                </Route>
-
-                <Route path="/bookmarks">
-                  <BookmarkList />
-                </Route>
-
-                <Route path="/contact-us">
-                  <ContactUsList />
-                </Route>
-
-                <Route path="/shares">
-                  <ShareList />
-                </Route>
-
-                <Route path="/dblog">
-                  <DblogList />
-                </Route>
-
                 <Route path="/detail/:id">
                   <Detail/>
                 </Route>
-
+                <Route path="/user/:id/view">
+                  <UserView />
+                </Route>
+                <Route path="/help">
+                  <Help />
+                </Route>
+                <PrivateRoute path="/">
+                  <PrivatePage />
+                </PrivateRoute>   
                 <Route path="*">
                   <NoMatch />
-                </Route>
-
+                </Route>     
               </Switch>
             </div>
           </main>
         </div>
+
+        {
+          dialogLoginOpen &&  
+          <DialogLogin
+            open={dialogLoginOpen}
+            onClose={() => {
+              setDialogLoginOpen(false);
+            }}
+          />
+        }
       </Store>
     </Router>
   );
 }
-
-// App.propTypes = {
-//   props.classes: PropTypes.object.isRequired,
-//   theme: PropTypes.object.isRequired
-// };
 
 export default withStyles(styles, { withTheme: true })(App);

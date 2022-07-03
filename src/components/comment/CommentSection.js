@@ -10,7 +10,8 @@ export const CommentSection = ({
   setComment,
   signinUrl,
   signupUrl,
-  customInput
+  customInput,
+  onSignin
 }) => {
   const [comments, setComments] = useState(commentsArray)
   
@@ -29,7 +30,7 @@ export const CommentSection = ({
     >
       <div className={"section"}>
         <div className={"inputBox"}>
-          {signupUrl && !currentUser ? <SignField /> : <Input />}
+          {signupUrl && !currentUser ? <SignField  onSignin={onSignin} /> : <Input />}
         </div>
         <div className={"displayComments"}>
           <DisplayComments comments={comments} />

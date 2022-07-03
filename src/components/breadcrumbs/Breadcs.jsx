@@ -8,55 +8,39 @@ const Breadcs = ({ title }) => {
   const postsMatches = useRouteMatch("/posts");
   const newPostMatches = useRouteMatch("/post/new");
   const postMatches = useRouteMatch("/post/:jobid/edit");
-
   const commentsMatches = useRouteMatch("/comments");
   const newCommentMatches = useRouteMatch("/comment/new");
   const commentMatches = useRouteMatch("/comment/:jobid/edit");
-
   const usersMatches = useRouteMatch("/users");
   const newUserMatches = useRouteMatch("/user/new");
-  const userMatches = useRouteMatch("/user/:jobid/edit");
-
+  const userMatches = useRouteMatch("/user/:jobid/:mode");
   const socketsMatches = useRouteMatch("/sockets");
   const newSocketMatches = useRouteMatch("/newSocket");
   const socketMatches = useRouteMatch("/socket/:jobid");
-
   const rolesMatches = useRouteMatch("/roles");
   const newRoleMatches = useRouteMatch("/role/new");
   const roleMatches = useRouteMatch("/role/:jobid/edit");
-
   const banksMatches = useRouteMatch("/banks");
   const newBankMatches = useRouteMatch("/bank/new");
   const bankMatches = useRouteMatch("/bank/:jobid/edit");
-
   const themeMailsMatches = useRouteMatch("/theme-mails");
   const newThemeMailMatches = useRouteMatch("/theme-mail/new");
   const themeMailMatches = useRouteMatch("/theme-mail/:jobid/edit");
-
   const develMatches = useRouteMatch("/devel");
-
   const notificationMatches =useRouteMatch("/notification")
-
   const messengerMatches =useRouteMatch("/message")
-
-  // bookmarks
   const bookmarksMatches =useRouteMatch("/bookmarks")
-
-  // reports
   const reportsMatches =useRouteMatch("/reports")
-
-  // 
   const sharesMatches =useRouteMatch("/shares")
-
-  // 
   const contactUsMatches =useRouteMatch("/contact-us")
-
-  // 
   const tcontactusListMatches =useRouteMatch("/tcontactus-list")
-
   const dblogMatches =useRouteMatch("/dblog")
-
   const detailMatches =useRouteMatch("/detail")
+  const helpMatches =useRouteMatch("/help")
+  const basicContentsMatches = useRouteMatch("/basic-contents");
+  const newBasicContentMatches = useRouteMatch("/basic-content/new");
+  const basicContentMatches = useRouteMatch("/basic-content/:id/edit");
+  const profileMatches = useRouteMatch("/me")
 
   const handleClick = () => {};
   return (
@@ -108,7 +92,6 @@ const Breadcs = ({ title }) => {
             users
           </MuiLink>
         )}
-        {/*  */}
         {newUserMatches && (
           <MuiLink component={Link} to="/user/new">
             New user
@@ -117,9 +100,9 @@ const Breadcs = ({ title }) => {
         {userMatches && (
           <MuiLink
             component={Link}
-            to={`/user/${userMatches.params.jobid}/edit`}
+            to={`/user/${userMatches.params.jobid}/${userMatches.params.mode}`}
           >
-            Edit user {/*({userMatches.params.jobid})*/}
+            {userMatches.params.mode.slice(0,1).toUpperCase() + userMatches.params.mode.slice(1, userMatches.params.mode.length)} user  {/*({userMatches.params.jobid})*/}
           </MuiLink>
         )}
         {socketsMatches && (
@@ -127,7 +110,6 @@ const Breadcs = ({ title }) => {
             Sockets
           </MuiLink>
         )}
-        {/* newSocketMatches */}
         {newSocketMatches && (
           <MuiLink component={Link} to="/newSocket">
             New socket
@@ -141,7 +123,6 @@ const Breadcs = ({ title }) => {
             Socket ({socketMatches.params.jobid})
           </MuiLink>
         )}
-
         {rolesMatches && (
           <MuiLink component={Link} to="/roles">
             Roles
@@ -157,7 +138,6 @@ const Breadcs = ({ title }) => {
             Edit role {/* ({roleMatches.params.jobid}) */}
           </MuiLink>
         )}
-
         {banksMatches && (
           <MuiLink component={Link} to="/banks">
             Banks
@@ -176,7 +156,6 @@ const Breadcs = ({ title }) => {
             Edit bank {/*({bankMatches.params.jobid}) */}
           </MuiLink>
         )}
-
         {themeMailsMatches && (
           <MuiLink component={Link} to="/theme-mails">
             Theme mails
@@ -195,71 +174,91 @@ const Breadcs = ({ title }) => {
             Edit Theme mail {/*({bankMatches.params.jobid}) */}
           </MuiLink>
         )}
-
-        {/* develMatches */}
         {develMatches && (
           <MuiLink component={Link} to="/devel">
             Devel
           </MuiLink>
         )}
-
         {notificationMatches && (
           <MuiLink component={Link} to="/notification">
             Notification
           </MuiLink>
         )}
-
         {messengerMatches && (
           <MuiLink component={Link} to="/message">
             Message
           </MuiLink>
         )}
-
-        {/* bookmarks  */}
         {bookmarksMatches && (
           <MuiLink component={Link} to="/bookmarks">
             Bookmarks
           </MuiLink>
         )}
-
-        {/*  */}
         {reportsMatches && (
           <MuiLink component={Link} to="/reports">
             Reports
           </MuiLink>
         )}
-
-        {/*  */}
         {sharesMatches && (
           <MuiLink component={Link} to="/shares">
             Shares
           </MuiLink>
         )}
-
-        {/*  */}
         {contactUsMatches && (
           <MuiLink component={Link} to="/contact-us">
             Contact Us
           </MuiLink>
         )}
-
         {tcontactusListMatches && (
           <MuiLink component={Link} to="/tcontactus-list">
             Taxonomy Contact Us
           </MuiLink>
         )}
-        
-        {/* dblogMatches */}
         {dblogMatches && (
           <MuiLink component={Link} to="/dblog">
             Recent log messages 
           </MuiLink>
         )}
-
-        {/* detailMatches */}
         {detailMatches && (
           <MuiLink component={Link} to="/detail">
             Detail 
+          </MuiLink>
+        )}
+        {helpMatches && (
+          <MuiLink component={Link} to="/help">
+            Help 
+          </MuiLink>
+        )}
+
+        {basicContentsMatches && (
+          <MuiLink 
+            component={Link} 
+            to="/basic-contents">
+            Basic contents
+          </MuiLink>
+        )}
+        {newBasicContentMatches && (
+          <MuiLink 
+            component={Link} 
+            to="/basic-content/new">
+            New Basis content
+          </MuiLink>
+        )}
+        {basicContentMatches && (
+          <MuiLink
+            component={Link}
+            to={`/basic-content/${basicContentMatches.params.id}/edit`}
+          >
+            Edit Basis content {/*({bankMatches.params.jobid}) */}
+          </MuiLink>
+        )}
+
+        {profileMatches && (
+          <MuiLink
+            component={Link}
+            to={`/me`}
+          >
+            Profile
           </MuiLink>
         )}
 
