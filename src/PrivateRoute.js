@@ -3,16 +3,19 @@ import "./styles.css";
 import React, {useState, useEffect} from "react";
 import { Route, Redirect } from "react-router-dom";
 
-import { isAuth } from "./AuthProvider";
+// import { isAuth } from "./AuthProvider";
 
-const PrivateRoute = ({ children, ...rest }) => {
+import { connect } from "react-redux";
+import _ from "lodash"
+
+const PrivateRoute = ({ user,  children, ...rest }) => {
     
     return (
         <Route
         {...rest}
         render={({ location }) =>
             {
-            return  isAuth()
+            return  !_.isEmpty(user)
                     ? children
                     : <Redirect
                         to={{
@@ -24,4 +27,12 @@ const PrivateRoute = ({ children, ...rest }) => {
     );
 }
 
-export default PrivateRoute;
+// export default PrivateRoute;
+const mapStateToProps = (state, ownProps) => {
+    console.log("mapStateToProps >>  :", state)
+    return {
+      user: state.auth.user,
+    }
+};
+  
+export default connect( mapStateToProps, null )(PrivateRoute);

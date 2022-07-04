@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import _ from "lodash";
+
 import DisplayComments from './DisplayComments'
 import { ActionProvider } from './ActionContext'
 import SignField from './SignField'
@@ -18,6 +20,8 @@ export const CommentSection = ({
   useEffect(() => {
     setComments(commentsArray)
   }, [commentsArray])
+
+  console.log("CommentSection : ", currentUser)
 
   return (
     <ActionProvider

@@ -13,8 +13,10 @@ import { NotificationsNone, Language, Settings, Comment as CommentIcon } from "@
 import { Link, useHistory } from "react-router-dom";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
+import { connect } from "react-redux";
+import _ from "lodash"
 
-import { isAuth, logout} from "./AuthProvider"
+// import { isAuth, logout} from "./AuthProvider"
 
 export const TopRight = styled.div`
   display: flex;
@@ -43,7 +45,7 @@ export const TopIconBadge = styled.span`
   font-size: 10px;
 `;
 
-const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
+const MyAppBar = ({classes, onDrawerOpen, onDialogLogin, user}) =>{
   let history = useHistory();
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -80,7 +82,7 @@ const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
                 BANLIST.INFO
               </Typography>
               {
-                isAuth()
+                !_.isEmpty(user)
                 ? <TopRight>
                     <Link to="/notification">
                       <IconContainer >
@@ -143,4 +145,13 @@ const MyAppBar = ({classes, onDrawerOpen, onDialogLogin}) =>{
           </AppBar>
 }
 
-export default MyAppBar;
+// export default MyAppBar;
+
+const mapStateToProps = (state, ownProps) => {
+  console.log("mapStateToProps  :", state)
+  return {
+    user: state.auth.user,
+  }
+};
+
+export default connect( mapStateToProps, null )(MyAppBar);

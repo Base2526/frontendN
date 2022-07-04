@@ -68,7 +68,9 @@ const index =({open, postId, onReport,  onClose})=> {
   }
 
   return (
-      <Dialog open={open}>
+      <Dialog 
+      onClose={onClose} 
+      open={open}>
         <DialogTitle>REPORT</DialogTitle>
         <DialogContent>
           {/* <DialogContentText>
@@ -97,7 +99,7 @@ const index =({open, postId, onReport,  onClose})=> {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>CLOSE</Button>
+          {/* <Button onClick={onClose}>CLOSE</Button> */}
           <Button onClick={onSubmit}>REPORT</Button>
         </DialogActions>
       </Dialog>

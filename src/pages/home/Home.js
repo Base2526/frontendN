@@ -14,6 +14,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useQuery, useMutation } from "@apollo/client";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { connect } from "react-redux";
+
+
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
 import Footer from "../footer";
@@ -22,15 +25,14 @@ import Pagination from "./Pagination";
 import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
-import {gqlHomes, gqlCreateContactUs } from "../../gqlQuery"
-import { isAuth, checkAuth } from "../../AuthProvider"
+import {gqlHomes, gqlCreateContactUs, gqlCreateBookmark, gqlIsBookmark } from "../../gqlQuery"
+
+import { login } from "../../redux/actions/auth"
 
 const Home = (props) => {
   let history = useHistory();
 
-  console.log("checkAuth :", checkAuth())
-
-  let userId = "62a2c0cecf7946010d3c743f";
+  let { user } = props
 
   const [keywordSearch, setKeywordSearch] = useState("");
   const [category, setCategory] = useState([0,1]);
@@ -69,6 +71,7 @@ const Home = (props) => {
       }
   );
   // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
+
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
@@ -141,6 +144,7 @@ const Home = (props) => {
   }
 
   const menuSetting = (item, index) =>{
+    
     return  <Menu
               anchorEl={anchorElSetting && anchorElSetting[index]}
               keepMounted
@@ -160,16 +164,24 @@ const Home = (props) => {
                 role: "listbox"
               }}
             >
+              {
+                !_.isEmpty(user) && user.id == item.ownerId
+                ? <MenuItem onClick={(e)=>{
+                    handleAnchorElSettingClose()
+                    history.push("/post/"+item.id+ "/edit");
+                  }}>
+                    Edit
+                  </MenuItem>
+                : <div /> 
+              }
+              
               <MenuItem onClick={(e)=>{
                 handleAnchorElSettingClose()
-                history.push("/post/"+item.id+ "/edit");
-              }}>
-                Edit
-              </MenuItem>
-              <MenuItem onClick={(e)=>{
-                handleAnchorElSettingClose()
-
-                setReport({open: true, postId:item.id})
+                if(_.isEmpty(user)){
+                  setDialogLoginOpen(true)
+                }else{
+                  setReport({open: true, postId:item.id})
+                }
               }}>
                 Report
               </MenuItem>
@@ -208,6 +220,7 @@ const Home = (props) => {
                         return (
                           <div key={item.id}>
                             <HomeItem 
+                              user={props.user}
                               item={item} 
                               index={index} 
                               onPanelComment={(data)=>{
@@ -227,7 +240,17 @@ const Home = (props) => {
                               }}
                               onDialogLogin={(status)=>{
                                 setDialogLoginOpen(status)
-                              }}/>
+                              }}
+                              // onCreateBookmark={(postId, userId, status)=>{
+                              //   onCreateBookmark({ variables: { input: {
+                              //         postId,
+                              //         userId,
+                              //         status
+                              //       }
+                              //     }
+                              //   }); 
+                              // }}
+                              />
                               {menuShare(item, index)}
                               {menuSetting(item, index)}
                           </div>
@@ -273,7 +296,7 @@ const Home = (props) => {
 
       {panelComment.isOpen && (
         <PanelComment
-          user={checkAuth()}
+          user={props.user}
           commentId={panelComment.commentId}
           isOpen={panelComment.isOpen}
           onRequestClose={() => {
@@ -315,8 +338,16 @@ const Home = (props) => {
       {dialogLoginOpen && (
         <DialogLogin
           open={dialogLoginOpen}
+          onComplete={(data)=>{
+            console.log("onComplete :", data)
+
+            props.login(data)
+            setDialogLoginOpen(false);
+          }}
           onClose={() => {
             setDialogLoginOpen(false);
+
+            history.push("/")
           }}
         />
       )}
@@ -326,7 +357,7 @@ const Home = (props) => {
                         postId={report.postId} 
                         onReport={(e)=>{
                           onCreateContactUs({ variables: { input: {
-                                  userId: userId,
+                                  userId: user.id,
                                   postId: e.postId,     
                                   categoryId: e.categoryId,
                                   description: e.description
@@ -348,7 +379,7 @@ const Home = (props) => {
       }
 
       {
-        isAuth() 
+        !_.isEmpty(props.user)
         ? <SpeedDial
             ariaLabel="SpeedDial basic example"
             sx={{ position: 'absolute', bottom: 16, right: 16 }}
@@ -366,4 +397,16 @@ const Home = (props) => {
   );
 }
 
-export default Home; 
+// export default Home; 
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    user: state.auth.user,
+  }
+};
+
+const mapDispatchToProps = {
+  login
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(Home);

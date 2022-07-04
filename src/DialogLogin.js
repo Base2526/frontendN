@@ -10,12 +10,15 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import Typography from "@mui/material/Typography";
-
+import { connect } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 
 import { gqlLogin } from "./gqlQuery"
 
-import { auth, getPermissions } from "./AuthProvider"
+// import { auth, getPermissions } from "./AuthProvider"
+
+import { login } from "./redux/actions/auth"
 
 import {
   FacebookLoginButton,
@@ -24,7 +27,9 @@ import {
 import { GoogleLogin, useGoogleLogin  } from "react-google-login";
 
 const DialogLogin = (props) => {
-  const { onClose, selectedValue, open } = props;
+  let history = useHistory();
+
+  const { onComplete, onClose, selectedValue, open, login } = props;
 
   const [input, setInput]   = useState({ username: "",  password: ""});
   const [onLogin, resultLogin] = useMutation(gqlLogin, {
@@ -78,15 +83,13 @@ const DialogLogin = (props) => {
     console.log("resultLogin :", resultLogin)
 
     if(resultLogin.data.login.status){
-      auth(resultLogin.data.login.data)
-      onClose(false)
+      onComplete(resultLogin.data.login.data)
     }else{
       // messages
     }
-    
   }
 
-  console.log("getPermissions :", getPermissions())
+  // console.log("getPermissions :", getPermissions())
 
   useEffect(()=>{
     console.log("input :", input)
@@ -205,4 +208,14 @@ const DialogLogin = (props) => {
   );
 };
 
-export default DialogLogin;
+// export default DialogLogin;
+
+const mapStateToProps = (state, ownProps) => {
+  return {}
+};
+
+const mapDispatchToProps = {
+  login
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(DialogLogin);

@@ -16,6 +16,9 @@ import AccountCircle from "@material-ui/icons/AccountCircle";
 import MenuItem from "@material-ui/core/MenuItem";
 import Menu from "@material-ui/core/Menu";
 
+import { connect } from "react-redux";
+import { bindActionCreators, compose } from 'redux';
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -42,6 +45,8 @@ import UserView from "./pages/user/UserView";
 import DialogLogin from "./DialogLogin";
 
 import Help from "./pages/help"
+
+import { login } from "./redux/actions/auth"
 
 const drawerWidth = 220;
 
@@ -122,7 +127,7 @@ const styles = (theme) => ({
 });
 
 const App = (props) => {
-  const navigate = useHistory();
+  const history = useHistory();
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -216,8 +221,20 @@ const App = (props) => {
           dialogLoginOpen &&  
           <DialogLogin
             open={dialogLoginOpen}
-            onClose={() => {
+            onComplete={(data)=>{
+              console.log("onComplete :", data)
+
+              props.login(data)
               setDialogLoginOpen(false);
+
+            }}
+            onClose={() => {
+
+              console.log(">>>> ")
+              setDialogLoginOpen(false);
+
+              // DialogLogin
+              history.push("/")
             }}
           />
         }
@@ -226,4 +243,21 @@ const App = (props) => {
   );
 }
 
-export default withStyles(styles, { withTheme: true })(App);
+// export default withStyles(styles, { withTheme: true })(App);
+
+const mapStateToProps = (state, ownProps) => {
+  console.log("mapStateToProps :", state)
+  return {}
+};
+
+const mapDispatchToProps = {
+  login
+}
+
+export default compose(
+                        connect(
+                          mapStateToProps,
+                          mapDispatchToProps, // or put null here if you do not have actions to dispatch
+                        ),
+                        withStyles(styles , { withTheme: true }),
+                      )(App);

@@ -22,6 +22,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 import { useHistory, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
+import { connect } from "react-redux";
 
 import {  gqlUsers, 
           gqlUser, 
@@ -35,6 +36,8 @@ import {  gqlUsers,
 import UserPostList from "./UserPostList"
 import { isAuth } from "../../AuthProvider"
 import DialogLogin from "../../DialogLogin";
+
+import { login } from "../../redux/actions/auth"
 
 const UserView = (props) => {
   let history = useHistory();
@@ -181,7 +184,8 @@ const UserView = (props) => {
                 variant="contained" 
                 color="primary"
                 onClick={(e)=>{
-                  isAuth()
+                  // isAuth()
+                  !_.isEmpty(props.user)
                   ? onCreateAndUpdateFollow({ variables: { input: {
                           userId: userId,
                           friendId: id,
@@ -201,7 +205,8 @@ const UserView = (props) => {
                 variant="contained" 
                 color="primary"
                 onClick={(e)=>{
-                  isAuth()
+                  // isAuth()
+                  !_.isEmpty(props.user)
                   ? onCreateConversation({ variables: { input: {
                           userId: userId,
                           friendId: id
@@ -231,6 +236,12 @@ const UserView = (props) => {
       {dialogLoginOpen && (
         <DialogLogin
           open={dialogLoginOpen}
+          onComplete={(data)=>{
+            console.log("onComplete :", data)
+
+            props.login(data)
+            setDialogLoginOpen(false);
+          }}
           onClose={() => {
             setDialogLoginOpen(false);
           }}
@@ -240,4 +251,17 @@ const UserView = (props) => {
   );
 };
 
-export default UserView;
+// export default UserView;
+
+const mapStateToProps = (state, ownProps) => {
+  console.log("mapStateToProps  :", state)
+  return {
+    user: state.auth.user,
+  }
+};
+
+const mapDispatchToProps = {
+  login
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(UserView);

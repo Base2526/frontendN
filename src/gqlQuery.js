@@ -25,6 +25,12 @@ export const gqlHomes = gql`
                     bankId
                 }
                 follows
+                shares {
+                    _id
+                    userId
+                    postId
+                    destination
+                }
                 files {
                     id: _id
                     base64
@@ -653,6 +659,12 @@ export const gqlLogin = gql`
                 displayName
                 isActive
                 roles
+                bookmarks{
+                    _id
+                    userId
+                    postId
+                    status
+                }
                 image {
                     _id
                     base64

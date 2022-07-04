@@ -4,17 +4,20 @@ import { Link, useHistory } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { connect } from "react-redux";
 
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { checkAuth, logout } from "../../AuthProvider"
+// import { checkAuth } from "../../AuthProvider"
+
+import { logout } from "../../redux/actions/auth"
 
 const index = (props) => {
   let history = useHistory();
 
-  let user = checkAuth()
+  let user = props.user;//checkAuth()
 
   let imageSrc =  _.isEmpty(user.image) ? "" : user.image[0].base64
 
@@ -44,11 +47,27 @@ const index = (props) => {
 
 
       <Button onClick={() => { 
-        logout(); 
-        window.location.reload(false)
+        props.logout()
+        // logout(); 
+        // window.location.reload(false)
+
+        history.push("/")
       }}>Logout</Button>
     </div>
   );
 };
 
-export default index;
+// export default index;
+
+const mapStateToProps = (state, ownProps) => {
+  console.log("mapStateToProps  :", state)
+  return {
+    user: state.auth.user,
+  }
+};
+
+const mapDispatchToProps = {
+  logout
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(index);

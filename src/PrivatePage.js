@@ -37,14 +37,16 @@ import BasicContent from "./pages/basicContent/BasicContent"
 
 import Profile from "./pages/profile"
 
-import { isAuth } from "./AuthProvider";
+// import { isAuth } from "./AuthProvider";
+import { connect } from "react-redux";
+import _ from "lodash"
 
 const PrivatePage =(props) => {
   let { path, url } = useRouteMatch();
   console.log("path :", path);
 
 
-  return isAuth() 
+  return !_.isEmpty(props.user)
         ?   <div>
                 <Switch>
                     <Route path="/me">
@@ -155,4 +157,12 @@ const PrivatePage =(props) => {
   
 }
 
-export default PrivatePage;
+// export default PrivatePage;
+const mapStateToProps = (state, ownProps) => {
+    console.log("mapStateToProps  :", state)
+    return {
+      user: state.auth.user,
+    }
+};
+
+export default connect( mapStateToProps, null )(PrivatePage);

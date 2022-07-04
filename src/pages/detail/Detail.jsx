@@ -19,38 +19,31 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 import { FacebookIcon, TwitterIcon } from "react-share";
-
+import { Link, useHistory } from "react-router-dom";
+import { connect } from "react-redux";
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import ReadMoreMaster from "../../utils/ReadMoreMaster"
-import {gqlPost, gqlComment, gqlCreateComment, gqlCreateBookmark, gqlIsBookmark, gqlBookmarksByPostId, gqlBanks} from "../../gqlQuery"
-import data from "../home/data.json";
-import { CommentSection } from "../../components/comment";
-
+import { gqlPost } from "../../gqlQuery"
 import DialogLogin from "../../DialogLogin";
+import { login } from "../../redux/actions/auth"
 
-import { getPermissions } from "../../AuthProvider"
+import ItemBank from "./ItemBank"
+import ItemComment from "./ItemComment"
+import ItemBookmark from "./ItemBookmark"
 
 const Detail = (props) => {
-    const { pathname } = useLocation();
-    let { id } = useParams();
 
-    let userId2 = "62a31ce2ca4789003e5f5123";
+    let history = useHistory();
+    let { pathname } = useLocation();
+    let { id } = useParams();
+    let { user, login } = props
 
     const [anchorElShare, setAnchorElShare] = useState(null);
     const [anchorElSetting, setAnchorElSetting] = useState(null);
     const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
     
-    const check = () =>{
-        let permissions = getPermissions()
-        if( permissions && (permissions.includes("authenticated") || permissions.includes("administrator"))){
-            return true
-        }
-        return  false
-    }
-
     const handleAnchorElSettingOpen = (index, event) => {
         setAnchorElSetting(event.currentTarget);
     };
@@ -65,101 +58,23 @@ const Detail = (props) => {
         images: []
     });
 
-    const [comment, setComment] = useState(data);
-    const userId = "01a";
-    const avatarUrl = "https://ui-avatars.com/api/name=Riya&background=random";
-    const name = "xyz";
-    const signinUrl = "/signin";
-    const signupUrl = "/signup";
-    let count = 0;
+    // const [comment, setComment] = useState(data);
+    // const userId = "01a";
+    // const avatarUrl = "https://ui-avatars.com/api/name=Riya&background=random";
+    // const name = "xyz";
+    // const signinUrl = "/signin";
+    // const signupUrl = "/signup";
+    // let count = 0;
     
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [pathname]);
-
-    let valueBanks = useQuery(gqlBanks, {
-        variables: {page: 0, perPage: 100},
-        notifyOnNetworkStatusChange: true,
-    });
-
-    // console.log("valueBanks :", valueBanks)
-
-    const [onCreateComment, resultCreateComment] = useMutation(gqlCreateComment, 
-        {
-            update: (cache, {data: {createComment}}) => {
-                const data1 = cache.readQuery({
-                    query: gqlComment,
-                    variables: {postId: id}
-                });
-    
-                let newData = {...data1.Comment}
-                newData = {...newData, data: createComment.data}
-                    
-                cache.writeQuery({
-                    query: gqlComment,
-                    data: {
-                        Comment: newData
-                    },
-                    variables: {
-                        postId: id
-                    }
-                });
-            },
-            onCompleted({ data }) {
-                // console.log("onCompleted")
-            }
-        }
-    );
-    // console.log("resultCreateComment :", resultCreateComment)
-
-    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
-        , {
-            update: (cache, {data: {createBookmark}}) => {
-                const data1 = cache.readQuery({
-                    query: gqlIsBookmark,
-                    variables: {
-                      userId: userId2,
-                      postId: id
-                    }
-                });
-    
-                let newData = {...data1.isBookmark}
-                newData = {...newData, data: createBookmark}
-            
-                cache.writeQuery({
-                    query: gqlIsBookmark,
-                    data: {
-                        isBookmark: newData
-                    },
-                    variables: {
-                        userId: userId2,
-                        postId: id
-                    }
-                });        
-            },
-            onCompleted({ data }) {
-            //   console.log("bookmark :::: onCompleted")
-            },
-          },  
-      );
 
 
     let postValue = useQuery(gqlPost, {
         variables: {id: id},
         notifyOnNetworkStatusChange: true,
     });
-
-    let commentValues = useQuery(gqlComment, {
-        variables: {postId: id},
-        notifyOnNetworkStatusChange: true,
-    });
-    // console.log("commentValues : ", commentValues)
-
-    let bmValus = useQuery(gqlIsBookmark, {
-        variables: {userId: userId2, postId: id},
-        notifyOnNetworkStatusChange: true,
-      });
-
 
     const menuShare = () =>{
         return  <Menu
@@ -209,66 +124,6 @@ const Detail = (props) => {
                       </TwitterShareButton>
                   </MenuItem>
                 </Menu>
-      }
-
-    const iconBookmark =()=>{
-        if(!bmValus.loading){
-
-          if(bmValus.data.isBookmark.data === null){
-    
-            return  <IconButton onClick={(e) => {
-                        onCreateBookmark({ variables: { input: {
-                              postId: id,
-                              userId: userId2,
-                              status: true
-                            }
-                          }
-                        }); 
-                      }}>
-                      <BookmarkIcon style={{ color:"" }} /> 
-                    </IconButton>
-          }
-    
-          let color = bmValus.data.isBookmark.data.status === null ? "" : bmValus.data.isBookmark.data.status ? "blue" : ""
-    
-          return  <IconButton onClick={(e) => {
-
-                      check() 
-                      ? onCreateBookmark({ variables: { input: {
-                                postId: id,
-                                userId: userId2,
-                                status: !bmValus.data.isBookmark.data.status
-                            }
-                            }
-                        })
-                      : setDialogLoginOpen(true)
-                    }}>
-                    <BookmarkIcon style={{ color }} /> 
-                  </IconButton>
-            
-        }
-        return  <IconButton> <BookmarkIcon style={{ color:"" }} /> </IconButton>
-    }
-    
-    const iconShare = () =>{
-        return <IconButton onClick={(e) => {
-            // onAnchorElShareOpen(index, e);
-            }}>
-                <ShareIcon onClick={(event)=>{
-            setAnchorElShare(event.currentTarget);
-        }}/>
-            
-        </IconButton>
-         
-    }
-
-    const iconMore = () =>{
-        return <IconButton  onClick={(e) => {
-                    // onAnchorElSettingOpen(index, e);
-                    setAnchorElSetting(e.currentTarget);
-                }}>
-                    <MoreVertIcon />
-                </IconButton>
     }
 
     const menuSetting = (item) =>{
@@ -305,20 +160,10 @@ const Detail = (props) => {
                     Report
                   </MenuItem>
                 </Menu>
-      }
-
-    const bankView = (item) =>{
-        if(valueBanks.loading){
-            return <div />
-        }
-        let bank = _.find(valueBanks.data.Banks.data, (v) => v.id === item.bankId)
-        return <li><Typography variant="subtitle2" color="textSecondary">{item.bankAccountName} [{bank === null ? "" : bank.name}]</Typography></li>
     }
 
     const mainView = () =>{
         let post = postValue.data.Post.data
-
-        console.log("post :", post)
         return  <div className="col-container">
                     <div className="col1">
                         {
@@ -357,9 +202,26 @@ const Detail = (props) => {
                         <div className="col3">
                             <div>
                                 <div>
-                                    {iconBookmark()}
-                                    {iconShare()}
-                                    {iconMore()}
+                                    <ItemBookmark 
+                                        {...props} 
+                                        postId={id}
+                                        onDialogLoginOpen={(e)=>{
+                                            setDialogLoginOpen(true)
+                                        }}/>
+                                    <IconButton onClick={(e) => { 
+                                        _.isEmpty(user)
+                                        ? setDialogLoginOpen(true)    
+                                        : setAnchorElShare(e.currentTarget) 
+                                    }}>
+                                        <ShareIcon />
+                                    </IconButton>
+                                    <IconButton  onClick={(e) => { 
+                                        _.isEmpty(user)
+                                        ? setDialogLoginOpen(true)    
+                                        : setAnchorElSetting(e.currentTarget) 
+                                    }}>
+                                        <MoreVertIcon />
+                                    </IconButton>
                                 </div>
                             </div>
                             <Typography variant="subtitle2" color="textSecondary">
@@ -389,11 +251,7 @@ const Detail = (props) => {
                             <Typography variant="subtitle2" color="textSecondary">ธนาคาร : 
                                 <ul>
                                     {
-                                        _.map(post.banks, (v)=>{
-                                            // return <li><Typography variant="subtitle2" color="textSecondary">{v.bankAccountName}</Typography></li>
-                                        
-                                            return bankView(v)
-                                        })
+                                        _.map(post.banks, (v)=><ItemBank item={v}/>)
                                     }
                                 </ul>
                             </Typography>
@@ -405,33 +263,12 @@ const Detail = (props) => {
                             <Typography variant="subtitle2" color="textSecondary">{"รายละเอียด :" + post.description}</Typography>
                         </div>
                         <div className="col4">
-                            {
-                                commentValues.loading 
-                                ?  <div><CircularProgress /></div> 
-                                :  <CommentSection
-                                    // currentUser={
-                                    //     userId && { userId: userId, avatarUrl: avatarUrl, name: name }
-                                    // }
-                                    currentUser={null}
-                                    commentsArray={commentValues.data.comment.data}
-                                    setComment={(data) => {
-    
-                                        let input = { postId: id, data: _.omitDeep(data, ['__typename']) }
-                                        console.log("onComment input :", input);
-    
-                                        onCreateComment({ variables: { input: input }});
-    
-                                    }}
-                                    signinUrl={signinUrl}
-                                    signupUrl={signupUrl}
-                                    onSignin={(e)=>{
-                                        console.log("onSignin :", e)
-
-                                        setDialogLoginOpen(true)
-                                    }}/>
-                                    
-                            }
-                           
+                            <ItemComment 
+                                {...props}
+                                id={id}
+                                onDialogLoginOpen={()=>{
+                                    setDialogLoginOpen(true)
+                                }}/>
                         </div>
                     </div>
 
@@ -443,7 +280,7 @@ const Detail = (props) => {
         <div>
             {
                 postValue.loading
-                ?   <div><CircularProgress /></div> 
+                ?   <CircularProgress />
                 :   mainView()
             }
 
@@ -477,8 +314,16 @@ const Detail = (props) => {
             {dialogLoginOpen && (
                 <DialogLogin
                 open={dialogLoginOpen}
+                onComplete={(data)=>{
+                    console.log("onComplete :", data)
+      
+                    login(data)
+                    setDialogLoginOpen(false);
+                }}
                 onClose={() => {
                     setDialogLoginOpen(false);
+
+                    // history.push("/")
                 }}
                 />
             )}
@@ -486,4 +331,16 @@ const Detail = (props) => {
     );
 };
 
-export default Detail;
+// export default Detail;
+const mapStateToProps = (state, ownProps) => {
+    console.log("mapStateToProps  :", state)
+    return {
+      user: state.auth.user,
+    }
+};
+
+const mapDispatchToProps = {
+    login
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(Detail);
