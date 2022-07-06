@@ -612,17 +612,37 @@ export const gqlIsFollow = gql`
         }
     }`;
 
-export const gqlFollowerByUserId = gql`
-    query FollowerByUserId($userId: ID!){
-        followerByUserId(
+export const gqlFollower = gql`
+    query Follower($userId: ID!){
+        follower(
             userId: $userId
         ){
             status
             executionTime
-            data{
-                id: _id
-                userId
-                status
+            total
+            data {
+                _id
+                username
+                password
+                email
+                displayName
+                isActive
+                roles
+                bookmarks {
+                  _id
+                  userId
+                  postId
+                  status
+                }
+                image {
+                  _id
+                  base64
+                  fileName
+                  lastModified
+                  size
+                  type
+                }
+                lastAccess
             }
         }
     }`;

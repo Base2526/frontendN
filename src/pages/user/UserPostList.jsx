@@ -18,7 +18,10 @@ import moment from "moment";
 import _ from "lodash"
 import { gqlPostsByUserId } from "../../gqlQuery"
 
-const UserPostList = ({id}) => {
+const UserPostList = (props) => {
+    let {id} = props
+
+    console.log("UserPostList :", props)
 
     const postsByUserId = useQuery(gqlPostsByUserId, {
         variables: { userId: id },
@@ -38,14 +41,11 @@ const UserPostList = ({id}) => {
                             _.map(postsByUserId.data.postsByUserId.data, (item)=>{
                                 return  <div key={item.id}>
                                             <CardHeader
-                                                
-                                                // avatar={<Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />}
                                                 action={
                                                 <IconButton aria-label="settings">
                                                     <MoreVertIcon />
                                                 </IconButton>
                                                 }
-                                                // title={item.title}
                                                 subheader={moment(item.createdAt).format('MMMM Do YYYY')}/>
                                             <CardContent>
                                                 <div style={{ position: "relative", paddingBottom: "10px" }}>
@@ -55,7 +55,6 @@ const UserPostList = ({id}) => {
                                                         alt="Remy Sharp"
                                                         src={item.files.length < 1 ? "" : item.files[0].base64}
                                                     />
-
                                                     {item.files.length > 1 
                                                     ? <div
                                                         style={{
@@ -87,7 +86,7 @@ const UserPostList = ({id}) => {
                                             <div>
                                                 <Typography>Footer Text</Typography>
                                             </div>
-                                            {/* <Divider variant="inset" component="li" /> */}
+                                            <Divider />
                                         </div>
                             })
                         }

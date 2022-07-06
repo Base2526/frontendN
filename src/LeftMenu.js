@@ -26,7 +26,9 @@ const LeftMenu = (props) => {
     if( permissions && permissions.includes("administrator")){
       listMenu = MenuAdministrator
     }
-    return  _.map(listMenu, (item)=> { return <CustomizedListItem key={item.id} item={item} /> })
+    return  _.map(listMenu, (item)=> { 
+      return <CustomizedListItem key={item.id} item={item} /> 
+    })
   }
 
   return (

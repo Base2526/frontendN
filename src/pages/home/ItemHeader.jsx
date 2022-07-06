@@ -28,7 +28,6 @@ const ItemHeader = (props) => {
         notifyOnNetworkStatusChange: true,
     });
 
-
     if( ! userValue.loading){
         if(userValue.data.User.data == null){
             return <div />
@@ -40,11 +39,11 @@ const ItemHeader = (props) => {
                             src={userValue.data.User.data.image[0].base64}
                             onClick={(e)=> history.push("/user/" + userValue.data.User.data.id +"/view") }  />}
                     action={
-                    <IconButton  onClick={(e) => {
-                        onAnchorElSettingOpen(index, e);
-                    }}>
-                        <MoreVertIcon />
-                    </IconButton>
+                        <IconButton  onClick={(e) => {
+                            onAnchorElSettingOpen(index, e);
+                        }}>
+                            <MoreVertIcon />
+                        </IconButton>
                     }
                     title={ <Typography className={"card-header-title"} onClick={(e)=>{
                         history.push("/user/" + userValue.data.User.data.id +"/view");

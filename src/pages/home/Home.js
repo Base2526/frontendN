@@ -193,14 +193,23 @@ const Home = (props) => {
       <div>
         <SearchBar
           keyword={keywordSearch}
-          onChange={(data, topic) => {
+          // onChange={(data, topic) => {
+
+          //   console.log("keyword :", data)
+          //   setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
+          //   setKeywordSearch(data);
+          // }}
+          // onKeyDown={(ev, topic) => {
+          //   if (ev.keyCode == 13) {
+          //     console.log("keyword :", ev.target.value)
+          //     setKeywordSearch(ev.target.value)
+          //   }
+          // }}
+          onSearch={(data, topic)=>{
+            console.log("onSearch :", data, topic)
+
             setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
             setKeywordSearch(data);
-          }}
-          onKeyDown={(ev, topic) => {
-            if (ev.keyCode == 13) {
-              setKeywordSearch(ev.target.value)
-            }
           }}
         />
 
@@ -241,15 +250,6 @@ const Home = (props) => {
                               onDialogLogin={(status)=>{
                                 setDialogLoginOpen(status)
                               }}
-                              // onCreateBookmark={(postId, userId, status)=>{
-                              //   onCreateBookmark({ variables: { input: {
-                              //         postId,
-                              //         userId,
-                              //         status
-                              //       }
-                              //     }
-                              //   }); 
-                              // }}
                               />
                               {menuShare(item, index)}
                               {menuSetting(item, index)}
@@ -268,7 +268,6 @@ const Home = (props) => {
                       //   pathname: "/",
                       //   search: "?sort=date&order=newest"
                       // });
-
                     }}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event) => {

@@ -15,10 +15,14 @@ import { PhotoCamera } from "@mui/icons-material";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import ClearIcon from '@mui/icons-material/Clear';
 
 import Checkboxs from "./checkboxs";
 
-const SearchBar = ({ keyword, onChange, onKeyDown }) => {
+const SearchBar = (props) => {
+  let { onSearch } = props
+  let [keyword, setKeyword] = useState("")
+
   const [choiceTopic, setChoiceTopic] = useState([
     { key: 0, name: "ชื่อเรื่องร้องเรียน", checked: true },
     { key: 1, name: "ชื่อ-นามสกุล", checked: true },
@@ -27,65 +31,16 @@ const SearchBar = ({ keyword, onChange, onKeyDown }) => {
     { key: 4, name: "เบอร์โทรศัพท์", checked: false }
   ]);
 
-  const handleChange = (event) => {
-    const id = event.target.id;
-    setChoiceTopic(
-      _.map(choiceTopic, (v, k) => {
-        // console.log("choiceTopic :", v.key);
-        if (v.key == id) {
-          return { ...v, checked: !v.checked };
-        }
-        return v;
-      })
-    );
-  };
-
-  /*
-  No recent searches
-  */
-
   return (
     <Container sx={{ py: 1 }} maxWidth="xl" >
-      {/* <TextField
-        fullWidth
-        label="Input keyword search"
-        onChange={(e) => onChange(e.target.value, choiceTopic)}
-        value={keyword}
-        InputProps={{
-          endAdornment: !keyword ? (
-            <IconButton>
-              <SearchIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              aria-label="toggle password visibility"
-              onClick={() => onChange("", choiceTopic)}
-            >
-              <CancelRoundedIcon />
-            </IconButton>
-          )
-        }}
-        onKeyDown={onKeyDown}
-      /> */}
-
       <Autocomplete
+        disableClearable
         value={keyword}
         disablePortal
-        id="combo-box-demo"
+        // id="combo-box-demo"
         options={[]}
-        // sx={{ width: 300, mt: 2 }}
         freeSolo={true}
         popupIcon={""}
-        // onChange={(e, value) => {
-        //   console.log("onChange value : ", e.target.value);
-        //   if (value == null) {
-        //     setKeyword("");
-        //   } else {
-        //     setKeyword(value.label);
-        //   }
-        // }}
-
-        onChange={(e) => onChange(e.target.value, choiceTopic)}
         renderOption={(props, option) => {
           return (
             <>
@@ -112,23 +67,29 @@ const SearchBar = ({ keyword, onChange, onKeyDown }) => {
             {...params}
             label="Input keyword"
             variant="outlined"
+            onChange={ev=>{
+              setKeyword(ev.target.value)
+            }}
+            onKeyDown={(ev) => {
+              if (ev.keyCode == 13) {
+                onSearch(ev.target.value, choiceTopic)
+              }
+            }}
             InputProps={{
               ...params.InputProps,
               startAdornment:
-                !keyword  ? (
-                  <React.Fragment>
-                    {params.InputProps.startAdornment}
-                    {/* <IconButton
-                      color="primary"
-                      aria-label="upload picture"
-                      component="span"
-                    > */}
-                    <SearchIcon className="search-icon" />
-                    {/* </IconButton> */}
-                  </React.Fragment>
-                ) : (
-                  <div />
-                )
+                <React.Fragment>
+                  {params.InputProps.startAdornment}
+                  <SearchIcon className="search-icon" />
+                </React.Fragment>
+              ,
+              endAdornment:
+                !_.isEmpty(keyword) 
+                ? <IconButton onClick={(ev)=>{
+                    setKeyword("")
+                    onSearch("", choiceTopic)
+                  }}><ClearIcon /></IconButton>
+                : <div />
             }}
           />
         )}
@@ -165,14 +126,20 @@ const SearchBar = ({ keyword, onChange, onKeyDown }) => {
         //     </Button> */}
         //   </Box>
         // }
-        onKeyDown={ (e) => onKeyDown(e, choiceTopic) }
+        
       />
-
-
       <Checkboxs
         list={choiceTopic}
-        // title="Claims"
-        handleChange={(event) => handleChange(event)}
+        handleChange={(event) =>{
+          setChoiceTopic(
+            _.map(choiceTopic, choice => {
+              if (choice.key == event.target.id) {
+                return { ...choice, checked: !choice.checked };
+              }
+              return choice;
+            })
+          );
+        }}
       />
     </Container>
   );

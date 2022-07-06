@@ -25,7 +25,7 @@ const CustomizedListItem = ({item}) => {
   };
 
   return (
-    <div>
+    <div key={item.Id}>
       <ListItem
         button
         key={item.Id}
@@ -42,11 +42,11 @@ const CustomizedListItem = ({item}) => {
       {item.Sheets && (
         <Collapse key={item.Sheets.Id} in={state} timeout="auto" unmountOnExit>
           <List component="li" disablePadding key={item.Id}>
-            {item.Sheets.map((sheet) => {
+            {item.Sheets.map((sheet, key) => {
               return (
                 <ListItem
                   button
-                  key={sheet.Id}
+                  key={key}
                   onClick={() => {
                     history.push(sheet.Path);
                   }}

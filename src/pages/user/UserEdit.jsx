@@ -42,7 +42,7 @@ import {  gqlUsers,
           gqlConversations, 
           gqlCreateConversation,
           gqlBookmarksByUserId,
-          gqlFollowerByUserId,
+          gqlFollower,
           gqlFollowingByUserId,
            } from "../../gqlQuery"
 import {convertFileToBase64} from "../../util"
@@ -153,11 +153,11 @@ const UserEdit = (props) => {
   });
   console.log("bookmarksByUserId :", bookmarksByUserId)
 
-  const followerByUserId = useQuery(gqlFollowerByUserId, {
+  const follower = useQuery(gqlFollower, {
     variables: { userId: userId },
     notifyOnNetworkStatusChange: true,
   });
-  console.log("followerByUserId :", followerByUserId)
+  console.log("follower :", follower)
 
   const followingByUserId = useQuery(gqlFollowingByUserId, {
     variables: { userId: userId },
@@ -541,10 +541,10 @@ const UserEdit = (props) => {
 
 
               {
-                followerByUserId.loading
+                follower.loading
                 ? <div />
-                : <Panel  title={ "Follower (" + followerByUserId.data.followerByUserId.data.length  +")" }>
-                    <UserEditPanelFollower followers={ followerByUserId.data.followerByUserId.data }/>
+                : <Panel  title={ "Follower (" + follower.data.follower.data.length  +")" }>
+                    <UserEditPanelFollower followers={ follower.data.follower.data }/>
                   </Panel>
               }
               {

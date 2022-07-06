@@ -47,112 +47,110 @@ const PrivatePage =(props) => {
 
 
   return !_.isEmpty(props.user)
-        ?   <div>
-                <Switch>
-                    <Route path="/me">
-                        <Profile />
-                    </Route>
-                    <Route path="/users">
-                        <UserList />
-                    </Route>
-                    <Route path="/user/:id/edit">
-                        <UserEdit />
-                    </Route>
-                    <Route path="/user/new"> 
-                        <UserNew />
-                    </Route>
-                    <Route path="/posts">
-                        <PostList />
-                    </Route>
-                    <Route path="/post/:id/:mode">
-                        <Post />
-                    </Route>
-                    <Route path="/post/:mode">
-                        <Post />
-                    </Route>
-                    <Route path="/comments">
-                        <CommentList />
-                    </Route>
-                    <Route path="/comment/:id/:mode">
-                        <Comment />
-                    </Route>
-                    <Route path="/comment/:mode">
-                        <Comment />
-                    </Route>
-                    <Route path="/sockets">
-                        <SocketList />
-                    </Route>
-                    <Route path="/socket/:id">
-                        <Socket />
-                    </Route>
-                    <Route path="/devel">
-                        <Devel />
-                    </Route>
-                    <Route path="/roles">
-                        <RoleList />
-                    </Route>
-                    <Route path="/role/:id/:mode">
-                        <Role />
-                    </Route>
-                    <Route path="/role/:mode">
-                        <Role />
-                    </Route>
-                    <Route path="/banks">
-                        <BankList />
-                    </Route>
-                    <Route path="/bank/:id/:mode">
-                        <Bank />
-                    </Route>
-                    <Route path="/bank/:mode">
-                        <Bank />
-                    </Route>
-                    <Route path="/theme-mails">
-                        <ThemeMailList />
-                    </Route>
-                    <Route path="/theme-mail/:id/:mode">
-                        <ThemeMail />
-                    </Route>
-                    <Route path="/theme-mail/:mode">
-                        <ThemeMail />
-                    </Route>
-                    <Route path="/tcontactus-list">
-                        <TContactUsList />
-                    </Route>
-                    <Route path="/tcontactus/:id/:mode">
-                        <TContactUs />
-                    </Route>
-                    <Route path="/tcontactus/:mode">
-                        <TContactUs />
-                    </Route>
-                    <Route path="/notification">
-                        <Notification />
-                    </Route>
-                    <Route path="/message">
-                        <Message />
-                    </Route>
-                    <Route path="/bookmarks">
-                        <BookmarkList />
-                    </Route>
-                    <Route path="/contact-us">
-                        <ContactUsList />
-                    </Route>
-                    <Route path="/shares">
-                        <ShareList />
-                    </Route>
-                    <Route path="/dblog">
-                        <DblogList />
-                    </Route>
-                    <Route path="/basic-contents">
-                        <BasicContentList />
-                    </Route>
-                    <Route path="/basic-content/:id/:mode">
-                        <BasicContent />
-                    </Route>
-                    <Route path="/basic-content/:mode">
-                        <BasicContent />
-                    </Route>
-                </Switch>
-            </div>
+        ?   <Switch>
+                <Route path="/me">
+                    <Profile />
+                </Route>
+                <Route path="/users">
+                    <UserList />
+                </Route>
+                <Route path="/user/:id/edit">
+                    <UserEdit />
+                </Route>
+                <Route path="/user/new"> 
+                    <UserNew />
+                </Route>
+                <Route path="/posts">
+                    <PostList />
+                </Route>
+                <Route path="/post/:id/:mode">
+                    <Post />
+                </Route>
+                <Route path="/post/:mode">
+                    <Post />
+                </Route>
+                <Route path="/comments">
+                    <CommentList />
+                </Route>
+                <Route path="/comment/:id/:mode">
+                    <Comment />
+                </Route>
+                <Route path="/comment/:mode">
+                    <Comment />
+                </Route>
+                <Route path="/sockets">
+                    <SocketList />
+                </Route>
+                <Route path="/socket/:id">
+                    <Socket />
+                </Route>
+                <Route path="/devel">
+                    <Devel />
+                </Route>
+                <Route path="/roles">
+                    <RoleList />
+                </Route>
+                <Route path="/role/:id/:mode">
+                    <Role />
+                </Route>
+                <Route path="/role/:mode">
+                    <Role />
+                </Route>
+                <Route path="/banks">
+                    <BankList />
+                </Route>
+                <Route path="/bank/:id/:mode">
+                    <Bank />
+                </Route>
+                <Route path="/bank/:mode">
+                    <Bank />
+                </Route>
+                <Route path="/theme-mails">
+                    <ThemeMailList />
+                </Route>
+                <Route path="/theme-mail/:id/:mode">
+                    <ThemeMail />
+                </Route>
+                <Route path="/theme-mail/:mode">
+                    <ThemeMail />
+                </Route>
+                <Route path="/tcontactus-list">
+                    <TContactUsList />
+                </Route>
+                <Route path="/tcontactus/:id/:mode">
+                    <TContactUs />
+                </Route>
+                <Route path="/tcontactus/:mode">
+                    <TContactUs />
+                </Route>
+                <Route path="/notification">
+                    <Notification />
+                </Route>
+                <Route path="/message">
+                    <Message />
+                </Route>
+                <Route path="/bookmarks">
+                    <BookmarkList />
+                </Route>
+                <Route path="/contact-us">
+                    <ContactUsList />
+                </Route>
+                <Route path="/shares">
+                    <ShareList />
+                </Route>
+                <Route path="/dblog">
+                    <DblogList />
+                </Route>
+                <Route path="/basic-contents">
+                    <BasicContentList />
+                </Route>
+                <Route path="/basic-content/:id/:mode">
+                    <BasicContent />
+                </Route>
+                <Route path="/basic-content/:mode">
+                    <BasicContent />
+                </Route>
+            </Switch>
         :   <Redirect to="/" />
   
 }

@@ -33,6 +33,8 @@ import ItemBank from "./ItemBank"
 import ItemComment from "./ItemComment"
 import ItemBookmark from "./ItemBookmark"
 
+
+
 const Detail = (props) => {
 
     let history = useHistory();
@@ -43,6 +45,7 @@ const Detail = (props) => {
     const [anchorElShare, setAnchorElShare] = useState(null);
     const [anchorElSetting, setAnchorElSetting] = useState(null);
     const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+
     
     const handleAnchorElSettingOpen = (index, event) => {
         setAnchorElSetting(event.currentTarget);
@@ -327,6 +330,8 @@ const Detail = (props) => {
                 }}
                 />
             )}
+
+           
         </div>
     );
 };
