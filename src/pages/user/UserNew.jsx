@@ -42,7 +42,7 @@ import CommentIcon from "@mui/icons-material/Comment";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CardHeader from "@material-ui/core/CardHeader";
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlUser, gqlRoles, gqlCreateUser, gqlUpdateUser, gqlPostsByOwner, gqlConversations, gqlCreateConversation } from "../../gqlQuery"
+import { gqlUsers, gqlRoles, gqlCreateUser } from "../../gqlQuery"
 import {convertFileToBase64} from "../../util"
 
 const Input = styled("input")({

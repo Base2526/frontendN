@@ -20,7 +20,7 @@ const ChatItemView = ({item, onCurrentChat}) => {
 
     if(!userValue.loading){
 
-        let user = userValue.data.User.data
+        let user = userValue.data.user.data
         console.log("ChatItemView userValue :" , userValue, member, item, user)
     }
 
@@ -30,9 +30,9 @@ const ChatItemView = ({item, onCurrentChat}) => {
             userValue.loading 
             ? <CircularProgress /> 
             : <ChatItem
-                avatar={userValue.data.User.data.image[0].base64}
+                avatar={userValue.data.user.data.image[0].base64}
                 alt={"Reactjs"}
-                title={userValue.data.User.data.displayName}
+                title={userValue.data.user.data.displayName}
                 subtitle={"What are you doing?"}
                 date={new Date()}
                 unread={10}

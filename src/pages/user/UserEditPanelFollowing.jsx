@@ -17,13 +17,13 @@ deepdash(_);
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import Table from "../../TableContainer"
-import { gqlPost, gqlCreateBookmark, gqlUser} from "../../gqlQuery"
+import { gqlPost, gqlCreateAndUpdateBookmark, gqlUser} from "../../gqlQuery"
 
 const UserEditPanelFollowing = ({followings}) => {
 
-    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
         , {
-            update: (cache, {data: {createBookmark}}) => {
+            update: (cache, {data: {createAndUpdateBookmark}}) => {
 
                 // console.log("onCreateBookmark : ", createBookmark)
                 // const data1 = cache.readQuery({
@@ -81,29 +81,8 @@ const UserEditPanelFollowing = ({followings}) => {
                             }}
                             variant="rounded"
                             alt="Example Alt"
-                            src={userValue.data.User.data.image[0].base64}
+                            src={userValue.data.user.data.image[0].base64}
                             />
-
-                    // if(props.row.original.image.length < 1){
-                    //     return <Avatar
-                    //             sx={{
-                    //                 height: 100,
-                    //                 width: 100
-                    //             }}>A</Avatar>
-                    // }
-                    // return (
-                    // <div style={{ position: "relative" }}>
-                    //     <Avatar
-                    //     sx={{
-                    //         height: 100,
-                    //         width: 100
-                    //     }}
-                    //     variant="rounded"
-                    //     alt="Example Alt"
-                    //     src={props.row.original.image[0].base64}
-                    //     />
-                    // </div>
-                    // );
                 }
             },
             {
@@ -119,7 +98,7 @@ const UserEditPanelFollowing = ({followings}) => {
                     return  userValue.loading 
                             ?   <LinearProgress sx={{width:"100px"}} />
                             :   <Typography variant="overline" display="block" gutterBottom>
-                                    {userValue.data.User.data.displayName}
+                                    {userValue.data.user.data.displayName}
                                 </Typography>
                 }
             }

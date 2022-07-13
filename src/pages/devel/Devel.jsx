@@ -4,10 +4,10 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PopupSnackbar from "../home/PopupSnackbar";
 import { useQuery, useMutation } from "@apollo/client";
-import { gqlUsers, gqlUser, gqlPosts, gqlRoles, 
+import { gqlUsers, gqlPosts, gqlRoles, 
         gqlCreatePost, 
         gqlBanks, 
-        gqlCreateBookmark, 
+        gqlCreateAndUpdateBookmark, 
         gqlCreateUser,
         gqlCreateRole,
         gqlCreateShare } from "../../gqlQuery"
@@ -23,7 +23,7 @@ const Devel = (props) => {
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("valueUsers :", valueUsers)
+  // console.log("valueUsers :", valueUsers)
 
   const valueBanks = useQuery(gqlBanks, {
     variables: {page: 0, perPage: 100},
@@ -63,7 +63,7 @@ const Devel = (props) => {
 
   console.log("resultCreatePost :", resultCreatePost)
 
-  const [onCreateBookmark, resultCreateBookmark] = useMutation(gqlCreateBookmark, {
+  const [onCreateBookmark, resultCreateBookmark] = useMutation(gqlCreateAndUpdateBookmark, {
     variables: {
       taskId: 1,
     },
@@ -194,10 +194,10 @@ const Devel = (props) => {
 
   const makePostId = () =>{
       const minPost = 1;
-      const maxPost = valuePosts.data.Posts.data.length;
+      const maxPost = valuePosts.data.posts.data.length;
       const randPost = minPost + Math.random() * (maxPost - minPost);
 
-      let Post = valuePosts.data.Posts.data[Math.floor(randPost)]
+      let Post = valuePosts.data.posts.data[Math.floor(randPost)]
       return Post.id
   }
 

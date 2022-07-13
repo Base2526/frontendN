@@ -3,8 +3,6 @@ import io from "socket.io-client";
 import axios from "axios";
 var _ = require("lodash");
 
-//
-
 let {
   REACT_APP_DEBUG,
   REACT_APP_VERSIONS,
@@ -57,11 +55,15 @@ const socketIO = async (props) => {
   return socket;
   */
 
+  console.log("socket.socket.options.query :", soc.socket.options.query)
+
   if(!_.isEmpty(soc)){
     return soc;
   }
 
-  soc = io("http://localhost:4040" , { transports : ['websocket'], query: {  x: 42} })
+  let token = _.isEmpty(localStorage.getItem('token')) ? "" : localStorage.getItem('token')
+
+  soc = io("http://localhost:4040" , { transports : ['websocket'], query: {  x: 42, xxxx: "23453", token } })
 
   if (soc.connected === false && soc.connecting === false) {
       // use a connect() or reconnect() here if you want
@@ -74,20 +76,35 @@ const socketIO = async (props) => {
 
 
 const socket = () => {
-  console.log("socket : ", soc)
+  
+  let newToken = _.isEmpty(localStorage.getItem('token')) ? "" : localStorage.getItem('token')
+
   if( soc !== undefined){
-      return soc;
+
+    // console.log("socket #1 :", soc.io.opts.query)
+
+    // socket.disconnect().connect();
+    
+    let {token} = soc.io.opts.query;
+
+    if( newToken != token ){
+      soc.io.opts.query = {token: newToken}
+
+      console.log("socket #2 :", soc.io.opts.query)
+      return soc.disconnect().connect();
+    }
+
+    return soc;
   }
 
-  soc = io("http://localhost:4040" , { transports : ['websocket'], query: {  x: 42} })
+  soc = io( process.env.HOST_GRAPHAL , { transports : ['websocket'], query: {token: newToken} })
 
   if (soc.connected === false && soc.connecting === undefined) {
     // use a connect() or reconnect() here if you want
     soc.connect();
-    console.log("socket")
   }
 
-  console.log("socket #1 ", soc, soc.connecting)
+  // console.log("socket #1 ", soc, soc.connecting)
   return soc;
 }
 

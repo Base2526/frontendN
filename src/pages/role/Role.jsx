@@ -18,7 +18,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 import Editor from "../../components/editor/Editor";
 
-import { gqlUsers, gqlUser, gqlRole, gqlCreateRole, gqlUpdateRole } from "../../gqlQuery"
+import { gqlRole, gqlCreateRole, gqlUpdateRole } from "../../gqlQuery"
 
 let editValues = undefined;
 let initValues =  { name : "",  description: "" }

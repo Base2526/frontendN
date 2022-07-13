@@ -84,11 +84,11 @@ const BookmarkList = (props) => {
                 notifyOnNetworkStatusChange: true,
               });
     
-              console.log("value.data.User.data :", value.loading ? "" : value.data.User.data)
+              // console.log("value.data.user.data :", value.loading ? "" : value.data.user.data)
               return  value.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
                       : <Typography variant="overline" display="block" gutterBottom>
-                          { value.data.User.data === null ? "" : value.data.User.data.displayName}
+                          { value.data.user.data === null ? "" : value.data.user.data.displayName}
                         </Typography>
             }
           },
@@ -112,7 +112,7 @@ const BookmarkList = (props) => {
               return  postValue.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
                       : <Typography variant="overline" display="block" gutterBottom>
-                          {postValue.data.Post.data.title}
+                          {postValue.data.post.data.title}
                         </Typography>
             }
           },

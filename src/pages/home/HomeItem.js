@@ -40,8 +40,6 @@ import ItemBookmark from "./ItemBookmark"
 import ItemShare from "./ItemShare"
 import ItemHeader from "./ItemHeader"
 import ItemBank from "./ItemBank"
-import {gqlUser, gqlComment, gqlShareByPostId, gqlCreateBookmark, gqlIsBookmark, gqlBanks} from "../../gqlQuery"
-
 
 const useStyles = makeStyles({
   avatar: {

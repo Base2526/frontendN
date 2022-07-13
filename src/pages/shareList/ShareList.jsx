@@ -82,7 +82,7 @@ const ShareList = (props) => {
               return  value.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
                       : <Typography variant="overline" display="block" gutterBottom>
-                          {value.data.User.data.displayName}
+                          {value.data.user.data.displayName}
                         </Typography>
             }
           },
@@ -98,7 +98,7 @@ const ShareList = (props) => {
               return  postValue.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
                       : <Typography variant="overline" display="block" gutterBottom>
-                          {postValue.data.Post.data.title}
+                          {postValue.data.post.data.title}
                         </Typography>
               
             }

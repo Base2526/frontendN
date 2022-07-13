@@ -72,13 +72,16 @@ const Home = (props) => {
   );
   // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
 
-
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("homesValues :", homesValues )
+  // console.log("homesValues :", homesValues )
+
+  // useEffect(()=>{
+  //   console.log("useEffect user :", user)
+  // }, [user])
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -105,7 +108,7 @@ const Home = (props) => {
               // onClose={()=>{
               //     console.log("Menu onClose")
               // }}
-              getContentAnchorEl={null}
+              // getContentAnchorEl={null}
               anchorOrigin={{
                   vertical: "bottom",
                   horizontal: "center"
@@ -193,21 +196,7 @@ const Home = (props) => {
       <div>
         <SearchBar
           keyword={keywordSearch}
-          // onChange={(data, topic) => {
-
-          //   console.log("keyword :", data)
-          //   setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
-          //   setKeywordSearch(data);
-          // }}
-          // onKeyDown={(ev, topic) => {
-          //   if (ev.keyCode == 13) {
-          //     console.log("keyword :", ev.target.value)
-          //     setKeywordSearch(ev.target.value)
-          //   }
-          // }}
           onSearch={(data, topic)=>{
-            console.log("onSearch :", data, topic)
-
             setCategory(_.filter(topic, (v)=>v.checked).map((v)=>v.key))
             setKeywordSearch(data);
           }}
@@ -224,7 +213,7 @@ const Home = (props) => {
                     className="my-masonry-grid"
                     columnClassName="my-masonry-grid_column"
                   >
-                    {homesValues.data.Homes.data.map(
+                    {homesValues.data.homes.data.map(
                       (item, index) => {
                         return (
                           <div key={item.id}>
@@ -274,7 +263,7 @@ const Home = (props) => {
                       setRowsPerPage(parseInt(event.target.value, 10));
                       setPage(0);
                     }}
-                    count={homesValues.data.Homes.total}
+                    count={homesValues.data.homes.total}
                   />
                 </Container>
               </div>

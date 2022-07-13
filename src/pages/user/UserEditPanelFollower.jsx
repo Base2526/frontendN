@@ -17,11 +17,11 @@ deepdash(_);
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import Table from "../../TableContainer"
-import { gqlPost, gqlCreateBookmark, gqlUser} from "../../gqlQuery"
+import { gqlCreateAndUpdateBookmark, gqlUser} from "../../gqlQuery"
 
 const UserEditPanelFollower = ({followers}) => {
 
-    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
         , {
             update: (cache, {data: {createBookmark}}) => {
 
@@ -81,7 +81,7 @@ const UserEditPanelFollower = ({followers}) => {
                             }}
                             variant="rounded"
                             alt="Example Alt"
-                            src={userValue.data.User.data.image[0].base64}
+                            src={userValue.data.user.data.image[0].base64}
                             />
 
                     // if(props.row.original.image.length < 1){
@@ -119,7 +119,7 @@ const UserEditPanelFollower = ({followers}) => {
                     return  userValue.loading 
                             ?   <LinearProgress sx={{width:"100px"}} />
                             :   <Typography variant="overline" display="block" gutterBottom>
-                                    {userValue.data.User.data.displayName}
+                                    {userValue.data.user.data.displayName}
                                 </Typography>
                 }
             }

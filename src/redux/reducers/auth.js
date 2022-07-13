@@ -12,6 +12,7 @@ const auth = (state = initialState, action) => {
         }
 
         case LOGOUT:{
+            localStorage.removeItem("token");
             return initialState;
         }
     }

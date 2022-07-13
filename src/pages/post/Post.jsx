@@ -40,8 +40,8 @@ import Footer from "../footer";
 import Editor from "../../components/editor/Editor";
 
 import { useQuery, useMutation } from "@apollo/client";
-import {  gqlUsers, gqlPost, gqlRoles, gqlCreatePost, gqlUpdatePost, 
-          gqlUser, gqlIsBookmark, gqlShareByPostId, gqlBookmarksByPostId,
+import {  gqlPost, gqlCreatePost, gqlUpdatePost, 
+          gqlUser, gqlShareByPostId, gqlBookmarksByPostId,
           gqlPosts } from "../../gqlQuery"
 import _ from "lodash";
 import deepdash from "deepdash";
@@ -84,7 +84,7 @@ const bmColumns = [
       return  value.loading 
               ? <LinearProgress sx={{width:"100px"}} />
               : <Typography variant="overline" display="block" gutterBottom>
-                  { value.data.User.data === null ? "" : value.data.User.data.displayName}
+                  { value.data.user.data === null ? "" : value.data.user.data.displayName}
                 </Typography>
       
     }
@@ -102,7 +102,7 @@ const bmColumns = [
       return  postValue.loading 
               ? <LinearProgress sx={{width:"100px"}} />
               : <Typography variant="overline" display="block" gutterBottom>
-                  {postValue.data.Post.data.title}
+                  {postValue.data.post.data.title}
                 </Typography>
       
     }
@@ -158,7 +158,7 @@ const shcolumns = [
       return  postValue.loading 
               ? <LinearProgress sx={{width:"100px"}} />
               : <Typography variant="overline" display="block" gutterBottom>
-                  {postValue.data.Post.data.title}
+                  {postValue.data.post.data.title}
                 </Typography>
       
     }
@@ -456,7 +456,7 @@ const Post = (props) => {
         console.log("newInput : ", _.omitDeep(newInput, ['__typename']))
 
         onUpdatePost({ variables: { 
-          id: editValues.data.Post.data.id,
+          id: editValues.data.post.data.id,
           input: _.omitDeep(newInput, ['__typename'])
         }});
       }

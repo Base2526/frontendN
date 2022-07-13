@@ -33,12 +33,10 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { useHistory, useLocation } from "react-router-dom";
 
 import { useQuery, useMutation } from "@apollo/client";
-import {  gqlUsers, 
-          gqlUser, 
+import {  gqlUser, 
           gqlRoles, 
-          gqlCreateUser, 
           gqlUpdateUser, 
-          gqlPostsByUserId, 
+          gqlPostsByUser, 
           gqlConversations, 
           gqlCreateConversation,
           gqlBookmarksByUserId,
@@ -115,7 +113,7 @@ const UserEdit = (props) => {
       let {loading}  = editValues
       
       if(!loading){
-        let {status, data} = editValues.data.User
+        let {status, data} = editValues.data.user
 
         console.log("edit editValues : ", data)
         if(status){
@@ -140,11 +138,11 @@ const UserEdit = (props) => {
   );
   console.log("resultUpdateUser :", resultUpdateUser)
 
-  const postsByUserId = useQuery(gqlPostsByUserId, {
+  const postsByUser = useQuery(gqlPostsByUser, {
     variables: { userId: id },
     notifyOnNetworkStatusChange: true,
   });
-  console.log("postsByUserId :", postsByUserId)
+  console.log("postsByUser :", postsByUser)
 
   // gqlBookmarksByUserId
   const bookmarksByUserId = useQuery(gqlBookmarksByUserId, {
@@ -356,7 +354,7 @@ const UserEdit = (props) => {
     }
 
     onUpdateUser({ variables: { 
-      id: editValues.data.User.data.id,
+      id: editValues.data.user.data.id,
       input: newInput
     }});
   };
@@ -515,10 +513,10 @@ const UserEdit = (props) => {
               </Panel>
               
               {
-                postsByUserId.loading 
+                postsByUser.loading 
                 ? <div /> 
-                : <Panel  title={ "Post (" + postsByUserId.data.postsByUserId.data.length  +")" }>
-                    <UserEditPanelPosts posts={ postsByUserId.data.postsByUserId.data }/>
+                : <Panel  title={ "Post (" + postsByUser.data.postsByUser.data.length  +")" }>
+                    <UserEditPanelPosts posts={ postsByUser.data.postsByUser.data }/>
                   </Panel>
               }
               

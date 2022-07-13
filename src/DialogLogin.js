@@ -1,24 +1,14 @@
 import React, {useEffect, useState} from "react";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import Typography from "@mui/material/Typography";
-import { connect } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 
+import { useDeviceData } from "react-device-detect";
 import { gqlLogin } from "./gqlQuery"
-
-// import { auth, getPermissions } from "./AuthProvider"
-
-import { login } from "./redux/actions/auth"
 
 import {
   FacebookLoginButton,
@@ -29,53 +19,14 @@ import { GoogleLogin, useGoogleLogin  } from "react-google-login";
 const DialogLogin = (props) => {
   let history = useHistory();
 
-  const { onComplete, onClose, selectedValue, open, login } = props;
+  let deviceData = useDeviceData();
+
+  const { onComplete, onClose, selectedValue, open } = props;
 
   const [input, setInput]   = useState({ username: "",  password: ""});
   const [onLogin, resultLogin] = useMutation(gqlLogin, {
-    // update: (cache, {data: {createPost}}) => {
-
-    //   let {state} = history.location
-    //   switch(state.from){
-    //     case "/posts":{
-    //       const data1 = cache.readQuery({
-    //         query: gqlPosts,
-    //         variables: {
-    //           page: 0, 
-    //           perPage: 100
-    //         }
-    //       });
-
-    //       if(data1 != null){
-    //         let newPosts = {...data1.Posts}
-    //         let newData = [...newPosts.data, createPost]
-
-    //         newPosts = {...newPosts, data: newData}
-
-    //         cache.writeQuery({
-    //           query: gqlPosts,
-    //           data: {
-    //             Posts: newPosts
-    //           },
-    //           variables: {
-    //            page: 0, 
-    //             perPage: 100
-    //           }
-    //         });
-    //       }
-    //       break;
-    //     }
-
-    //     default:{
-
-    //       break;
-    //     }
-    //   }
-    // },
     onCompleted({ data }) {
-      // console.log("bookmark :::: onCompleted")
-
-      // history.push("/posts")
+      // history.push("/")
     },
   });
 
@@ -83,13 +34,14 @@ const DialogLogin = (props) => {
     console.log("resultLogin :", resultLogin)
 
     if(resultLogin.data.login.status){
+
+      localStorage.setItem('token', resultLogin.data.login.token)
+      
       onComplete(resultLogin.data.login.data)
     }else{
       // messages
     }
   }
-
-  // console.log("getPermissions :", getPermissions())
 
   useEffect(()=>{
     console.log("input :", input)
@@ -127,10 +79,7 @@ const DialogLogin = (props) => {
   const handleSubmit = (event) =>{
     event.preventDefault();
 
-    console.log("handleSubmit")
-
-    // onLogin
-    onLogin({ variables: { input: { username: input.username,  password: input.password }} })
+    onLogin({ variables: { input: { username: input.username,  password: input.password, deviceAgent: JSON.stringify(deviceData) }} })
   }
 
   const onInputChange = (e) => {
@@ -192,30 +141,14 @@ const DialogLogin = (props) => {
             formUserLogin()
           }
 
-          <button /*onClick={signIn}*/
-            onClick={(e)=>{
-              let result =  login("a", "b")
-              console.log("result :", result)
-            }} className="button">Sign in with Google</button>
+          <button className="button">Sign in with Google</button>
         </DialogContentText>
         </DialogContent>
         <DialogContent>
             <Typography variant="body2" color="text.secondary">By continuing, you agree to Banlist Terms of Service, Privacy Policy</Typography>
         </DialogContent>
-    </Dialog>
-
-    
+    </Dialog>    
   );
 };
 
-// export default DialogLogin;
-
-const mapStateToProps = (state, ownProps) => {
-  return {}
-};
-
-const mapDispatchToProps = {
-  login
-}
-
-export default connect( mapStateToProps, mapDispatchToProps )(DialogLogin);
+export default DialogLogin;

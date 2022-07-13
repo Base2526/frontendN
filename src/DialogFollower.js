@@ -23,6 +23,8 @@ const DialogFollower = (props) => {
   let history = useHistory();
   let { user, open, id, onClose, onFollow } = props
 
+  console.log("DialogFollower")
+
   let followerValues = useQuery(gqlFollower, {
     variables: {userId: id},
     notifyOnNetworkStatusChange: true,

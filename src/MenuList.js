@@ -137,90 +137,90 @@ const MenuAuthenticated = [
     Icon: <Timeline className="icon" />,
     Path: "/posts"
   },
-  {
-    Id: 3,
-    Name: "Bookmarks",
-    Icon: <BookmarksIcon className="icon" />,
-    Path: "/bookmarks"
-  },
-  {
-    Id: 4,
-    Name: "Users",
-    Icon: <Group className="icon" />,
-    Path: "/users"
-  },
+  // {
+  //   Id: 3,
+  //   Name: "Bookmarks",
+  //   Icon: <BookmarksIcon className="icon" />,
+  //   Path: "/bookmarks"
+  // },
+  // {
+  //   Id: 4,
+  //   Name: "Users",
+  //   Icon: <Group className="icon" />,
+  //   Path: "/users"
+  // },
 
-  {
-    Id: 7,
-    Name: "Taxonomy",
-    Icon: <AssistantPhotoIcon className="icon" />,
-    // Path: "/devel",
-    Sheets: [
-      {
-        Id: 1,
-        Title: "Devel",
-        // Icon: <WebhookIcon className="icon" />,
-        Path: "/devel"
-      },
-      {
-        Id: 2,
-        Title: "Roles",
-        // Icon: <RuleIcon className="icon" />,
-        Path: "/roles"
-      },
-      {
-        Id: 3,
-        Title: "Banks",
-        // Icon: <AccountBalanceWalletIcon className="icon" />,
-        Path: "/banks"
-      },
-      {
-        Id: 4,
-        Title: "Socket",
-        // Icon: <PowerIcon className="icon" />,
-        Path: "/sockets"
-      },
-      {
-        Id: 5,
-        Title: "Theme mail",
-        // Icon: <MailIcon className="icon" />,
-        Path: "/theme-mails"
-      },
+  // {
+  //   Id: 7,
+  //   Name: "Taxonomy",
+  //   Icon: <AssistantPhotoIcon className="icon" />,
+  //   // Path: "/devel",
+  //   Sheets: [
+  //     {
+  //       Id: 1,
+  //       Title: "Devel",
+  //       // Icon: <WebhookIcon className="icon" />,
+  //       Path: "/devel"
+  //     },
+  //     {
+  //       Id: 2,
+  //       Title: "Roles",
+  //       // Icon: <RuleIcon className="icon" />,
+  //       Path: "/roles"
+  //     },
+  //     {
+  //       Id: 3,
+  //       Title: "Banks",
+  //       // Icon: <AccountBalanceWalletIcon className="icon" />,
+  //       Path: "/banks"
+  //     },
+  //     {
+  //       Id: 4,
+  //       Title: "Socket",
+  //       // Icon: <PowerIcon className="icon" />,
+  //       Path: "/sockets"
+  //     },
+  //     {
+  //       Id: 5,
+  //       Title: "Theme mail",
+  //       // Icon: <MailIcon className="icon" />,
+  //       Path: "/theme-mails"
+  //     },
 
-      {
-        Id: 62,
-        Title: "ContactUs",
-        // Icon: <MailIcon className="icon" />,
-        Path: "/tcontactus-list"
-      },
-      {
-        Id: 63,
-        Title: "Shares",
-        // Icon: <MailIcon className="icon" />,
-        Path: "/shares"
-      },
-      ,
-      {
-        Id: 64,
-        Title: "Basic content",
-        // Icon: <MailIcon className="icon" />,
-        Path: "/basic-contents"
-      }
-    ]
-  },
-  {
-    // ReportList
-    Id: 8,
-    Name: "Contact Us",
-    Icon: <BugReportIcon className="icon" />,
-    Path: "/contact-us"
-  },
-  {
-    Id: 20,
-    Name: "Recent log messages",
-    Icon: <AdbIcon className="icon" />,
-    Path: "/dblog"
-  },
+  //     {
+  //       Id: 62,
+  //       Title: "ContactUs",
+  //       // Icon: <MailIcon className="icon" />,
+  //       Path: "/tcontactus-list"
+  //     },
+  //     {
+  //       Id: 63,
+  //       Title: "Shares",
+  //       // Icon: <MailIcon className="icon" />,
+  //       Path: "/shares"
+  //     },
+  //     ,
+  //     {
+  //       Id: 64,
+  //       Title: "Basic content",
+  //       // Icon: <MailIcon className="icon" />,
+  //       Path: "/basic-contents"
+  //     }
+  //   ]
+  // },
+  // {
+  //   // ReportList
+  //   Id: 8,
+  //   Name: "Contact Us",
+  //   Icon: <BugReportIcon className="icon" />,
+  //   Path: "/contact-us"
+  // },
+  // {
+  //   Id: 20,
+  //   Name: "Recent log messages",
+  //   Icon: <AdbIcon className="icon" />,
+  //   Path: "/dblog"
+  // },
   {
     Id: 21,
     Name: "Help",

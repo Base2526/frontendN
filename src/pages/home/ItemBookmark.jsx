@@ -11,7 +11,7 @@ import CommentIcon from "@mui/icons-material/Comment";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import _ from "lodash"
 
-import { gqlIsBookmark, gqlCreateBookmark } from "../../gqlQuery"
+import { gqlIsBookmark, gqlCreateAndUpdateBookmark } from "../../gqlQuery"
 
 const ItemBookmark = (props) => {
   let {user, item, onDialogLogin} = props 
@@ -20,9 +20,9 @@ const ItemBookmark = (props) => {
     return  <IconButton onClick={e=>onDialogLogin(true)}> <BookmarkIcon style={{ color:"" }} /> </IconButton>
   }
 
-  const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+  const [onCreateAndUpdateBookmark, resultCreateAndUpdateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
     , {
-        update: (cache, {data: {createBookmark}}) => {
+        update: (cache, {data: {createAndUpdateBookmark}}) => {
             const data1 = cache.readQuery({
                 query: gqlIsBookmark,
                 variables: {
@@ -31,7 +31,7 @@ const ItemBookmark = (props) => {
             });
 
             let newData = {...data1.isBookmark}
-            newData = {...newData, data: createBookmark}
+            newData = {...newData, data: createAndUpdateBookmark}
         
             cache.writeQuery({
                 query: gqlIsBookmark,
@@ -59,7 +59,7 @@ const ItemBookmark = (props) => {
     let isBookmark = bmValus.data.isBookmark.data
     if(isBookmark == null){
       return  <IconButton onClick={(e) => {
-                  onCreateBookmark({ variables: { input: {
+                  onCreateAndUpdateBookmark({ variables: { input: {
                         postId: item.id,
                         userId: user.id,
                         status: true
@@ -74,7 +74,7 @@ const ItemBookmark = (props) => {
     let color = isBookmark.status == null ? "" : isBookmark.status ? "blue" : ""
 
     return  <IconButton onClick={(e) => {
-                onCreateBookmark({ variables: { input: {
+                onCreateAndUpdateBookmark({ variables: { input: {
                       postId: item.id,
                       userId: user.id,
                       status: !isBookmark.status
@@ -86,7 +86,7 @@ const ItemBookmark = (props) => {
             </IconButton>
   }
   return  <IconButton onClick={(e) => {
-                        onCreateBookmark({ variables: { input: {
+                        onCreateAndUpdateBookmark({ variables: { input: {
                               postId: item.id,
                               userId: user.id,
                               status: true

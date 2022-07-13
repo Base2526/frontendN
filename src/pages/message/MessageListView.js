@@ -31,24 +31,7 @@ const MessageListView = ({currentChat}) => {
     let userId = "62a2f65dcf7946010d3c7547"
 
     console.log("MessageListView : ", currentChat)
-
-    // let userId = "62a2f65dcf7946010d3c7547"
-
-    // let members = item.members
-    // let member = _.filter(members, (vv)=>vv != userId)
-
-    // let userValue = useQuery(gqlUser, {
-    //   variables: {id: member[0]},
-    //   notifyOnNetworkStatusChange: true,
-    // });
-
-    // if(!userValue.loading){
-
-    //     let user = userValue.data.User.data
-    //     console.log("ChatItemView userValue :" , userValue, member, item, user)
-    // }
-
-    
+   
     const [onAddMessage, resultAddMessageValues] = useMutation(gqlAddMessage
         , {
             update: (cache, {data: {addMessage}}) => {
@@ -360,8 +343,8 @@ const MessageListView = ({currentChat}) => {
 
       if(!_.isEmpty(userValue)){
         return <div className="rce-container-input">
-                  <div><Avatar src={_.isEmpty(userValue.data.User.data.image) ? "" : userValue.data.User.data.image[0].base64 } /> </div>
-                  <div>{userValue.data.User.data.displayName}</div>
+                  <div><Avatar src={_.isEmpty(userValue.data.user.data.image) ? "" : userValue.data.user.data.image[0].base64 } /> </div>
+                  <div>{userValue.data.user.data.displayName}</div>
                 </div>
       }
     }

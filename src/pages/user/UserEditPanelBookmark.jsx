@@ -17,11 +17,11 @@ deepdash(_);
 
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import Table from "../../TableContainer"
-import { gqlPost, gqlCreateBookmark, gqlIsBookmark} from "../../gqlQuery"
+import { gqlPost, gqlCreateAndUpdateBookmark, gqlIsBookmark} from "../../gqlQuery"
 
 const UserEditPanelBookmark = ({bookmarks}) => {
 
-    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
+    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
         , {
             update: (cache, {data: {createBookmark}}) => {
 
@@ -75,7 +75,7 @@ const UserEditPanelBookmark = ({bookmarks}) => {
                     return  postValue.loading 
                             ? <LinearProgress sx={{width:"100px"}} />
                             : <Typography variant="overline" display="block" gutterBottom>
-                                {postValue.data.Post.data.title}
+                                {postValue.data.post.data.title}
                             </Typography>
                 }
             },

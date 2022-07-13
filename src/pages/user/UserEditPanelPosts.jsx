@@ -18,8 +18,6 @@ deepdash(_);
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import Table from "../../TableContainer"
 
-import {gqlBookmarks, gqlPost, gqlUser} from "../../gqlQuery"
-
 const UserEditPanelPosts = ({posts}) => {
 
   ///////////////////////

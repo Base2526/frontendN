@@ -25,7 +25,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { gqlPost } from "../../gqlQuery"
+import { gqlPost, gqlCreateAndUpdateBookmark, gqlIsBookmark, gqlCreateComment, gqlComment } from "../../gqlQuery"
 import DialogLogin from "../../DialogLogin";
 import { login } from "../../redux/actions/auth"
 
@@ -33,11 +33,11 @@ import ItemBank from "./ItemBank"
 import ItemComment from "./ItemComment"
 import ItemBookmark from "./ItemBookmark"
 
-
+import ReportDialog from "../../components/report"
 
 const Detail = (props) => {
-
     let history = useHistory();
+
     let { pathname } = useLocation();
     let { id } = useParams();
     let { user, login } = props
@@ -46,7 +46,8 @@ const Detail = (props) => {
     const [anchorElSetting, setAnchorElSetting] = useState(null);
     const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
-    
+    const [report, setReport] = useState({open: false, postId:""});
+
     const handleAnchorElSettingOpen = (index, event) => {
         setAnchorElSetting(event.currentTarget);
     };
@@ -61,13 +62,64 @@ const Detail = (props) => {
         images: []
     });
 
-    // const [comment, setComment] = useState(data);
-    // const userId = "01a";
-    // const avatarUrl = "https://ui-avatars.com/api/name=Riya&background=random";
-    // const name = "xyz";
-    // const signinUrl = "/signin";
-    // const signupUrl = "/signup";
-    // let count = 0;
+    const [onCreateAndUpdateBookmark, resultCreateAndUpdateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
+        , {
+            update: (cache, {data: {createAndUpdateBookmark}}) => {
+              const data1 = cache.readQuery({
+                query: gqlIsBookmark,
+                variables: {
+                  userId: user.id,
+                  postId: id
+                }
+              });
+    
+              let newData = {...data1.isBookmark}
+              newData = {...newData, data: createAndUpdateBookmark}
+            
+              cache.writeQuery({
+                query: gqlIsBookmark,
+                data: {
+                  isBookmark: newData
+                },
+                variables: {
+                  userId: user.id,
+                  postId: id
+                }
+              });
+            },
+            onCompleted({ data }) {
+              // console.log("bookmark :::: onCompleted")
+            },
+          },  
+    );
+    // console.log("resultCreateAndUpdateBookmarkValues :", resultCreateAndUpdateBookmarkValues)
+
+    const [onCreateComment, resultCreateComment] = useMutation(gqlCreateComment, 
+      {
+          update: (cache, {data: {createComment}}) => {
+              const data1 = cache.readQuery({
+                  query: gqlComment,
+                  variables: {postId: id}
+              });
+  
+              let newData = {...data1.Comment}
+              newData = {...newData, data: createComment.data}
+                  
+              cache.writeQuery({
+                  query: gqlComment,
+                  data: {
+                      Comment: newData
+                  },
+                  variables: {
+                      postId: id
+                  }
+              });
+          },
+          onCompleted({ data }) {
+              // console.log("onCompleted")
+          }
+      }
+    );
     
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -158,7 +210,11 @@ const Detail = (props) => {
                   <MenuItem onClick={(e)=>{
                     handleAnchorElSettingClose()
     
-                    // setReport({open: true, postId:item.id})
+
+                    _.isEmpty(user)
+                    ? setDialogLoginOpen(true)    
+                    : setReport({open: true, postId:item.id})
+                    
                   }}>
                     Report
                   </MenuItem>
@@ -166,7 +222,7 @@ const Detail = (props) => {
     }
 
     const mainView = () =>{
-        let post = postValue.data.Post.data
+        let post = postValue.data.post.data
         return  <div className="col-container">
                     <div className="col1">
                         {
@@ -208,7 +264,10 @@ const Detail = (props) => {
                                     <ItemBookmark 
                                         {...props} 
                                         postId={id}
-                                        onDialogLoginOpen={(e)=>{
+                                        onBookmark={(input)=>{
+                                            onCreateAndUpdateBookmark({ variables: { input } }); 
+                                        }}
+                                        onDialogLogin={(e)=>{
                                             setDialogLoginOpen(true)
                                         }}/>
                                     <IconButton onClick={(e) => { 
@@ -269,7 +328,10 @@ const Detail = (props) => {
                             <ItemComment 
                                 {...props}
                                 id={id}
-                                onDialogLoginOpen={()=>{
+                                onComment={(input)=>{
+                                    onCreateComment({ variables: { input: input }});
+                                }}
+                                onDialogLogin={()=>{
                                     setDialogLoginOpen(true)
                                 }}/>
                         </div>
@@ -331,6 +393,26 @@ const Detail = (props) => {
                 />
             )}
 
+
+            {report.open && <ReportDialog 
+                                    open={report.open} 
+                                    postId={report.postId} 
+                                    onReport={(e)=>{
+                                    onCreateContactUs({ variables: { input: {
+                                            userId: user.id,
+                                            postId: e.postId,     
+                                            categoryId: e.categoryId,
+                                            description: e.description
+                                            } 
+                                        } 
+                                    });
+
+                                    setReport({open: false, postId:""})
+                                    }}
+
+                                    // onCreateTContactUs
+                                    onClose={()=>setReport({open: false, postId:""})}/>
+            }
            
         </div>
     );

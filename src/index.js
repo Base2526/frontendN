@@ -38,13 +38,47 @@ import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
-  useQuery,
-  gql
+  createHttpLink
 } from "@apollo/client";
 import { relayStylePagination } from "@apollo/client/utilities"
+import { setContext } from '@apollo/client/link/context';
 
+import { WebSocketLink } from "@apollo/client/link/ws";
+
+
+const httpLink = createHttpLink({
+  uri: 'http://localhost:4040/graphql'
+});
+
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('token');
+
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    }
+  }
+});
+
+
+const token = localStorage.getItem('token');
 const client = new ApolloClient({
-  uri: 'http://localhost:4040/graphql',
+  // uri: 'http://localhost:4040/graphql',
+  link: authLink.concat(httpLink),
+  // link: new WebSocketLink({
+  //   uri: 'wss://localhost:4040/graphql',
+  //   options: {
+  //     reconnect: true,
+  //     connectionParams: {
+  //       headers: {
+  //         Authorization: token ? `Bearer ${token}` : "",
+  //       }
+  //     }
+  //   }
+  // }),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

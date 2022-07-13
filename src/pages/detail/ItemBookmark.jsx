@@ -11,59 +11,21 @@ import CommentIcon from "@mui/icons-material/Comment";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import _ from "lodash"
 
-import { gqlIsBookmark, gqlCreateBookmark } from "../../gqlQuery"
+import { gqlIsBookmark, gqlCreateAndUpdateBookmark } from "../../gqlQuery"
 
 const ItemBookmark = (props) => {
-    let {user, postId, onDialogLoginOpen} = props 
-
-    const [onCreateBookmark, resultCreateBookmarkValues] = useMutation(gqlCreateBookmark
-        , {
-            update: (cache, {data: {createBookmark}}) => {
-              const data1 = cache.readQuery({
-                query: gqlIsBookmark,
-                variables: {
-                  userId: user.id,
-                  postId: postId
-                }
-              });
-    
-              let newData = {...data1.isBookmark}
-              newData = {...newData, data: createBookmark}
-            
-              cache.writeQuery({
-                query: gqlIsBookmark,
-                data: {
-                  isBookmark: newData
-                },
-                variables: {
-                  userId: user.id,
-                  postId: postId
-                }
-              });
-            },
-            onCompleted({ data }) {
-              // console.log("bookmark :::: onCompleted")
-            },
-          },  
-    );
-    console.log("resultCreateBookmarkValues :", resultCreateBookmarkValues)
+    let {user, postId, onBookmark, onDialogLogin} = props 
 
     const handleCreateBookmark = (status) =>{
-        if( _.isEmpty(user) ){
-          onDialogLoginOpen(true)
-        }else{
-          onCreateBookmark({ variables: { input: {
-                                        postId: postId,
-                                        userId: user.id,
-                                        status
-                                      }
-                                    }
-                                  }); 
-        }
+      if( _.isEmpty(user) ){
+        onDialogLogin(true)
+      }else{
+        onBookmark({ postId: postId, userId: user.id, status })
       }
+    }
 
     if(_.isEmpty(user)){
-        return  <IconButton onClick={(e) => { onDialogLoginOpen(true) }}>
+        return  <IconButton onClick={(e) => { onDialogLogin(true) }}>
                     <BookmarkIcon style={{ color:"" }} /> 
                 </IconButton>
     }

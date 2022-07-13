@@ -1,49 +1,35 @@
 import React, { useState, useEffect, withStyles } from "react";
-import {
-  NewUserContainer,
-  NewUserForm,
-  FormItem,
-  GenderContainer,
-  NewUserButton,
-  ButtonWrapper
-} from "./User.styled";
 import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useParams, Link } from "react-router-dom";
 
-import _, { set } from "lodash";
+import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
 import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
 import { useHistory, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { connect } from "react-redux";
 
-import {  gqlUsers, 
-          gqlUser, 
-          gqlRoles, 
+import {  gqlUser, 
           gqlConversations, 
           gqlCreateConversation,
-
-          gqlCreateAndUpdateFollow, 
+          gqlCreateAndUpdateFollow,
           gqlIsFollow,
-        
           gqlFollower} from "../../gqlQuery"
 
 import UserPostList from "./UserPostList"
 import DialogLogin from "../../DialogLogin";
-
 import { login } from "../../redux/actions/auth"
-
 import DialogFollower from "../../DialogFollower"
 import ItemFollower from "./ItemFollower"
+import ItemFollowing from "./ItemFollowing"
 
-let isFollowValues = null
+import ReportDialog from "../../components/report"
+
 const UserView = (props) => {
   let history = useHistory();
   let { pathname } = useLocation();
@@ -52,18 +38,12 @@ const UserView = (props) => {
 
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
   const [dialogFollower, setDialogFollower] = useState(false);
-    
 
+  const [report, setReport] = useState({open: false, postId:""});
+    
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
-  if(!_.isEmpty(user)){
-    isFollowValues = useQuery(gqlIsFollow, {
-      variables: {userId: user.id, friendId: id},
-      notifyOnNetworkStatusChange: true,
-    });
-  }
 
   let userValues = useQuery(gqlUser, {
     variables: {id},
@@ -168,21 +148,9 @@ const UserView = (props) => {
         },
       },  
   );
-
-  const isFollow = () =>{
-    if(_.isEmpty(user)){
-      return false
-    }
-    if(!isFollowValues.loading){
-      if(isFollowValues.data.isFollow.data != null && isFollowValues.data.isFollow.data.status){
-        return true
-      }
-    }
-    return false
-  }
   
   const mainView = () =>{
-    let userValue = userValues.data.User.data
+    let userValue = userValues.data.user.data
     let imageSrc =  _.isEmpty(userValue.image) ? "" : userValue.image[0].base64
 
     return  <div>
@@ -211,29 +179,21 @@ const UserView = (props) => {
               <ItemFollower id={id} onFollower={(e)=>setDialogFollower(true)} />
           
               <div>
-              <Button
-                variant="contained" 
-                color="primary"
-                onClick={(e)=>{
-                  !_.isEmpty(user)
-                  ? onCreateAndUpdateFollow({ variables: { input: {
-                          userId: user.id,
-                          friendId: id,
-                          status: !isFollow()
-                        }
-                      }
-                    })
-                  : setDialogLoginOpen(true)
-                }}>
-                {isFollow() ? "Following" : "Follow"}
-              </Button>
+                <ItemFollowing 
+                  {...props} 
+                  id={id}
+                  onFollowing={(input)=>{
+                    onCreateAndUpdateFollow({ variables: { input } })
+                  }}
+                  onDialogLogin={(status)=>{
+                    setDialogLoginOpen(true)
+                  }}/>
               </div>
               <div>
               <Button 
                 variant="contained" 
                 color="primary"
                 onClick={(e)=>{
-                  // isAuth()
                   !_.isEmpty(props.user)
                   ? onCreateConversation({ variables: { input: {
                           userId: user.id,
@@ -246,8 +206,24 @@ const UserView = (props) => {
                 Chat
               </Button>
               </div>
-              <UserPostList {...props} id={id}/>                  
+              <UserPostList 
+                {...props} 
+                id={id}
+                onDialogLogin={(status)=>{
+                  setDialogLoginOpen(true)
+                }}
+                onReport={(id)=>{
+                  _.isEmpty(user)
+                    ? setDialogLoginOpen(true)    
+                    : setReport({open: true, postId:id})
+                  
+                }}/>
 
+                {/*
+
+                 
+                
+                */}
             </div>
   }
 
@@ -294,11 +270,30 @@ const UserView = (props) => {
           }}
         />
       }
+
+      {report.open && 
+        <ReportDialog 
+          open={report.open} 
+          postId={report.postId} 
+          onReport={(e)=>{
+          onCreateContactUs({ variables: { input: {
+                  userId: user.id,
+                  postId: e.postId,     
+                  categoryId: e.categoryId,
+                  description: e.description
+                  } 
+              } 
+          });
+
+          setReport({open: false, postId:""})
+          }}
+
+          // onCreateTContactUs
+          onClose={()=>setReport({open: false, postId:""})}/>
+      }
     </div>
   );
 };
-
-// export default UserView;
 
 const mapStateToProps = (state, ownProps) => {
   return {

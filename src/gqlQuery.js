@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 export const gqlHomes = gql`
     query Homes($page: Int, $perPage: Int, $keywordSearch: String, $category: String) {
-        Homes(
+        homes(
             page: $page
             perPage: $perPage
             keywordSearch: $keywordSearch
@@ -49,7 +49,7 @@ export const gqlHomes = gql`
 
 export const gqlPosts = gql`
     query Posts($page: Int, $perPage: Int) {
-        Posts(
+        posts(
             page: $page
             perPage: $perPage
         ){
@@ -88,7 +88,7 @@ export const gqlPosts = gql`
 
 export const gqlPost = gql`
     query Post($id: ID!) {
-        Post(_id: $id) {
+        post(_id: $id) {
             status 
             executionTime
             data {
@@ -122,9 +122,9 @@ export const gqlPost = gql`
         }
     }`;
 
-export const gqlPostsByUserId =  gql`
-    query PostsByUserId($userId: ID!) {
-        postsByUserId(
+export const gqlPostsByUser =  gql`
+    query PostsByUser($userId: ID!) {
+        postsByUser(
             userId: $userId
         ){
             status
@@ -191,7 +191,7 @@ export const gqlUsers = gql`
 
 export const gqlUser = gql`
     query User($id: ID!) {
-        User(_id: $id) {
+        user(_id: $id) {
             status 
             executionTime
             data {
@@ -671,6 +671,7 @@ export const gqlLogin = gql`
             status
             messages
             executionTime
+            token
             data {
                 id: _id
                 username
@@ -743,9 +744,9 @@ export const gqlCreatePost = gql`
         }
     }`;
 
-export const gqlCreateBookmark = gql`
-    mutation CreateBookmark($input: BookmarkInput) {
-        createBookmark(input: $input) {
+export const gqlCreateAndUpdateBookmark = gql`
+    mutation CreateAndUpdateBookmark($input: BookmarkInput) {
+        createAndUpdateBookmark(input: $input) {
             _id
             userId
             postId

@@ -83,7 +83,7 @@ const ContactUsList = (props) => {
                 return  value.loading 
                         ? <LinearProgress sx={{width:"100px"}} />
                         : <Typography variant="overline" display="block" gutterBottom>
-                            {value.data.User.data.displayName}
+                            {value.data.user.data.displayName}
                           </Typography>
               }
             },
@@ -116,7 +116,7 @@ const ContactUsList = (props) => {
                   return  value.loading 
                           ? <LinearProgress sx={{width:"100px"}} />
                           : <Typography variant="overline" display="block" gutterBottom>
-                              {value.data.Post.data.title}
+                              {value.data.post.data.title}
                             </Typography>
               }
             },

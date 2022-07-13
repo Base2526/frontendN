@@ -29,15 +29,17 @@ const ItemHeader = (props) => {
     });
 
     if( ! userValue.loading){
-        if(userValue.data.User.data == null){
+        if(userValue.data.user.data == null){
             return <div />
         }
+
+        let user = userValue.data.user.data
 
         return  <CardHeader
                     avatar={<Avatar 
                             className={"card-header-title"} 
-                            src={userValue.data.User.data.image[0].base64}
-                            onClick={(e)=> history.push("/user/" + userValue.data.User.data.id +"/view") }  />}
+                            src={user.image[0].base64}
+                            onClick={(e)=> history.push("/user/" + user.id +"/view") }  />}
                     action={
                         <IconButton  onClick={(e) => {
                             onAnchorElSettingOpen(index, e);
@@ -46,9 +48,9 @@ const ItemHeader = (props) => {
                         </IconButton>
                     }
                     title={ <Typography className={"card-header-title"} onClick={(e)=>{
-                        history.push("/user/" + userValue.data.User.data.id +"/view");
+                        history.push("/user/" + user.id +"/view");
                     }} 
-                    variant="subtitle2" gutterBottom component="div">{userValue.data.User.data.displayName}</Typography> }
+                    variant="subtitle2" gutterBottom component="div">{user.displayName}</Typography> }
                     subheader={moment(item.createdAt).format('MMMM Do YYYY')}
                 />
     }

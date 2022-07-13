@@ -33,7 +33,7 @@ import _ from "lodash"
 
 
 import { socket } from "../../SocketioClient";
-import { gqlUser, gqlConversations, gqlMessage } from "../../gqlQuery"
+import { gqlConversations } from "../../gqlQuery"
 
 import ChatItemView from "./ChatItemView"
 import MessageListView from "./MessageListView"

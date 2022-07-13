@@ -38,8 +38,6 @@ const LeftMenu = (props) => {
   )
 };
 
-// export default LeftMenu;
-
 const mapStateToProps = (state, ownProps) => {
   // console.log("mapStateToProps  :", state)
   return {

@@ -34,8 +34,6 @@ import Table from "../../TableContainer"
 const PostList = (props) => {
   let history = useHistory();
 
-  let userId = "62a31ce2ca4789003e5f5123";
-
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
@@ -46,7 +44,6 @@ const PostList = (props) => {
     images: []
   });
 
-  
   const [openDialogDelete, setOpenDialogDelete] = useState({
     isOpen: false,
     id: ""
@@ -58,7 +55,6 @@ const PostList = (props) => {
   });
 
   console.log("postsValue :", postsValue)
-
 
   ///////////////
   const fetchData = useCallback(
@@ -96,7 +92,6 @@ const PostList = (props) => {
             Header: 'Profile',
             accessor: 'files',
             Cell: props =>{
-              
               if(props.value.length < 1){
                 return <div />
               }
@@ -117,7 +112,6 @@ const PostList = (props) => {
                       }}
                     />
                   </CardActionArea>
-                  
                   <div
                       style={{
                           position: "absolute",
@@ -143,7 +137,6 @@ const PostList = (props) => {
             Header: 'Detail',
             accessor: 'description',
             Cell: props => {
-
               return <Box
                       sx={{
                         maxHeight: "inherit",
@@ -163,24 +156,18 @@ const PostList = (props) => {
             Header: 'Owner',
             accessor: 'ownerId',
             Cell: props =>{
-
-              
               let userValue = useQuery(gqlUser, {
                 variables: {id: props.value},
                 notifyOnNetworkStatusChange: true,
               });
       
-              console.log("Owner Id userValue :", userValue )
-      
-              // /user/62a2c0cecf7946010d3c743f/view
               return userValue.loading 
                     ? <LinearProgress sx={{width:"100px"}} />
-                    : userValue.data.User.data != null ? <Link to={`/user/${userValue.data.User.data.id}/view`}>{userValue.data.User.data.displayName}</Link> : <div />
+                    : userValue.data.user.data != null ? <Link to={`/user/${userValue.data.user.data.id}/view`}>{userValue.data.user.data.displayName}</Link> : <div />
             } 
           },
           {
             Header: 'Comments',
-            // accessor: 'id',
             Cell: props =>{
               let commentValues = useQuery(gqlComment, {
                 variables: {postId: props.row.original.id},
@@ -209,7 +196,6 @@ const PostList = (props) => {
           },
           {
             Header: 'Bookmark',
-            // accessor: 'id',
             Cell: props =>{
               const bmValus = useQuery(gqlBookmarksByPostId, {
                 variables: { postId: props.row.original.id},
@@ -229,7 +215,6 @@ const PostList = (props) => {
           }, // 
           {
             Header: 'Share',
-            // accessor: 'id',
             Cell: props =>{
               const shareValus = useQuery(gqlShareByPostId, {
                 variables: {postId: props.row.original.id, page: 0, perPage: 10000},
@@ -248,7 +233,6 @@ const PostList = (props) => {
           {
             Header: 'Action',
             Cell: props => {
-              // console.log("Cell :", props.row.original.id)
               return  <div>
                         <Link to={`/post/${props.row.original.id}/edit`}>
                           <button>Edit</button>
@@ -309,7 +293,7 @@ const PostList = (props) => {
         ? <div><CircularProgress /></div> 
         : <Table
             columns={columns}
-            data={postsValue.data.Posts.data}
+            data={postsValue.data.posts.data}
             fetchData={fetchData}
             rowsPerPage={pageOptions}
             updateMyData={updateMyData}

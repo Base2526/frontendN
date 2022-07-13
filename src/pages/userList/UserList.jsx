@@ -21,7 +21,7 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { useQuery } from "@apollo/client";
 import LinearProgress from '@mui/material/LinearProgress';
 
-import {gqlUsers, gqlManyRoles, gqlPostsByUserId} from "../../gqlQuery"
+import {gqlUsers, gqlPostsByUser} from "../../gqlQuery"
 import Footer from "../footer";
 import Table from "../../TableContainer"
 
@@ -112,14 +112,14 @@ const UserList = (props) => {
             Header: 'Posts',
             accessor: 'posts',
             Cell: props => {
-              const postsByUserId = useQuery(gqlPostsByUserId, {
+              const postsByUser = useQuery(gqlPostsByUser, {
                 variables: { userId: props.row.original.id },
                 notifyOnNetworkStatusChange: true,
               });
 
-              return postsByUserId.loading
+              return postsByUser.loading
                     ? <LinearProgress sx={{width:"100px"}} />
-                    : <>{postsByUserId.data.postsByUserId.data.length }</>  
+                    : <>{postsByUser.data.postsByUser.data.length }</>  
             }
           },
           {
