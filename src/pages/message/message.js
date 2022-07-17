@@ -32,7 +32,7 @@ import Identicon from "identicon.js";
 import _ from "lodash"
 
 
-import { socket } from "../../SocketioClient";
+// import { socket } from "../../SocketioClient";
 import { gqlConversations } from "../../gqlQuery"
 
 import ChatItemView from "./ChatItemView"
@@ -47,7 +47,7 @@ function useForceUpdate() {
 
 // https://github.com/saswatamcode/graphQLChat
 
-let _socket = socket()
+// let _socket = socket()
 
 const message = (props) => {
   const messageListReferance = useRef();
@@ -408,13 +408,13 @@ const message = (props) => {
     clearRef();
     // forceUpdate();
 
-    console.log("_socket ", _socket)
+    // console.log("_socket ", _socket)
 
-    if(_socket && _socket.connected){
-      _socket.emit("MESSAGE_SEND", {item: random("message", mtype)}, (response)=>{
-        console.log("MESSAGE_SEND callback : ", response)
-      });
-    }
+    // if(_socket && _socket.connected){
+    //   _socket.emit("MESSAGE_SEND", {item: random("message", mtype)}, (response)=>{
+    //     console.log("MESSAGE_SEND callback : ", response)
+    //   });
+    // }
   };
 
   //

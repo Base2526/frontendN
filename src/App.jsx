@@ -34,7 +34,7 @@ import Detail from "./pages/detail/Detail"
 import _ from "lodash";
 import Breadcs from "./components/breadcrumbs/Breadcs";
 import Home from "./pages/home/Home";
-import { socket } from "./SocketioClient";
+// import { socket } from "./SocketioClient";
 
 import MyAppBar from "./MyAppBar";
 import LeftMenu from "./LeftMenu"
@@ -134,7 +134,7 @@ const App = (props) => {
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
   useEffect(async () => {
-    socket()
+    // socket()
   }, [])
 
   const handleDrawerOpen = () => {

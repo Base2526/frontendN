@@ -37,7 +37,7 @@ import Pagination from "./Pagination";
 
 import Detail from "./Detail";
 
-import { socket } from "../../SocketioClient";
+// import { socket } from "../../SocketioClient";
 
 import DialogLogin from "./DialogLogin";
 
@@ -264,12 +264,12 @@ const Home = (props) => {
 
                           // let soc = await socketIO()
 
-                          await socket().emit('follow', {test: "1234"}, (values)=>{
-                            // console.log(error);
-                            console.log(values);
+                          // await socket().emit('follow', {test: "1234"}, (values)=>{
+                          //   // console.log(error);
+                          //   console.log(values);
 
-                            setSnackbar({open: true, message:"Follow"});
-                          });
+                          //   setSnackbar({open: true, message:"Follow"});
+                          // });
                         }}
                       />
                     </IconButton>

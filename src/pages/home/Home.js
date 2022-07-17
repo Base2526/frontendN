@@ -11,7 +11,7 @@ import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 import _ from "lodash";
 import CircularProgress from '@mui/material/CircularProgress';
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { connect } from "react-redux";
@@ -25,7 +25,7 @@ import Pagination from "./Pagination";
 import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
-import {gqlHomes, gqlCreateContactUs, gqlCreateBookmark, gqlIsBookmark } from "../../gqlQuery"
+import {gqlHomes, gqlCreateContactUs, gqlCurrentNumber, subNumberIncremented , subPostCreated} from "../../gqlQuery"
 
 import { login } from "../../redux/actions/auth"
 
@@ -71,6 +71,28 @@ const Home = (props) => {
       }
   );
   // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
+
+  // gqlCurrentNumber
+  const [onCurrentNumber, resultCurrentNumberValues] = useMutation(gqlCurrentNumber
+    , {
+        onCompleted({ data }) {
+          // history.push("/");
+        }
+      }
+  );
+
+  // /// 
+  const numberIncrementedValues = useSubscription(subNumberIncremented);
+
+  // let { data, loading } = useSubscription(subNumberIncremented, {
+  //   onSubscriptionData: (res) => {
+  //     // setDataFromCb(res.subscriptionData.data)
+  //     console.log("onSubscriptionData")
+  //   },
+  // });
+
+  console.log("numberIncrementedValues :", numberIncrementedValues)
+
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
@@ -226,6 +248,9 @@ const Home = (props) => {
                               }}
                               onLightbox={(data)=>{
                                 setLightbox(data)
+
+                                onCurrentNumber()
+                                console.log("+++")
                               }}
                               onAnchorElShareOpen={(index, e)=>{
                                 handleAnchorElShareOpen(index, e)

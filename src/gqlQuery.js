@@ -663,6 +663,8 @@ export const gqlFollowingByUserId = gql`
         }
     }`;
 
+
+
 //////////////////  mutation  ///////////////////
 
 export const gqlLogin = gql`
@@ -901,5 +903,31 @@ export const gqlUpdateTContactUs = gql`
     }`;
 
     // createComment
+export const gqlCurrentNumber = gql`
+    mutation Query {
+        currentNumber
+      }`;
 
 //////////////////  mutation  ///////////////////
+
+
+//////////////////  subscription  ///////////////////
+
+export const subNumberIncremented = gql`
+  subscription OnnumberIncremented {
+    numberIncremented
+  }
+`;
+
+
+export const subPostCreated = gql`
+    subscription Subscription {
+    postCreated
+  }
+`;
+
+/*
+
+*/ 
+
+//////////////////  subscription  ///////////////////
