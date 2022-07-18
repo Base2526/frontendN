@@ -25,7 +25,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { gqlPost, gqlCreateAndUpdateBookmark, gqlIsBookmark, gqlCreateComment, gqlComment } from "../../gqlQuery"
+import { gqlPost, gqlCreateAndUpdateBookmark, gqlIsBookmark, gqlCreateAndUpdateComment, gqlComment } from "../../gqlQuery"
 import DialogLogin from "../../DialogLogin";
 import { login } from "../../redux/actions/auth"
 
@@ -94,16 +94,16 @@ const Detail = (props) => {
     );
     // console.log("resultCreateAndUpdateBookmarkValues :", resultCreateAndUpdateBookmarkValues)
 
-    const [onCreateComment, resultCreateComment] = useMutation(gqlCreateComment, 
+    const [onCreateComment, resultCreateComment] = useMutation(gqlCreateAndUpdateComment, 
       {
-          update: (cache, {data: {createComment}}) => {
+          update: (cache, {data: {createAndUpdateComment}}) => {
               const data1 = cache.readQuery({
                   query: gqlComment,
                   variables: {postId: id}
               });
   
               let newData = {...data1.Comment}
-              newData = {...newData, data: createComment.data}
+              newData = {...newData, data: createAndUpdateComment.data}
                   
               cache.writeQuery({
                   query: gqlComment,

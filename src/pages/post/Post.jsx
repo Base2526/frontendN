@@ -30,6 +30,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { DataGrid } from "@mui/x-data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import Typography from "@mui/material/Typography";
+import { connect } from "react-redux";
 
 import BankInputField from "./BankInputField";
 import AttackFileField from "./AttackFileField";
@@ -198,7 +199,11 @@ const Post = (props) => {
   // props.location.state
   console.log("props.location.state :", history)
 
-  let userId = "62a2c0cecf7946010d3c743f";
+  let {user} = props
+
+  if(_.isEmpty(user)){
+    history.push("/")
+  }
 
   let { id, mode } = useParams();
 
@@ -261,45 +266,24 @@ const Post = (props) => {
     {
       update: (cache, {data: {updatePost}}) => {
         let {state} = history.location
+        const data1 = cache.readQuery({
+          query: gqlPost,
+          variables: {id}
+        });
 
-        if(state == undefined){
-          return;
-        }
-        switch(state.from){
-          case "/posts":{
-            const data1 = cache.readQuery({
-              query: gqlPosts,
-              variables: {
-                page: 0, 
-                perPage: 100
-              }
-            });
+        console.log("onUpdatePost :", updatePost, data1, state)
 
-            if(data1 != null){
-              // let newPosts = {...data1.Posts}
-              // let newData = [...newPosts.data, updatePost]
+        let newPost = {...data1.post}
+        let newData = {...newPost.data, updatePost}
+        newPost = {...newPost, data: newData}
 
-              // newPosts = {...newPosts, data: newData}
-
-              // cache.writeQuery({
-              //   query: gqlPosts,
-              //   data: {
-              //     Posts: newPosts
-              //   },
-              //   variables: {
-              //   page: 0, 
-              //     perPage: 100
-              //   }
-              // });
-            }
-            break;
-          }
-
-          default:{
-
-            break;
-          }
-        }
+        cache.writeQuery({
+          query: gqlPost,
+          data: {
+            post: newPost
+          },
+          variables: {id}
+        });
       },
       onCompleted({ data }) {
         history.push("/posts");
@@ -333,15 +317,22 @@ const Post = (props) => {
         notifyOnNetworkStatusChange: true,
       });
 
+      console.log("editValues : ", editValues)
+
       if(_.isEqual(input, initValues)) {
         if(!_.isEmpty(editValues)){
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.Post
+            let {status, data} = editValues.data.post
 
             console.log("edit editValues : ", data)
             if(status){
+
+              if( data.ownerId != user.id){
+                history.push("/")
+              }
+
               setInput({
                 title: data.title, 
                 nameSubname: data.nameSubname, 
@@ -433,7 +424,7 @@ const Post = (props) => {
             description: input.description,
             dateTranfer: input.dateTranfer,
             files: [...newAttackFilesBase64, ...oldAttackFiles],
-            ownerId: userId
+            ownerId: user.id
           }
         }});
         break;
@@ -450,10 +441,10 @@ const Post = (props) => {
                       description: input.description,
                       dateTranfer: input.dateTranfer,
                       files:  _.omitDeep(_.filter([...newAttackFilesBase64, ...oldAttackFiles], (v, key) => !v.delete), ['__typename', 'id']),
-                      ownerId: userId
+                      ownerId: user.id
                     }
 
-        console.log("newInput : ", _.omitDeep(newInput, ['__typename']))
+        console.log("newInput : ", editValues.data.post.data.id, _.omitDeep(newInput, ['__typename']))
 
         onUpdatePost({ variables: { 
           id: editValues.data.post.data.id,
@@ -770,4 +761,10 @@ const Post = (props) => {
   );
 };
 
-export default Post;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    user: state.auth.user,
+  }
+};
+
+export default connect( mapStateToProps, null )(Post);

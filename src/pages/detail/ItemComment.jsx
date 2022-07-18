@@ -4,7 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import _ from "lodash"
 
-import { gqlComment, gqlCreateComment } from "../../gqlQuery"
+import { gqlComment } from "../../gqlQuery"
 import { CommentSection } from "../../components/comment";
 
 const ItemComment = (props) => {

@@ -791,9 +791,9 @@ export const gqlCreateTContactUs = gql`
         }
     }`;
 
-export const gqlCreateComment = gql`
-    mutation CreateComment($input: CommentInput) {
-        createComment(input: $input) {
+export const gqlCreateAndUpdateComment = gql`
+    mutation CreateAndUpdateComment($input: CommentInput) {
+        createAndUpdateComment(input: $input) {
             status
             executionTime
             data {
@@ -871,6 +871,30 @@ export const gqlUpdatePost = gql`
   mutation UpdatePost($id: ID!, $input: PostInput) {
         updatePost(_id: $id, input: $input) {
             id: _id
+            title
+            nameSubname
+            idCard
+            amount
+            dateTranfer
+            description
+            tels
+            follows
+            isPublish
+            createdAt
+            updatedAt
+            banks{
+                bankAccountName
+                bankId
+            }
+            files {
+                id:_id
+                base64
+                fileName
+                lastModified
+                size
+                type
+            }
+            ownerId
         }
     }`;
  
@@ -914,11 +938,10 @@ export const gqlCurrentNumber = gql`
 //////////////////  subscription  ///////////////////
 
 export const subNumberIncremented = gql`
-  subscription OnnumberIncremented {
-    numberIncremented
+  subscription OnnumberIncremented($postIDs: String) {
+    numberIncremented(postIDs: $postIDs)
   }
 `;
-
 
 export const subPostCreated = gql`
     subscription Subscription {
@@ -926,8 +949,71 @@ export const subPostCreated = gql`
   }
 `;
 
-/*
+// subPost
+export const subPost = gql`
+    subscription subPost($postIDs: String) {
+        subPost(postIDs: $postIDs) {
+            mutation
+            data {
+              id: _id
+              title
+              nameSubname
+              idCard
+              amount
+              dateTranfer
+              description
+              tels
+              banks {
+                _id
+                bankAccountName
+                bankId
+              }
+              follows
+              shares {
+                _id
+                userId
+                postId
+                destination
+              }
+              files {
+                _id
+                base64
+                fileName
+                lastModified
+                size
+                type
+              }
+              isPublish
+              ownerId
+              createdAt
+              updatedAt
+            }
+        }
+    }
+`;
 
-*/ 
+// 
+export const subComment = gql`
+    subscription subComment($commentID: String) {
+        subComment(commentID: $commentID) {
+            mutation
+            commentID
+            data {
+              userId
+              comId
+              fullName
+              avatarUrl
+              text
+              replies {
+                userId
+                comId
+                fullName
+                avatarUrl
+                text
+              }
+            }
+        }
+    }
+`;
 
 //////////////////  subscription  ///////////////////

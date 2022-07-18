@@ -11,7 +11,7 @@ import CommentIcon from "@mui/icons-material/Comment";
 
 import _ from "lodash"
 
-import { gqlComment } from "../../gqlQuery"
+import { gqlComment, subComment } from "../../gqlQuery"
 
 const ItemComment = (props) => {
     let {item, onPanelComment} = props 
@@ -25,6 +25,25 @@ const ItemComment = (props) => {
           if(commentValues.data.comment.data.length == 0){
             return <CommentIcon />
           }
+
+
+          let {subscribeToMore} = commentValues
+          const unsubscribe =  subscribeToMore({
+            document: subComment,
+            variables: { commentID: item.id },
+            updateQuery: (prev, {subscriptionData}) => {
+              if (!subscriptionData.data) return prev;
+
+              let { mutation, data } = subscriptionData.data.subComment;
+
+              let newPrev = {...prev.comment, data}
+
+              console.log("ItemComment updateQuery >> ", prev, subscriptionData, newPrev);
+        
+              return {comment: newPrev}; 
+            }
+          });
+
     
           let count = 0;
           _.map(commentValues.data.comment.data, (v) => {

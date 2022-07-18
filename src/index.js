@@ -50,8 +50,8 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 
 import { createClient } from 'graphql-ws';
 
-import { WebSocketLink } from "@apollo/client/link/ws";
-import { SubscriptionClient } from "subscriptions-transport-ws";
+// import { WebSocketLink } from "@apollo/client/link/ws";
+// import { SubscriptionClient } from "subscriptions-transport-ws";
 
 
 // const httpLink = createHttpLink({
@@ -81,15 +81,46 @@ const httpLink = new HttpLink({
 
 // authLink.concat(httpLink)
 
+let activeSocket, timedOut;
 
 const wsLink = new GraphQLWsLink(createClient({
   url: 'ws://localhost:4000/graphql',
+  disablePong: false,
   connectionParams: {
     authToken: token,
   },
   on: {
-    connected: () => console.log("connected client"),
-    closed: () => console.log("closed"),
+    // connected: () => console.log("connected client"),
+    closed: () =>{
+      console.log("closed")
+      activeSocket =null
+    } ,
+    connected: (socket) =>{
+      activeSocket = socket
+
+      console.log("connected client ", socket)
+    },
+    keepAlive: 1, // ping server every 10 seconds
+    ping: (received) => {
+      console.log("#0")
+      if (!received) // sent
+        console.log("#1")
+        timedOut = setTimeout(() => {
+          if (activeSocket.readyState === WebSocket.OPEN){
+            activeSocket.close(4408, 'Request Timeout');
+          }
+
+          console.log("#2")
+            
+        }, 5_000); // wait 5 seconds for the pong and then close the connection
+    },
+    pong: (received) => {
+      console.log("#4")
+      if (received){
+        console.log("#3")
+        clearTimeout(timedOut); // pong is received, clear connection close timeout
+      } 
+    },
   },
 }));
 

@@ -12,7 +12,7 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import {gqlComment, gqlCreateComment} from "../../gqlQuery"
+import {gqlComment, gqlCreateAndUpdateComment, subComment} from "../../gqlQuery"
 
 import data from "./data.json";
 
@@ -62,16 +62,16 @@ const PanelComment = ({ user, commentId, isOpen, onRequestClose, onSignin }) => 
   //   i.replies && i.replies.map((i) => (count += 1));
   // });
 
-  const [onCreateComment, resultCreateComment] = useMutation(gqlCreateComment, 
+  const [onCreateAndUpdateComment, resultCreateAndUpdateComment] = useMutation(gqlCreateAndUpdateComment, 
     {
-        update: (cache, {data: {createComment}}) => {
+        update: (cache, {data: {createAndUpdateComment}}) => {
             const data1 = cache.readQuery({
                 query: gqlComment,
                 variables: {postId: commentId}
             });
 
             let newData = {...data1.comment}
-            newData = {...newData, data: createComment.data}
+            newData = {...newData, data: createAndUpdateComment.data}
                 
             cache.writeQuery({
                 query: gqlComment,
@@ -88,13 +88,33 @@ const PanelComment = ({ user, commentId, isOpen, onRequestClose, onSignin }) => 
         }
     }
   );
-  console.log("resultCreateComment :", resultCreateComment)
+  console.log("resultCreateAndUpdateComment :", resultCreateAndUpdateComment)
 
   let commentValues = useQuery(gqlComment, {
     variables: {postId: commentId},
     notifyOnNetworkStatusChange: true,
   });
   console.log("commentValues : ", commentValues)
+  if(!commentValues.loading){
+    let {subscribeToMore} = commentValues
+    const unsubscribe =  subscribeToMore({
+			document: subComment,
+      variables: { commentID: commentId },
+			updateQuery: (prev, {subscriptionData}) => {
+        if (!subscriptionData.data) return prev;
+
+				console.log("updateQuery >> ", prev, subscriptionData);
+
+        let { mutation, data } = subscriptionData.data.subComment;
+
+        let newPrev = {...prev.comment, data}
+  
+        return {comment: newPrev}; //;
+			}
+		});
+
+    console.log("unsubscribe :", unsubscribe)
+  }
 
   // if(!commentValues.loading){
   //   setComment(commentValues.data.Comment.data)
@@ -150,7 +170,7 @@ const PanelComment = ({ user, commentId, isOpen, onRequestClose, onSignin }) => 
                     let input = { postId: commentId, data: _.omitDeep(data, ['__typename']) }
                     console.log("onComment input :", input);
 
-                    onCreateComment({ variables: { input: input }});
+                    onCreateAndUpdateComment({ variables: { input: input }});
 
                   }}
                   signinUrl={signinUrl}

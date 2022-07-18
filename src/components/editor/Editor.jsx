@@ -8,11 +8,11 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 const Editor = ({label, initData, onEditorChange}) => {
 
-  console.log("editValues : >", initData)
+  // console.log("editValues : >", initData)
   const [text, setText] = useState(initData)
 
   useEffect(()=>{
-    console.log("editValues :", text)
+    // console.log("editValues :", text)
     onEditorChange(text)
   }, [text])
 

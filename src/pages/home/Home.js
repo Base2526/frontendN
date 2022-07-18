@@ -16,7 +16,6 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { connect } from "react-redux";
 
-
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
 import Footer from "../footer";
@@ -25,7 +24,7 @@ import Pagination from "./Pagination";
 import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
-import {gqlHomes, gqlCreateContactUs, gqlCurrentNumber, subNumberIncremented , subPostCreated} from "../../gqlQuery"
+import {gqlHomes, gqlCreateContactUs, gqlCurrentNumber, subPost} from "../../gqlQuery"
 
 import { login } from "../../redux/actions/auth"
 
@@ -82,7 +81,7 @@ const Home = (props) => {
   );
 
   // /// 
-  const numberIncrementedValues = useSubscription(subNumberIncremented);
+  
 
   // let { data, loading } = useSubscription(subNumberIncremented, {
   //   onSubscriptionData: (res) => {
@@ -90,8 +89,7 @@ const Home = (props) => {
   //     console.log("onSubscriptionData")
   //   },
   // });
-
-  console.log("numberIncrementedValues :", numberIncrementedValues)
+  
 
 
   const homesValues =useQuery(gqlHomes, {
@@ -99,7 +97,45 @@ const Home = (props) => {
     notifyOnNetworkStatusChange: true,
   });
 
-  // console.log("homesValues :", homesValues )
+  console.log("homesValues :", homesValues )
+
+  if(!homesValues.loading){
+
+    // console.log("homesValues.data.homes.data :", homesValues.data.homes.data)
+
+    var keys = _.map(homesValues.data.homes.data, _.property("id"));
+
+    // const numberIncrementedValues = useSubscription(subNumberIncremented, 
+    //   { variables: { postIDs: JSON.stringify(keys) } });
+    // console.log("keys :", keys)
+
+    let {subscribeToMore} = homesValues
+    const unsubscribe =  subscribeToMore({
+			document: subPost,
+      variables: { postIDs: JSON.stringify(keys) },
+			updateQuery: (prev, {subscriptionData}) => {
+        if (!subscriptionData.data) return prev;
+
+				console.log("updateQuery >> ", prev, subscriptionData);
+
+        let { mutation, data } = subscriptionData.data.subPost;
+
+        let prevData = prev.homes.data
+        let newData = _.map(prevData, (o)=>{
+                        if(o.id === data.id){
+                          return data
+                        }
+                        return o
+                      })
+
+        let newPrev = {...prev.homes, data: newData}
+        console.log("newPrev >> ", newPrev);
+        return newPrev;
+			}
+		});
+
+    console.log("unsubscribe :", unsubscribe)
+  }
 
   // useEffect(()=>{
   //   console.log("useEffect user :", user)
