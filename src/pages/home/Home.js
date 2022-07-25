@@ -15,6 +15,7 @@ import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { connect } from "react-redux";
+import IconButton from "@mui/material/IconButton";
 
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
@@ -24,7 +25,9 @@ import Pagination from "./Pagination";
 import DialogLogin from "../../DialogLogin";
 import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
-import {gqlHomes, gqlCreateContactUs, gqlCurrentNumber, subPost} from "../../gqlQuery"
+import {gqlHomes, gqlCreateContactUs, 
+        gqlCreateShare, gqlCurrentNumber, 
+        subPost, gqlCreateAndUpdateBookmark} from "../../gqlQuery"
 
 import { login } from "../../redux/actions/auth"
 
@@ -81,16 +84,40 @@ const Home = (props) => {
   );
 
   // /// 
-  
 
-  // let { data, loading } = useSubscription(subNumberIncremented, {
-  //   onSubscriptionData: (res) => {
-  //     // setDataFromCb(res.subscriptionData.data)
-  //     console.log("onSubscriptionData")
-  //   },
-  // });
+  const [onCreateShare, resultCreateShare] = useMutation(gqlCreateShare, {
+    onCompleted({ data }) {
+      // history.push("/");
+    }
+  });
+  console.log("resultCreateShare :", resultCreateShare)
   
+  const [onCreateAndUpdateBookmark, resultCreateAndUpdateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
+    , {
+        update: (cache, {data: {createAndUpdateBookmark}}) => {
+          let {userId, postId} = createAndUpdateBookmark
+        
+          const data1 = cache.readQuery({
+              query: gqlIsBookmark,
+              variables: { userId, postId }
+          });
 
+          let newData = {...data1.isBookmark}
+          newData = {...newData, data: createAndUpdateBookmark}
+      
+          cache.writeQuery({
+              query: gqlIsBookmark,
+              data: {
+                isBookmark: newData
+              },
+              variables: {userId, postId }
+          });     
+        },
+        onCompleted({ data }) {
+        //   console.log("bookmark :::: onCompleted")
+        },
+      },  
+  );
 
   const homesValues =useQuery(gqlHomes, {
     variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
@@ -116,30 +143,19 @@ const Home = (props) => {
 			updateQuery: (prev, {subscriptionData}) => {
         if (!subscriptionData.data) return prev;
 
-				console.log("updateQuery >> ", prev, subscriptionData);
-
         let { mutation, data } = subscriptionData.data.subPost;
 
         let prevData = prev.homes.data
         let newData = _.map(prevData, (o)=>{
-                        if(o.id === data.id){
-                          return data
-                        }
-                        return o
+                        if(o.id === data.id) return data
+                        return o 
                       })
 
         let newPrev = {...prev.homes, data: newData}
-        console.log("newPrev >> ", newPrev);
         return newPrev;
 			}
 		});
-
-    console.log("unsubscribe :", unsubscribe)
   }
-
-  // useEffect(()=>{
-  //   console.log("useEffect user :", user)
-  // }, [user])
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -181,25 +197,57 @@ const Home = (props) => {
               }}
               >
               <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
-                  <FacebookShareButton
+                  {/* <FacebookShareButton
                     url={window.location.href + "detail/" + item.id}
                     quote={item.title}
                     hashtag={"#hashtag"}
                     description={item.title}
                     className="Demo__some-network__share-button"
-                  >
-                  <FacebookIcon size={32} round /> Facebook
-                  </FacebookShareButton>
+                  > */}
+                 <div onClick={(e)=>{
+
+                    if(_.isEmpty(user)){
+                      setDialogLoginOpen(true)
+                    }else{
+                      onCreateShare({ variables: { input: {
+                            postId: item.id,
+                            userId: user.id,
+                            destination: "facebook"
+                          }
+                        }
+                      });  
+                    }
+                    handleAnchorElShareClose()
+                  }}>
+                    <FacebookIcon size={32} round /> Facebook
+                  </div>
+                  {/* </FacebookShareButton> */}
               </MenuItem>{" "}
               <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
-                  <TwitterShareButton
+                  {/* <TwitterShareButton
                     title={item.title}
                     url={window.location.href + "detail/" + item.id}
                     hashtags={["hashtag1", "hashtag2"]}
-                  >
-                  <TwitterIcon size={32} round />
-                  Twitter
-                  </TwitterShareButton>
+                  > */}
+                  <div onClick={(e)=>{
+
+                    if(_.isEmpty(user)){
+                      setDialogLoginOpen(true)
+                    }else{
+                      onCreateShare({ variables: { input: {
+                            postId: item.id,
+                            userId: user.id,
+                            destination: "twitter"
+                          }
+                        }
+                      });  
+                    }
+
+                    handleAnchorElShareClose()
+                  }}>
+                    <TwitterIcon size={32} round />Twitter
+                  </div>
+                  {/* </TwitterShareButton> */}
               </MenuItem>
             </Menu>
   }
@@ -300,6 +348,15 @@ const Home = (props) => {
                               onDialogLogin={(status)=>{
                                 setDialogLoginOpen(status)
                               }}
+                              onBookmark={(postId, userId, status)=>{
+                                onCreateAndUpdateBookmark({ variables: { input: {
+                                      postId,
+                                      userId,
+                                      status
+                                    }
+                                  }
+                                }); 
+                              }}
                               />
                               {menuShare(item, index)}
                               {menuSetting(item, index)}
@@ -314,15 +371,22 @@ const Home = (props) => {
                     page={page}
                     onPageChange={(event, newPage) => {
                       setPage(newPage);
-                      // navigate.push({
-                      //   pathname: "/",
-                      //   search: "?sort=date&order=newest"
-                      // });
+
+
+                      history.push({
+                        pathname: "/",
+                        search: "?page=" + newPage + "&perPage=" + rowsPerPage
+                      });
                     }}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={(event) => {
                       setRowsPerPage(parseInt(event.target.value, 10));
                       setPage(0);
+
+                      history.push({
+                        pathname: "/",
+                        search: "?perPage=" + parseInt(event.target.value, 10)
+                      });
                     }}
                     count={homesValues.data.homes.total}
                   />
@@ -445,8 +509,6 @@ const Home = (props) => {
     </div>
   );
 }
-
-// export default Home; 
 
 const mapStateToProps = (state, ownProps) => {
   return {

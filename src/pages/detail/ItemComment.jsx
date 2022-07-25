@@ -4,9 +4,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import _ from "lodash"
 
-import { gqlComment } from "../../gqlQuery"
+import { gqlComment, subComment } from "../../gqlQuery"
 import { CommentSection } from "../../components/comment";
 
+let unsubscribe =null
 const ItemComment = (props) => {
     let { user, id, onComment, onDialogLogin } = props 
     
@@ -17,6 +18,26 @@ const ItemComment = (props) => {
       variables: {postId: id},
       notifyOnNetworkStatusChange: true,
     });
+
+    if(!commentValues.loading){
+      let {subscribeToMore} = commentValues
+      unsubscribe =  subscribeToMore({
+        document: subComment,
+        variables: { commentID: id },
+        updateQuery: (prev, {subscriptionData}) => {
+          console.log("ItemComment updateQuery #1 >> ", prev, subscriptionData);
+          if (!subscriptionData.data) return prev;
+
+          let { mutation, data } = subscriptionData.data.subComment;
+
+          let newPrev = {...prev.comment, data}
+
+          console.log("ItemComment updateQuery #2 >> ", prev, subscriptionData, newPrev);
+    
+          return {comment: newPrev}; 
+        }
+      });
+    }
 
     return (
       <>

@@ -9,7 +9,7 @@ import RoleList from "./pages/roleList/RoleList";
 import Role from "./pages/role/Role";
 import Devel from "./pages/devel/Devel";
 import Notification from "./pages/notification"
-import Message from "./pages/message/message"
+import Message from "./pages/message/MessageView"
 import BookmarkList from "./pages/bookmarkList/BookmarkList"
 import ContactUsList from "./pages/contactUsList/ContactUsList"
 import TContactUs from "./pages/taxonomy/tContactUs/TContactUs"
@@ -43,7 +43,7 @@ import _ from "lodash"
 
 const PrivatePage =(props) => {
   let { path, url } = useRouteMatch();
-  console.log("path :", path);
+//   console.log("path :", path);
 
 
   return !_.isEmpty(props.user)
@@ -157,7 +157,7 @@ const PrivatePage =(props) => {
 
 // export default PrivatePage;
 const mapStateToProps = (state, ownProps) => {
-    console.log("mapStateToProps  :", state)
+    // console.log("mapStateToProps  :", state)
     return {
       user: state.auth.user,
     }

@@ -307,7 +307,7 @@ const Post = (props) => {
       console.log("bookmarksByPostIdValues : ", bookmarksByPostIdValues)
     
       shareValues = useQuery(gqlShareByPostId, {
-        variables: {postId: id, page: 0, perPage: 100},
+        variables: {postId: id},
         notifyOnNetworkStatusChange: true,
       });
       console.log("shareValues : ", shareValues)
@@ -711,7 +711,7 @@ const Post = (props) => {
                           </div>
                       }
                     </Panel> 
-                    <Panel title={shareValues.loading ? "Shares" : "Shares (" + shareValues.data.ShareByPostId.data.length  +")"}>
+                    <Panel title={shareValues.loading ? "Shares" : "Shares (" + shareValues.data.shareByPostId.data.length  +")"}>
                       {
                         shareValues.loading
                         ? <div><CircularProgress /></div> 

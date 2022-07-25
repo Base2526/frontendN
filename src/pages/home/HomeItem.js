@@ -66,7 +66,7 @@ const useStyles = makeStyles({
 
 const HomeItem =(props) => {
   
-  let { user, item, index, onPanelComment, onLightbox, onAnchorElShareOpen, onAnchorElSettingOpen, onDialogLogin } = props
+  let { item, onLightbox } = props
   
   const classes = useStyles(item);
   let history = useHistory();
@@ -180,7 +180,7 @@ const HomeItem =(props) => {
           <Divider light />
           <div>
 
-            <ItemBookmark {...props} />
+            {/* <ItemBookmark {...props} /> */}
             <ItemShare {...props} />
             <ItemComment {...props}/>
 

@@ -45,7 +45,10 @@ export const TopIconBadge = styled.span`
   font-size: 10px;
 `;
 
-const MyAppBar = ({classes, onDrawerOpen, onDialogLogin, user}) =>{
+const MyAppBar = (props) =>{
+
+  let {conversations, classes, onDrawerOpen, onDialogLogin, user} = props
+
   let history = useHistory();
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -90,12 +93,16 @@ const MyAppBar = ({classes, onDrawerOpen, onDialogLogin, user}) =>{
                         <TopIconBadge>2</TopIconBadge>
                       </IconContainer>
                     </Link>
-                    <Link to="/message">
-                      <IconContainer>
-                        <CommentIcon />
-                        <TopIconBadge>2</TopIconBadge>
-                      </IconContainer>
-                    </Link>
+
+                    {
+                      !_.isEmpty(conversations)  && <Link to="/message">
+                                                      <IconContainer>
+                                                        <CommentIcon />
+                                                        <TopIconBadge>2</TopIconBadge>
+                                                      </IconContainer>
+                                                    </Link>
+                    }
+                    
                     <IconContainer>
                       <IconButton
                         aria-owns={Boolean(anchorEl) ? "menu-appbar" : undefined}
@@ -148,9 +155,10 @@ const MyAppBar = ({classes, onDrawerOpen, onDialogLogin, user}) =>{
 // export default MyAppBar;
 
 const mapStateToProps = (state, ownProps) => {
-  console.log("mapStateToProps  :", state)
+  // console.log("mapStateToProps  :", state)
   return {
     user: state.auth.user,
+    conversations: state.auth.conversations
   }
 };
 

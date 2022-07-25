@@ -21,7 +21,7 @@ export const CommentSection = ({
     setComments(commentsArray)
   }, [commentsArray])
 
-  console.log("CommentSection : ", currentUser)
+  // console.log("CommentSection : ", currentUser)
 
   return (
     <ActionProvider

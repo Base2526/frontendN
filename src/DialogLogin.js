@@ -6,8 +6,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import Typography from "@mui/material/Typography";
 import { useHistory } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
-
 import { useDeviceData } from "react-device-detect";
+
 import { gqlLogin } from "./gqlQuery"
 
 import {

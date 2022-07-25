@@ -1,9 +1,7 @@
 import "./messenger.css";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useQuery, useMutation } from "@apollo/client";
-
-
+import { useMutation } from "@apollo/client";
 
 // RCE CSS
 import "react-chat-elements/dist/main.css";
@@ -28,12 +26,11 @@ import FaSquare from "react-icons/lib/md/crop-square";
 import CircularProgress from '@mui/material/CircularProgress';
 import loremIpsum from "lorem-ipsum";
 import Identicon from "identicon.js";
-
+import { connect } from "react-redux";
 import _ from "lodash"
 
-
 // import { socket } from "../../SocketioClient";
-import { gqlConversations } from "../../gqlQuery"
+import { gqlFetchMessage, gqlAddMessage } from "../../gqlQuery"
 
 import ChatItemView from "./ChatItemView"
 import MessageListView from "./MessageListView"
@@ -49,7 +46,18 @@ function useForceUpdate() {
 
 // let _socket = socket()
 
-const message = (props) => {
+// const usePrevious =(value) =>{
+//   const ref = useRef();
+//   useEffect(() => {
+//     ref.current = value;
+//   });
+//   return ref.current;
+// }
+
+const Message2 = (props) => {
+
+  let {user, conversations} = props
+
   const messageListReferance = useRef();
   const inputReferance = useRef();
 
@@ -62,45 +70,72 @@ const message = (props) => {
   const [preview, setPreview] = useState(false);
 
   const [currentChat, setCurrentChat] = useState(null);
-
-  let userId = "62a2f65dcf7946010d3c7547"
-
-  // useEffect(() => {
-
-  //   if(currentChat !== null){
-  //     let messageValue = useQuery(gqlMessage, {
-  //       variables: {id: currentChat.id},
-  //       notifyOnNetworkStatusChange: true,
-  //     });
-  
-  //     console.log("currentChat :", currentChat, messageValue);
-  //   }
-
-  // }, [currentChat]);
+  // const prevCurrentChat = usePrevious(currentChat);
 
   
-  const conversationValues =useQuery(gqlConversations, {
-    variables: {userId: userId},
-    notifyOnNetworkStatusChange: true,
-  });
+  const [onAddMessage, resultAddMessageValues] = useMutation(gqlAddMessage
+    , {
+        update: (cache, {data: {addMessage}}) => {
 
-  console.log("conversationValues :", conversationValues)
+            // const data1 = cache.readQuery({
+            //     query: gqlFetchMessage,
+            //     variables: {id: currentChat === null ? "" : currentChat.id},
+            // });
 
-  if(!conversationValues.loading){
-    let conversations = conversationValues.data.conversations.data
+            // let newData = {...data1.message}
+            // newData = {...newData, data: [...newData.data, addMessage]}
+
+            // console.log("gqlMessage ::: ", addMessage, data1, newData)
+        
+            // cache.writeQuery({
+            //     query: gqlFetchMessage,
+            //     data: {
+            //         message: newData
+            //     },
+            //     variables: {id: currentChat === null ? "" : currentChat.id},
+            // });
+        },
+        onCompleted({ data }) {
+        console.log("gqlAddMessage :::: onCompleted")
+        },
+    },  
+  );
+
+  useEffect(() => {
+    console.log("message :", conversations)
+
     if(!_.isEmpty(conversations)){
-
-      console.log("")
-
-      // setCurrentChat(conversations[0]);
-
-      // let messageValue = useQuery(gqlMessage, {
-      //   variables: {id: conversations[0].id},
-      //   notifyOnNetworkStatusChange: true,
-      // });
-      // console.log("conversationValues, messageValue :", messageValue)
+      setCurrentChat(conversations[0]) 
     }
-  }
+  }, []);
+
+  useEffect(()=>{
+    console.log("message :", currentChat)
+    if(!_.isEmpty(currentChat)) onFetchMessage({ variables: { id: currentChat.id } }); 
+  }, [currentChat])
+
+  // const conversationValues =useQuery(gqlConversations, {
+  //   variables: {userId: user.id},
+  //   notifyOnNetworkStatusChange: true,
+  // });
+
+  // console.log("conversationValues :", conversationValues)
+
+  // if(!conversationValues.loading){
+  //   // let conversations = conversationValues.data.conversations.data
+  //   // if(!_.isEmpty(conversations)){
+
+  //   //   console.log("")
+
+  //   //   // setCurrentChat(conversations[0]);
+
+  //   //   // let messageValue = useQuery(gqlMessage, {
+  //   //   //   variables: {id: conversations[0].id},
+  //   //   //   notifyOnNetworkStatusChange: true,
+  //   //   // });
+  //   //   // console.log("conversationValues, messageValue :", messageValue)
+  //   // }
+  // }
   
 
   // if(!conversationValues.loading){
@@ -148,15 +183,15 @@ const message = (props) => {
   // }, []);
 
 
-  useEffect(() => {
-    // if(currentChat !== null){
-    //   console.log("currentChat :", currentChat)
-    //   let messageValue = useQuery(gqlMessage, {
-    //     variables: {id: "62aea57bf9ac37002c819c99"},
-    //     notifyOnNetworkStatusChange: true,
-    //   });
-    // }
-  }, [currentChat])
+  // useEffect(() => {
+  //   // if(currentChat !== null){
+  //   //   console.log("currentChat :", currentChat)
+  //   //   let messageValue = useQuery(gqlMessage, {
+  //   //     variables: {id: "62aea57bf9ac37002c819c99"},
+  //   //     notifyOnNetworkStatusChange: true,
+  //   //   });
+  //   // }
+  // }, [currentChat])
  
   const getRandomColor = () => {
     var letters = "0123456789ABCDEF";
@@ -178,6 +213,7 @@ const message = (props) => {
     }).toString();
   };
 
+  // status, waiting, sent, received, read
   const random = (type, mtype) => {
     switch (type) {
       case "message":
@@ -423,7 +459,7 @@ const message = (props) => {
 
   const chatItemView =(item) =>{
     let members = item.members
-    let member = _.filter(members, (vv)=>vv != userId)
+    let member = _.filter(members, (vv)=>vv != user.id)
 
     if(!_.isEmpty(member)){
       // let userValue = useQuery(gqlUser, {
@@ -487,30 +523,130 @@ const message = (props) => {
       */
   } 
 
+
+  const [onFetchMessage, resultMessage] = useMutation(gqlFetchMessage, {
+
+    update: (cache, {data: {message}}) => {
+
+      console.log("message :", message)
+      // let {userId, postId} = createAndUpdateBookmark
+    
+      // const data1 = cache.readQuery({
+      //     query: gqlIsBookmark,
+      //     variables: { userId, postId }
+      // });
+
+      // let newData = {...data1.isBookmark}
+      // newData = {...newData, data: createAndUpdateBookmark}
+  
+      // cache.writeQuery({
+      //     query: gqlIsBookmark,
+      //     data: {
+      //       isBookmark: newData
+      //     },
+      //     variables: {userId, postId }
+      // });     
+    },
+    onCompleted({ data }) {
+      // history.push("/");
+    }
+  });
+
+  if(resultMessage.called && !resultMessage.loading){
+    let {executionTime, status, data}= resultMessage.data.fetchMessage
+    console.log("resultMessage :", status, data, executionTime)
+
+    let mList = [
+                    {
+                      avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                      alt: 'Reactjs',
+                      title: 'Facebook',
+                      subtitle: 'What are you doing?',
+                      date: new Date(),
+                      unread: 0,
+                    },
+                    {
+                      avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                      alt: 'Reactjs',
+                      title: 'Facebook',
+                      subtitle: 'What are you doing?',
+                      date: new Date(),
+                      unread: 0,
+                    },
+                    {
+                      avatar: 'https://www.nicepng.com/png/detail/192-1921815_-corgi-cartoon-face.png',
+                      alt: 'Reactjs',
+                      title: 'Facebook',
+                      subtitle: 'What are you doing?',
+                      date: new Date(),
+                      unread: 0,
+                    }
+                  ]
+
+    return  <div >
+              {
+                <div className="container">
+                  <div className="left-panel">
+                    {
+                      _.map(conversations, (item)=>{
+                        return <ChatItemView 
+                                {...props}
+                                item={item}
+                                onCurrentChat={(e)=> setCurrentChat(e) }/>
+                      })
+                    }
+                  </div>
+                  <div className="right-panel">
+                    <MessageListView 
+                      {...props}
+                      messageList={mList}
+                      onAddMessage={(input)=>{
+                        // onAddMessage({ variables: { input: input } });
+
+                        console.log("input :", input)
+                      }}
+                      currentChat={currentChat === null  ? _.isEmpty(conversations) ? null :conversations[0] :currentChat}/>
+                  </div>
+                </div>
+              }
+            </div>
+  }else{
+    return  <div >
+              {
+                <div className="container">
+                  <div className="left-panel">
+
+                    {
+                      _.map(conversations, (item)=>{
+                        return <ChatItemView 
+                                {...props}
+                                item={item}
+                                onCurrentChat={(e)=> onFetchMessage({ variables: { id: e.id } }) }/>
+                      })
+                      
+                    }
+                  </div>
+                  <div className="right-panel">
+                    <CircularProgress /> 
+                  </div>
+                </div>
+              }
+            </div>
+  }
+
   return (
     <div >
 
       {
-        conversationValues.loading 
-        ? <CircularProgress /> 
-        : <div className="container">
+        <div className="container">
             <div className="left-panel">
 
             {
-              _.map(conversationValues.data.conversations.data, (item)=>{
+              _.map(conversations, (item)=>{
                 return <ChatItemView 
+                        {...props}
                         item={item}
-                        onCurrentChat={(e)=>{
-                          setCurrentChat(e)
-                          // let messageValue = useQuery(gqlMessage, {
-                          //   variables: {id: e.id},
-                          //   notifyOnNetworkStatusChange: true,
-                          // });
-                      
-                          // console.log("currentChat :", currentChat, messageValue);
-
-                          
-                        }}/>
+                        onCurrentChat={(e)=> onFetchMessage({ variables: { id: e.id } }) }/>
               })
               
             }
@@ -551,9 +687,12 @@ const message = (props) => {
             </div>
             {/* <div className="right-panel"> */}
               <MessageListView 
-                currentChat={currentChat === null 
-                            ? _.isEmpty(conversationValues.data.conversations.data) ? null :conversationValues.data.conversations.data[0]
-                            :currentChat}/>
+                {...props}
+                messageList={messageList}
+                onAddMessage={(input)=>{
+                  onAddMessage({ variables: { input: input } });
+                }}
+                currentChat={currentChat === null  ? _.isEmpty(conversations) ? null :conversations[0] :currentChat}/>
               {/* <MessageList
                 referance={messageListReferance}
                 className="message-list"
@@ -745,4 +884,11 @@ const message = (props) => {
   );
 }
 
-export default message;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    user: state.auth.user,
+    conversations: state.auth.conversations
+  }
+};
+
+export default connect( mapStateToProps, null )(Message2);

@@ -489,11 +489,9 @@ export const gqlShares = gql`
     }`;
 
 export const gqlShareByPostId = gql`
-    query ShareByPostId($postId: ID!, $page: Int, $perPage: Int){
-        ShareByPostId(
+    query ShareByPostId($postId: ID!){
+        shareByPostId(
             postId: $postId
-            page: $page
-            perPage: $perPage
         ){
             status
             executionTime
@@ -524,7 +522,7 @@ export const gqlDblog = gql`
     }`;
 
 export const gqlConversations = gql`
-    query Conversations($userId: ID!){
+    query Conversations($userId: ID){
         conversations(
             userId: $userId
         ){
@@ -532,37 +530,16 @@ export const gqlConversations = gql`
             executionTime
             data{
                 id: _id
-                members
-            }
-        }
-    }`;
-
-export const gqlMessage = gql`
-    query Message($id: ID!){
-        message(
-            _id: $id
-        ){
-            status
-            executionTime
-            data{
-                id: _id
-                conversationId
-                avatar
-                date
-                forwarded
-                meeting
-                position
-                removeButton
-                reply
-                replyButton
-                retracted
+                userId
+                name
+                lastSenderName
+                info
+                avatarSrc
+                avatarName
                 status
-                text
-                theme
-                title
-                titleColor
-                type
-                view
+                unreadCnt
+                sentTime
+                members
             }
         }
     }`;
@@ -662,6 +639,25 @@ export const gqlFollowingByUserId = gql`
             }
         }
     }`;
+
+export const gqlFetchMessage = gql`
+    query fetchMessage( $id: ID! ){
+            fetchMessage( id: $id ){
+              status
+              executionTime
+              data{
+                id: _id
+                conversationId
+                type
+                message
+                sentTime
+                sender
+                direction
+                position
+                status
+              }
+          }
+      }`;
 
 
 
@@ -824,6 +820,15 @@ export const gqlCreateConversation = gql`
     mutation CreateConversation($input: ConversationInput) {
         createConversation(input: $input) {
             id: _id
+            userId
+            name
+            lastSenderName
+            info
+            avatarSrc
+            avatarName
+            status
+            unreadCnt
+            sentTime
             members
         }
     }`;
@@ -836,27 +841,19 @@ export const gqlCreateAndUpdateFollow = gql`
         }
     }`;
 
+    
 export const gqlAddMessage = gql`
-    mutation AddMessage($input: MessageInput) {
-        addMessage(input: $input) {
+    mutation AddMessage($id: ID! , $input: MessageInput) {
+        addMessage( _id: $id, input: $input) {
             id: _id
             conversationId
-            avatar
-            date
-            forwarded
-            meeting
-            position
-            removeButton
-            reply
-            replyButton
-            retracted
-            status
-            text
-            theme
-            title
-            titleColor
             type
-            view
+            message
+            sentTime
+            sender
+            direction
+            position
+            status
         }
     }`;
 
@@ -931,6 +928,9 @@ export const gqlCurrentNumber = gql`
     mutation Query {
         currentNumber
       }`;
+
+
+
 
 //////////////////  mutation  ///////////////////
 
@@ -1015,5 +1015,73 @@ export const subComment = gql`
         }
     }
 `;
+
+export const subBookmark = gql`
+    subscription subBookmark($userId: ID!, $postId: ID!) {
+        subBookmark(userId: $userId, postId: $postId) {
+        mutation
+        data {
+            _id
+            userId
+            postId
+            status
+        }
+        }
+    }
+`;
+
+// 
+
+export const subShare = gql`
+    subscription subShare( $postId: ID! ) {
+        subShare( postId: $postId ) {
+            mutation
+            data {
+                id: _id
+                userId
+                postId
+                destination
+            }
+        }
+    }`;
+
+export const subConversation = gql`
+    subscription subConversation( $userId: ID! ) {
+        subConversation( userId: $userId ) {
+            mutation
+            data {
+                id: _id
+                userId
+                name
+                lastSenderName
+                info
+                avatarSrc
+                avatarName
+                status
+                unreadCnt
+                sentTime
+                members
+            }
+        }
+    }`;
+
+export const subMessage = gql`
+    subscription subMessage( $id: ID! ) {
+        subMessage( id: $id ) {
+            mutation
+            data {
+                id: _id
+                conversationId
+                type
+                message
+                sentTime
+                sender
+                senderId
+                direction
+                position
+                status
+            }
+        }
+    }`;
 
 //////////////////  subscription  ///////////////////

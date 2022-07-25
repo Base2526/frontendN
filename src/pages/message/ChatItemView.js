@@ -6,48 +6,31 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { gqlUser, gqlConversations } from "../../gqlQuery"
 
-const ChatItemView = ({item, onCurrentChat}) => {
+const ChatItemView = (props) => {
+    let { item, onCurrentChat } = props
 
-    let userId = "62a2f65dcf7946010d3c7547"
-
-    let members = item.members
-    let member = _.filter(members, (vv)=>vv != userId)
-
-    let userValue = useQuery(gqlUser, {
-      variables: {id: member[0]},
-      notifyOnNetworkStatusChange: true,
-    });
-
-    if(!userValue.loading){
-
-        let user = userValue.data.user.data
-        console.log("ChatItemView userValue :" , userValue, member, item, user)
-    }
-
+    let { avatar, title, subtitle, unread, muted, updatedAt } = item
     return (
-        <div>
-            {
-            userValue.loading 
-            ? <CircularProgress /> 
-            : <ChatItem
-                avatar={userValue.data.user.data.image[0].base64}
-                alt={"Reactjs"}
-                title={userValue.data.user.data.displayName}
-                subtitle={"What are you doing?"}
-                date={new Date()}
-                unread={10}
-                muted={true}
+            <ChatItem
+                avatar={avatar}
+                alt={""}
+                title={title}
+                subtitle={subtitle}
+                date={new Date(updatedAt)}
+                unread={unread}
+                muted={muted}
                 showMute={true}
                 onContextMenu={(e)=>{
                     console.log("onContextMenu")
                 }}
                 onClick={(e)=>{
                     onCurrentChat(item)
+
+                    console.log("item :", item)
                 }}
-                />
-            }
-            
-        </div>
+                onClickMute={(e, index)=>{
+                    console.log("onClickMute", e, index)
+                }}/>
     );
 };
 

@@ -1,21 +1,20 @@
-import React, { useState, useEffect, withStyles } from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import AddBoxIcon from '@mui/icons-material/AddBox';
+import React, { useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import Typography from "@mui/material/Typography";
-import { useQuery, useMutation } from "@apollo/client";
-import CommentIcon from "@mui/icons-material/Comment";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { useQuery } from "@apollo/client";
 import ShareIcon from "@mui/icons-material/Share";
 import _ from "lodash"
 
-import { gqlShareByPostId } from "../../gqlQuery"
+import { gqlShareByPostId, subShare } from "../../gqlQuery"
 
+let unsubscribe =  null
 const ItemShare = (props) => {
   let {user, index,  item, onAnchorElShareOpen, onDialogLogin} = props 
+
+  useEffect(()=>{
+    return () => {
+      unsubscribe && unsubscribe()
+    };
+  }, [])
 
   const handleClick = (e) =>{
     _.isEmpty(user)
@@ -24,12 +23,29 @@ const ItemShare = (props) => {
   }
 
   let shareValues = useQuery(gqlShareByPostId, {
-    variables: {postId: item.id, page: 0, perPage: 1000},
+    variables: {postId: item.id},
     notifyOnNetworkStatusChange: true,
   });
 
+  // console.log("shareValues :", shareValues)
+
   if(!shareValues.loading){
-    if(shareValues.data.ShareByPostId.data.length == 0){
+
+    let {subscribeToMore} = shareValues
+    unsubscribe =  subscribeToMore({
+      document: subShare,
+      variables: { postId: item.id },
+      updateQuery: (prev, {subscriptionData}) => {
+        if (!subscriptionData.data) return prev;
+
+        let { mutation, data } = subscriptionData.data.subShare;
+        let newPrev = {...prev.shareByPostId, data:_.uniqBy([...prev.shareByPostId.data, data], 'id')}  
+        return {shareByPostId: newPrev}; 
+      }
+    });
+
+
+    if(shareValues.data.shareByPostId.data.length == 0){
       return <IconButton onClick={(e) => handleClick(e)}>
                 <ShareIcon />
               </IconButton> 
@@ -45,7 +61,7 @@ const ItemShare = (props) => {
                   borderColor: "red",
                   borderWidth: "1px",
                   fontSize: "10px"
-              }}>{shareValues.data.ShareByPostId.data.length}</div>
+              }}>{shareValues.data.shareByPostId.data.length}</div>
             </IconButton>
   }
   

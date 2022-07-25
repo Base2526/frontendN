@@ -18,65 +18,28 @@ import loremIpsum from "lorem-ipsum";
 import Identicon from "identicon.js";
 import Avatar from "@material-ui/core/Avatar";
 
-import { gqlUser, gqlConversations, gqlMessage, gqlAddMessage } from "../../gqlQuery"
+import { gqlUser, gqlConversations, gqlFetchMessage, gqlAddMessage } from "../../gqlQuery"
 
 let clearRef = () => {};
 
-const MessageListView = ({currentChat}) => {
+const MessageListView = (props) => {
     const messageListReferance = useRef();
     const [isShowChild, setIsShowChild] = useState(false);
     const [preview, setPreview] = useState(false);
     const inputReferance = useRef();
 
-    let userId = "62a2f65dcf7946010d3c7547"
+    let {user, currentChat, messageList, onAddMessage} = props
 
-    console.log("MessageListView : ", currentChat)
-   
-    const [onAddMessage, resultAddMessageValues] = useMutation(gqlAddMessage
-        , {
-            update: (cache, {data: {addMessage}}) => {
-
-                const data1 = cache.readQuery({
-                    query: gqlMessage,
-                    variables: {id: currentChat === null ? "" : currentChat.id},
-                });
-
-                let newData = {...data1.message}
-                newData = {...newData, data: [...newData.data, addMessage]}
-
-                console.log("gqlMessage ::: ", addMessage, data1, newData)
-            
-                cache.writeQuery({
-                    query: gqlMessage,
-                    data: {
-                        message: newData
-                    },
-                    variables: {id: currentChat === null ? "" : currentChat.id},
-                });
-            },
-            onCompleted({ data }) {
-            console.log("gqlAddMessage :::: onCompleted")
-            },
-        },  
-    );
-
-    let messageValue = useQuery(gqlMessage, {
-        variables: {id: currentChat === null ? "" : currentChat.id},
-        notifyOnNetworkStatusChange: true,
-    });
-  
-
-    /*
-    
-    */
-
-    console.log("MessageListView currentChat :", currentChat, messageValue);
+    // console.log("MessageListView : ", currentChat)
+    // let messageValue = useQuery(gqlFetchMessage, {
+    //     variables: {id: currentChat === null ? "" : currentChat.id},
+    //     notifyOnNetworkStatusChange: true,
+    // });
+    // console.log("MessageListView currentChat :", currentChat);
 
     let userValue = null
     if(!_.isEmpty(currentChat)){
-      let members = currentChat.members
-      let member = _.filter(members, (vv)=>vv != userId)
-
+      let member = _.filter(currentChat.members, (vv)=>vv != user.id)
       userValue = useQuery(gqlUser, {
         variables: {id: member[0]},
         notifyOnNetworkStatusChange: true,
@@ -333,7 +296,7 @@ const MessageListView = ({currentChat}) => {
         let input = {...random("message", mtype), conversationId: currentChat === null ? "" : currentChat.id}
         console.log("input :", input)
 
-        onAddMessage({ variables: { input: input } });
+        onAddMessage(input);
     }
 
     const topView = () =>{
@@ -351,10 +314,7 @@ const MessageListView = ({currentChat}) => {
 
     return (
         <div>
-            {
-            messageValue.loading 
-            ? <CircularProgress /> 
-            : <div className="right-panel">
+            <div className="right-panel">
                 <div>
                 { topView() } 
                 </div>
@@ -363,13 +323,7 @@ const MessageListView = ({currentChat}) => {
                     className="message-list"
                     lockable={true}
                     downButtonBadge={10}
-                    dataSource={ messageValue.data.message.data
-                        /*[ {
-                        position: 'right',
-                        type: 'text',
-                        text: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit',
-                        date: new Date(),
-                    }]*/}
+                    dataSource={ messageList }
                     sendMessagePreview={true}
                     isShowChild={isShowChild}
                     downButton={false}
@@ -457,8 +411,6 @@ const MessageListView = ({currentChat}) => {
                     }
                 /> 
               </div>
-            }
-            
         </div>
     );
 };

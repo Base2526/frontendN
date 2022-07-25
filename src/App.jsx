@@ -32,6 +32,9 @@ import styled from "styled-components";
 import Store from "./Store";
 import Detail from "./pages/detail/Detail"
 import _ from "lodash";
+
+import { useQuery, useSubscription } from "@apollo/client";
+
 import Breadcs from "./components/breadcrumbs/Breadcs";
 import Home from "./pages/home/Home";
 // import { socket } from "./SocketioClient";
@@ -46,7 +49,10 @@ import DialogLogin from "./DialogLogin";
 
 import Help from "./pages/help"
 
-import { login } from "./redux/actions/auth"
+import { login, addedConversations, addedConversation } from "./redux/actions/auth"
+
+import { gqlConversations, subConversation } from "./gqlQuery"
+
 
 const drawerWidth = 220;
 
@@ -127,11 +133,73 @@ const styles = (theme) => ({
 });
 
 const App = (props) => {
+
+  let {user, addedConversations, addedConversation} = props
+
   const history = useHistory();
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
 
   const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
+
+  
+  // if(!_.isEmpty(user)){
+    const conversationValues =useQuery(gqlConversations, {
+      variables: {userId: user.id ? "" : user.id},
+      notifyOnNetworkStatusChange: true,
+    });
+  
+    console.log("conversationValues :", conversationValues)
+    if(!conversationValues.loading){
+      
+      if( conversationValues.data.conversations){
+        let { status, data } = conversationValues.data.conversations  
+        addedConversations(data)
+      }
+  
+      let {subscribeToMore} = conversationValues
+      const unsubscribe =  subscribeToMore({
+        document: subConversation,
+        variables: { userId: user.id },
+        updateQuery: (prev, {subscriptionData}) => {
+  
+          console.log("subConversation updateQuery #1 :", prev, subscriptionData )
+          if (!subscriptionData.data) return prev;
+  
+          let { subConversation } = subscriptionData.data;
+  
+          console.log("subConversation updateQuery #2 :", prev, subscriptionData, subConversation )
+  
+          addedConversation(subConversation)
+  
+          return prev;
+  
+          // let prevData = prev.homes.data
+          // let newData = _.map(prevData, (o)=>{
+          //                 if(o.id === data.id) return data
+          //                 return o 
+          //               })
+  
+          // let newPrev = {...prev.homes, data: newData}
+          // return newPrev;
+        }
+      });
+    }
+  // }
+ 
+
+ 
+
+  // const { data:dataSub, loading:loadingSub } = useSubscription(
+  //   subConversations,
+  //   { variables: { userId: user.id } }
+  // );
+
+  // console.log("dataSub loadingSub  :", dataSub, loadingSub, props )
+
+  // if(!loadingSub && dataSub){
+  //   onConversations(dataSub.subConversations)
+  // }
 
   useEffect(async () => {
     // socket()
@@ -247,11 +315,15 @@ const App = (props) => {
 
 const mapStateToProps = (state, ownProps) => {
   console.log("mapStateToProps :", state)
-  return {}
+  return {
+    user: state.auth.user
+  }
 };
 
 const mapDispatchToProps = {
-  login
+  login,
+  addedConversations,
+  addedConversation
 }
 
 export default compose(

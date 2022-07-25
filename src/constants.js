@@ -1,2 +1,9 @@
 export const LOGIN = "LOGIN";
 export const LOGOUT = "LOGOUT";
+
+export const ADDED_CONVERSATIONS    = "ADDED_CONVERSATIONS";
+export const ADDED_CONVERSATION     = "ADDED_CONVERSATION";
+
+export const ADDED_MESSAGE     = "ADDED_MESSAGE";
+export const EDITED_MESSAGE    = "EDITED_MESSAGE";
+export const DELETED_MESSAGE   = "DELETED_MESSAGE";

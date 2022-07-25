@@ -1,0 +1,75 @@
+/* .App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, ubuntu;
+  background: navajowhite;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+} */
+
+input,
+button {
+  font-family: verdana, ubuntu;
+}
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  /* background: hsl(0, 20%, 70%); */
+} 
+
+.chat-list {
+  min-width: 240px;
+  max-width: 380px;
+  overflow: auto;
+}
+
+.left-panel {
+  flex: 3;
+  font-size: 16px;
+  background: hsl(0, 50%, 60%);
+  padding: 2px;
+  border-style: dotted;
+}
+
+.right-panel {
+  flex: 9;
+  display: flex;
+  flex-direction: column;
+  border-style: dotted;
+  margin-left: 5px;
+  max-width: 700px;
+}
+
+.message-list {
+  flex: 1;
+  min-width: 140px;
+  overflow: auto;
+}
+
+.input-area {
+  height: 50px;
+  /* background: red; */
+}
+
+.rce-container-mlist{
+  max-height: 500px;
+}
+
+.rce-container-input{
+  border-style: dotted;
+}
+
+.rce-input{
+  border-radius: 0px;
+}

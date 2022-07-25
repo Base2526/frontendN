@@ -25,7 +25,12 @@ import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
 
-import { gqlPost, gqlCreateAndUpdateBookmark, gqlIsBookmark, gqlCreateAndUpdateComment, gqlComment } from "../../gqlQuery"
+import { gqlPost, gqlCreateAndUpdateBookmark, 
+        gqlIsBookmark, gqlCreateAndUpdateComment, 
+        gqlComment, gqlCreateShare, 
+        gqlShareByPostId,
+        subShare } from "../../gqlQuery"
+
 import DialogLogin from "../../DialogLogin";
 import { login } from "../../redux/actions/auth"
 
@@ -35,6 +40,7 @@ import ItemBookmark from "./ItemBookmark"
 
 import ReportDialog from "../../components/report"
 
+let unsubscribe =null
 const Detail = (props) => {
     let history = useHistory();
 
@@ -47,6 +53,12 @@ const Detail = (props) => {
     const [dialogLoginOpen, setDialogLoginOpen] = useState(false);
 
     const [report, setReport] = useState({open: false, postId:""});
+
+    useEffect(()=>{
+        return () => {
+          unsubscribe && unsubscribe()
+        };
+    }, [])
 
     const handleAnchorElSettingOpen = (index, event) => {
         setAnchorElSetting(event.currentTarget);
@@ -120,6 +132,13 @@ const Detail = (props) => {
           }
       }
     );
+
+    const [onCreateShare, resultCreateShare] = useMutation(gqlCreateShare, {
+        onCompleted({ data }) {
+          // history.push("/");
+        }
+      });
+      console.log("resultCreateShare :", resultCreateShare)
     
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -131,7 +150,32 @@ const Detail = (props) => {
         notifyOnNetworkStatusChange: true,
     });
 
-    const menuShare = () =>{
+    let shareValues = useQuery(gqlShareByPostId, {
+        variables: {postId: id},
+        notifyOnNetworkStatusChange: true,
+    });
+    console.log("shareValues :", shareValues)
+
+    if(!shareValues.loading){
+        let {subscribeToMore} = shareValues
+        unsubscribe =  subscribeToMore({
+            document: subShare,
+            variables: { postId: id },
+            updateQuery: (prev, {subscriptionData}) => {
+                if (!subscriptionData.data) return prev;
+
+                let { mutation, data } = subscriptionData.data.subShare;
+                let newPrev = {...prev.shareByPostId, data:_.uniqBy([...prev.shareByPostId.data, data], 'id')}  
+                return {shareByPostId: newPrev}; 
+            }
+        });
+    }
+
+    /*
+    shareValues.data.shareByPostId.data
+    */
+
+    const menuShare = (item) =>{
         return  <Menu
                   anchorEl={anchorElShare}
                   keepMounted
@@ -156,7 +200,7 @@ const Detail = (props) => {
                   <MenuItem onClose={(e)=>{
                     setAnchorElShare(null);
                   }}>
-                      <FacebookShareButton
+                      {/* <FacebookShareButton
                       url={"https://peing.net/ja/"}
                       quote={"quotequotequotequote"}
                       hashtag={"#hashtag"}
@@ -164,19 +208,54 @@ const Detail = (props) => {
                       className="Demo__some-network__share-button"
                       >
                       <FacebookIcon size={32} round /> Facebook
-                      </FacebookShareButton>
+                      </FacebookShareButton> */}
+
+                    <div onClick={(e)=>{
+                        if(_.isEmpty(user)){
+                            setDialogLoginOpen(true)
+                        }else{
+                            onCreateShare({ variables: { input: {
+                                    postId: item.id,
+                                    userId: user.id,
+                                    destination: "facebook"
+                                }
+                                }
+                            });  
+                        }
+                        setAnchorElShare(null);
+                    }}>
+                        <FacebookIcon size={32} round /> Facebook
+                    </div>
                   </MenuItem>{" "}
                   <MenuItem onClose={(e)=>{
                     setAnchorElShare(null);
                   }}>
-                      <TwitterShareButton
+                      {/* <TwitterShareButton
                       title={"test"}
                       url={"https://peing.net/ja/"}
                       hashtags={["hashtag1", "hashtag2"]}
                       >
                       <TwitterIcon size={32} round />
                       Twitter
-                      </TwitterShareButton>
+                      </TwitterShareButton> */}
+
+                    <div onClick={(e)=>{
+
+                        if(_.isEmpty(user)){
+                            setDialogLoginOpen(true)
+                        }else{
+                            onCreateShare({ variables: { input: {
+                                    postId: item.id,
+                                    userId: user.id,
+                                    destination: "twitter"
+                                }
+                                }
+                            });  
+                        }
+                        setAnchorElShare(null);
+                    }}>
+                        <TwitterIcon size={32} round />Twitter
+                    </div>
                   </MenuItem>
                 </Menu>
     }
@@ -219,6 +298,8 @@ const Detail = (props) => {
                     Report
                   </MenuItem>
                 </Menu>
+
+    
     }
 
     const mainView = () =>{
@@ -276,6 +357,19 @@ const Detail = (props) => {
                                         : setAnchorElShare(e.currentTarget) 
                                     }}>
                                         <ShareIcon />
+                                        {  
+                                            shareValues.loading 
+                                            ? <div /> 
+                                            : <div style={{
+                                                position: "absolute",
+                                                right: "5px",
+                                                borderRadius: "5px",
+                                                borderStyle: "solid",
+                                                borderColor: "red",
+                                                borderWidth: "1px",
+                                                fontSize: "10px"
+                                                }}>{shareValues.data.shareByPostId.data.length}</div> 
+                                        }
                                     </IconButton>
                                     <IconButton  onClick={(e) => { 
                                         _.isEmpty(user)
@@ -338,6 +432,8 @@ const Detail = (props) => {
                     </div>
 
                     {menuSetting(post)}
+
+                    {menuShare(post)}
                 </div>
     }
 
@@ -374,8 +470,6 @@ const Detail = (props) => {
                     }}/>
             )}
 
-            {menuShare()}
-
             {dialogLoginOpen && (
                 <DialogLogin
                 open={dialogLoginOpen}
@@ -392,7 +486,6 @@ const Detail = (props) => {
                 }}
                 />
             )}
-
 
             {report.open && <ReportDialog 
                                     open={report.open} 

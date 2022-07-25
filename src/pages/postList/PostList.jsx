@@ -217,16 +217,16 @@ const PostList = (props) => {
             Header: 'Share',
             Cell: props =>{
               const shareValus = useQuery(gqlShareByPostId, {
-                variables: {postId: props.row.original.id, page: 0, perPage: 10000},
+                variables: {postId: props.row.original.id},
                 notifyOnNetworkStatusChange: true,
               });
       
               return  shareValus.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
-                      : shareValus.data.ShareByPostId.data.length == 0 
+                      : shareValus.data.shareByPostId.data.length == 0 
                           ? <div /> 
                           : <ButtonWrapper><Link to={`/comments`}>
-                              <button className="editBtn">{shareValus.data.ShareByPostId.data.length}</button>
+                              <button className="editBtn">{shareValus.data.shareByPostId.data.length}</button>
                             </Link></ButtonWrapper>
             } 
           },

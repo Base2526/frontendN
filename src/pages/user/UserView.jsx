@@ -84,9 +84,6 @@ const UserView = (props) => {
           }
         },
         onCompleted({ data }) {
-          // history.push("/");
-          // console.log("onCompleted > onCreateConversation")
-
           history.push("/message")
         },
       },  
@@ -216,14 +213,7 @@ const UserView = (props) => {
                   _.isEmpty(user)
                     ? setDialogLoginOpen(true)    
                     : setReport({open: true, postId:id})
-                  
                 }}/>
-
-                {/*
-
-                 
-                
-                */}
             </div>
   }
 

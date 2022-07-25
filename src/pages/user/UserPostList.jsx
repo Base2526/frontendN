@@ -24,7 +24,7 @@ import { FacebookIcon, TwitterIcon } from "react-share";
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 
-import { gqlPostsByUser } from "../../gqlQuery"
+import { gqlPostsByUser, gqlCreateShare } from "../../gqlQuery"
 import ItemComment from "../home/ItemComment"
 import ItemBookmark from "../home/ItemBookmark"
 import ItemShare from "../home/ItemShare"
@@ -46,6 +46,13 @@ const UserPostList = (props) => {
         photoIndex: 0,
         images: []
     });
+
+    const [onCreateShare, resultCreateShare] = useMutation(gqlCreateShare, {
+        onCompleted({ data }) {
+          // history.push("/");
+        }
+    });
+    console.log("resultCreateShare :", resultCreateShare)
 
     const postsByUser = useQuery(gqlPostsByUser, {
         variables: { userId: id },
@@ -92,7 +99,7 @@ const UserPostList = (props) => {
                   }}
                   >
                   <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
-                      <FacebookShareButton
+                      {/* <FacebookShareButton
                         url={window.location.href + "detail/" + item.id}
                         quote={item.title}
                         hashtag={"#hashtag"}
@@ -100,17 +107,51 @@ const UserPostList = (props) => {
                         className="Demo__some-network__share-button"
                       >
                       <FacebookIcon size={32} round /> Facebook
-                      </FacebookShareButton>
+                      </FacebookShareButton> */}
+
+                    <div onClick={(e)=>{
+                        if(_.isEmpty(user)){
+                            setDialogLoginOpen(true)
+                        }else{
+                            onCreateShare({ variables: { input: {
+                                    postId: item.id,
+                                    userId: user.id,
+                                    destination: "facebook"
+                                }
+                                }
+                            });  
+                        }
+                        handleAnchorElShareClose()
+                    }}>
+                    <FacebookIcon size={32} round /> Facebook
+                    </div>
                   </MenuItem>{" "}
                   <MenuItem onClose={(e)=>handleAnchorElShareClose()}>
-                      <TwitterShareButton
+                      {/* <TwitterShareButton
                         title={item.title}
                         url={window.location.href + "detail/" + item.id}
                         hashtags={["hashtag1", "hashtag2"]}
                       >
                       <TwitterIcon size={32} round />
                       Twitter
-                      </TwitterShareButton>
+                      </TwitterShareButton> */}
+
+                        <div onClick={(e)=>{
+                            if(_.isEmpty(user)){
+                                setDialogLoginOpen(true)
+                            }else{
+                                onCreateShare({ variables: { input: {
+                                        postId: item.id,
+                                        userId: user.id,
+                                        destination: "twitter"
+                                    }
+                                    }
+                                });  
+                            }
+                            handleAnchorElShareClose()
+                        }}>
+                        <TwitterIcon size={32} round />Twitter
+                        </div>
                   </MenuItem>
                 </Menu>
     }
