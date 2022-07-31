@@ -245,6 +245,8 @@ const MessageView =(props)=> {
   const onMessageList = () =>{
     if(!fetchMessageValues.loading){
 
+      console.log("fetchMessageValues.data.fetchMessage :",  fetchMessageValues.data.fetchMessage)
+
       let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       let {subscribeToMore} = fetchMessageValues
       const unsubscribe =  subscribeToMore({
