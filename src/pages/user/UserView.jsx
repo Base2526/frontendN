@@ -64,7 +64,7 @@ const UserView = (props) => {
           });
 
           if(data != null){
-            if(_.find(data.conversations.data, (v)=>v.id === createConversation.id) == null){
+            if(_.find(data.conversations.data, (v)=>v._id === createConversation._id) == null){
               let new_data = {...data.conversations}
           
               new_data = [...new_data.data, createConversation]
@@ -83,11 +83,13 @@ const UserView = (props) => {
 
           }
         },
-        onCompleted({ data }) {
-          history.push("/message")
+        onCompleted({createConversation}) {
+          history.push({pathname: "/message", state: { conversationId: createConversation._id }})
         },
       },  
   );
+
+  console.log("resultCreateConversation :", resultCreateConversation)
 
   const [onCreateAndUpdateFollow, resultCreateAndUpdateFollow] = useMutation(gqlCreateAndUpdateFollow
     , {
@@ -145,10 +147,33 @@ const UserView = (props) => {
         },
       },  
   );
+
+  const onButtonChat = () =>{
+
+    if(!(!_.isEmpty(user) && user.id === id)){
+      return  <Button 
+                variant="contained" 
+                color="primary"
+                onClick={(e)=>{
+                  !_.isEmpty(props.user)
+                  ? onCreateConversation({ variables: { input: {
+                          userId: user.id,
+                          friendId: id
+                        }
+                      }
+                    })
+                  : setDialogLoginOpen(true)
+                }}>
+                Chat
+              </Button>
+    }
+  }
   
   const mainView = () =>{
     let userValue = userValues.data.user.data
     let imageSrc =  _.isEmpty(userValue.image) ? "" : userValue.image[0].base64
+
+    console.log("userValue :", userValue, user)
 
     return  <div>
               <Typography variant="overline" display="block" gutterBottom>
@@ -186,23 +211,7 @@ const UserView = (props) => {
                     setDialogLoginOpen(true)
                   }}/>
               </div>
-              <div>
-              <Button 
-                variant="contained" 
-                color="primary"
-                onClick={(e)=>{
-                  !_.isEmpty(props.user)
-                  ? onCreateConversation({ variables: { input: {
-                          userId: user.id,
-                          friendId: id
-                        }
-                      }
-                    })
-                  : setDialogLoginOpen(true)
-                }}>
-                Chat
-              </Button>
-              </div>
+              <div> { onButtonChat() } </div>
               <UserPostList 
                 {...props} 
                 id={id}

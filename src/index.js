@@ -58,17 +58,19 @@ import { createClient } from 'graphql-ws';
 //   uri: 'http://localhost:4000/graphql'
 // });
 
-const token = localStorage.getItem('token');
+
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  
+
+  let token = localStorage.getItem('token');
 
   // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : "",
+      textHeaders: "axxxx1"
     }
   }
 });
@@ -87,7 +89,8 @@ const wsLink = new GraphQLWsLink(createClient({
   url: 'ws://localhost:4000/graphql',
   disablePong: false,
   connectionParams: {
-    authToken: token,
+    authToken: localStorage.getItem('token'),
+    textHeaders: "axxxx2"
   },
   on: {
     // connected: () => console.log("connected client"),
@@ -142,12 +145,12 @@ const splitLink = split(
   authLink.concat(httpLink)
 );
 
-
-////////////////////////
-
 const client = new ApolloClient({
   // uri: 'http://localhost:4040/graphql',
   link: splitLink,
+  request: (operation) => {
+    console.log("request >>>>>>>  ", operation)
+  },
   // link: new WebSocketLink({
   //   uri: 'wss://localhost:4040/graphql',
   //   options: {
@@ -177,14 +180,20 @@ const client = new ApolloClient({
 
 import App from "./App";
 
+import { useConfigClient } from './useConfigClient'; 
+
+
+console.log("useConfigClient :", useConfigClient())
+
+
 ReactDOM.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <ApolloProvider client={client}>
-        <StrictMode>
+      <StrictMode>
+        <ApolloProvider client={client}>
           <App />
-        </StrictMode>
-      </ApolloProvider>
+        </ApolloProvider>
+      </StrictMode>
     </PersistGate>
   </Provider>,
   document.getElementById("root")

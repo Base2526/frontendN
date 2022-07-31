@@ -27,14 +27,15 @@ import ReportDialog from "../../components/report"
 import DialogProfile from "../../components/dialogProfile"
 import {gqlHomes, gqlCreateContactUs, 
         gqlCreateShare, gqlCurrentNumber, 
-        subPost, gqlCreateAndUpdateBookmark} from "../../gqlQuery"
+        subPost, gqlCreateAndUpdateBookmark, 
+        gqlIsBookmark} from "../../gqlQuery"
 
-import { login } from "../../redux/actions/auth"
+import { login, addedBookmark } from "../../redux/actions/auth"
 
 const Home = (props) => {
   let history = useHistory();
 
-  let { user } = props
+  let { user, addedBookmark } = props
 
   const [keywordSearch, setKeywordSearch] = useState("");
   const [category, setCategory] = useState([0,1]);
@@ -74,7 +75,6 @@ const Home = (props) => {
   );
   // console.log("resultCreateContactUsValues :", resultCreateContactUsValues)
 
-  // gqlCurrentNumber
   const [onCurrentNumber, resultCurrentNumberValues] = useMutation(gqlCurrentNumber
     , {
         onCompleted({ data }) {
@@ -83,20 +83,17 @@ const Home = (props) => {
       }
   );
 
-  // /// 
-
   const [onCreateShare, resultCreateShare] = useMutation(gqlCreateShare, {
     onCompleted({ data }) {
       // history.push("/");
     }
   });
-  console.log("resultCreateShare :", resultCreateShare)
-  
+  // console.log("resultCreateShare :", resultCreateShare)
+    
   const [onCreateAndUpdateBookmark, resultCreateAndUpdateBookmarkValues] = useMutation(gqlCreateAndUpdateBookmark
     , {
         update: (cache, {data: {createAndUpdateBookmark}}) => {
           let {userId, postId} = createAndUpdateBookmark
-        
           const data1 = cache.readQuery({
               query: gqlIsBookmark,
               variables: { userId, postId }
@@ -104,7 +101,7 @@ const Home = (props) => {
 
           let newData = {...data1.isBookmark}
           newData = {...newData, data: createAndUpdateBookmark}
-      
+
           cache.writeQuery({
               query: gqlIsBookmark,
               data: {
@@ -113,22 +110,19 @@ const Home = (props) => {
               variables: {userId, postId }
           });     
         },
-        onCompleted({ data }) {
-        //   console.log("bookmark :::: onCompleted")
-        },
+        onCompleted({ data }) { },
       },  
   );
-
+  
   const homesValues =useQuery(gqlHomes, {
-    variables: {page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
+    variables: {userId: _.isEmpty(user) ? "" : user.id, page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
-
-  console.log("homesValues :", homesValues )
+  // console.log("homesValues :", homesValues )
 
   if(!homesValues.loading){
 
-    // console.log("homesValues.data.homes.data :", homesValues.data.homes.data)
+    console.log("homesValues.data.homes.data :", homesValues)
 
     var keys = _.map(homesValues.data.homes.data, _.property("id"));
 
@@ -156,6 +150,10 @@ const Home = (props) => {
 			}
 		});
   }
+
+  useEffect(()=>{
+    homesValues && homesValues.refetch({userId: _.isEmpty(user) ? "" : user.id, page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()})
+  }, [user])
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -324,6 +322,7 @@ const Home = (props) => {
                         return (
                           <div key={item.id}>
                             <HomeItem 
+                              {...props}
                               user={props.user}
                               item={item} 
                               index={index} 
@@ -356,6 +355,8 @@ const Home = (props) => {
                                     }
                                   }
                                 }); 
+
+                                // addedBookmark({postId, userId, status})
                               }}
                               />
                               {menuShare(item, index)}
@@ -511,13 +512,17 @@ const Home = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
+
+  console.log("state.auth.bookmarks :", state.auth.bookmarks)
   return {
     user: state.auth.user,
+    bookmarks: state.auth.bookmarks
   }
 };
 
 const mapDispatchToProps = {
-  login
+  login,
+  addedBookmark
 }
 
 export default connect( mapStateToProps, mapDispatchToProps )(Home);

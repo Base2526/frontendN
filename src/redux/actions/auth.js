@@ -4,7 +4,9 @@ import {LOGIN,
         ADDED_CONVERSATION, 
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
-        DELETED_MESSAGE } from "../../constants"
+        DELETED_MESSAGE,
+        ADDED_BOOKMARKS, 
+        ADDED_BOOKMARK} from "../../constants"
 
 const _login = (data) => ({ type: LOGIN, data });
 const _logout = (data) => ({ type: LOGOUT, data });
@@ -15,6 +17,9 @@ const _addedConversation = (data) => ({ type: ADDED_CONVERSATION, data });
 const _addedMessage = (data) => ({ type: ADDED_MESSAGE, data });
 const _editedMessage = (data) => ({ type: EDITED_MESSAGE, data });
 const _deletedMessage = (data) => ({ type: DELETED_MESSAGE, data });
+
+const _addedBookmarks = (data) => ({ type: ADDED_BOOKMARKS, data });
+const _addedBookmark = (data) => ({ type: ADDED_BOOKMARK, data });
 
 export const login = (data) => (dispatch) => {
     dispatch(_login(data));
@@ -42,4 +47,12 @@ export const editedMessage = (data) => (dispatch) => {
 
 export const deletedMessage = (data) => (dispatch) => {
     dispatch(_deletedMessage(data));
+}
+
+export const addedBookmarks = (data) => (dispatch) => {
+    dispatch(_addedBookmarks(data));
+}
+
+export const addedBookmark = (data) => (dispatch) => {
+    dispatch(_addedBookmark(data));
 }

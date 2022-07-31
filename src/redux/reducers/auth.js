@@ -5,7 +5,9 @@ import {LOGIN,
         ADDED_CONVERSATION,
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
-        DELETED_MESSAGE } from "../../constants"
+        DELETED_MESSAGE,
+        ADDED_BOOKMARKS, 
+        ADDED_BOOKMARK } from "../../constants"
 
 import _ from "lodash"
 
@@ -35,11 +37,13 @@ const auth = (state = initialState, action) => {
         case ADDED_CONVERSATION: {
             let {mutation, data} = action.data
 
-            let conversations = [...state.conversations]
-            if(_.find(conversations, (c)=>c.id == data.id)){
+            console.log("ADDED_CONVERSATION #0 :", mutation, data)
 
-                console.log("_.map(conversations, (c)=>c.id==data.id ? data : c ) :", _.map(conversations, (c)=>c.id==data.id ? data : c ))
-                return { ...state, conversations: _.map(conversations, (c)=>c.id==data.id ? data : c ) };
+            let conversations = [...state.conversations]
+            if(_.find(conversations, (c)=>c._id == data._id)){
+
+                console.log("ADDED_CONVERSATION #1 :", mutation, data)
+                return { ...state, conversations: _.map(conversations, (c)=>c._id==data._id ? data : c ) };
             }
             switch(mutation){
                 case "CREATE":
@@ -48,6 +52,8 @@ const auth = (state = initialState, action) => {
                     break;
                 }
             }
+
+            console.log("ADDED_CONVERSATION #2 :", mutation, data, conversations)
             return { ...state, conversations };
         }
 
@@ -68,6 +74,82 @@ const auth = (state = initialState, action) => {
             let messages = [...state.messages]
             let newMessages = _.filter(messages, m=>m._id!==action.data.id)
             return { ...state, messages:newMessages };
+        }
+
+        /*
+        ADDED_BOOKMARKS, 
+        ADDED_BOOKMARK
+        */
+
+        case ADDED_BOOKMARKS: {
+
+            console.log("ADDED_BOOKMARKS : ", action.data)
+            if(!_.isEqual(state.bookmark, action.data)){
+                return  {...state, bookmarks: action.data }
+            }
+            return state
+            
+        }
+
+        case ADDED_BOOKMARK: {
+            let {mutation, data} = action.data
+
+            console.log("ADDED_BOOKMARK :", action.data, state.bookmarks)
+
+            let result = null;
+            if(_.isEmpty(mutation)){
+                let bookmarks = [...state.bookmarks]
+                
+                let bookmark = _.find(bookmarks, (bookmark)=> bookmark.postId === action.data.postId && bookmark.userId === action.data.userId)
+            
+                if(_.isEmpty(bookmark)){
+                    bookmarks = [...bookmarks, {...action.data, local:true}]
+                    result =  { ...state, bookmarks };
+                }else{
+                    bookmarks = _.map(bookmarks, (bookmark)=>bookmark.postId === action.data.postId && bookmark.userId === action.data.userId ? {...bookmark, status:action.data.status,  local:true} : bookmark )
+                    result =  { ...state, bookmarks };
+                }
+            }
+
+            console.log("state.auth.bookmarks :" , result, action.data)
+            return result;
+
+    
+            /*
+            if(_.isEmpty(mutation)){
+                let bookmarks = [...state.bookmarks]
+                let bookmark = _.find(bookmarks, (bookmark)=> bookmark.id === action.data.id)
+    
+                if(!_.isEmpty(bookmark)){
+                    if(!_.isEqual(bookmark, action.data)){
+                        return { ...state, bookmarks: _.map(bookmarks, (c)=>c.id==action.data.id ? action.data : c ) };
+                    }
+                }else{
+                    bookmarks = [...bookmarks, action.data]
+    
+                    return { ...state, bookmarks };
+                }
+            }
+
+            */
+           
+
+            // let {mutation, data} = action.data
+
+            // let bookmarks = [...state.bookmarks]
+            // if(_.find(bookmarks, (c)=>c.id == data.id)){
+
+            //     console.log("_.map(conversations, (c)=>c.id==data.id ? data : c ) :", _.map(bookmarks, (c)=>c.id==data.id ? data : c ))
+            //     return { ...state, bookmarks: _.map(bookmarks, (c)=>c.id==data.id ? data : c ) };
+            // }
+            // switch(mutation){
+            //     case "CREATE":
+            //     case "UPDATED":{
+            //         bookmarks = [...bookmarks, data]
+            //         break;
+            //     }
+            // }
+            // return { ...state, bookmarks };
         }
     }
 

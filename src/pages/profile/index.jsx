@@ -17,6 +17,8 @@ import { logout } from "../../redux/actions/auth"
 const index = (props) => {
   let history = useHistory();
 
+  let {logout} = props
+
   let user = props.user;//checkAuth()
 
   let imageSrc =  _.isEmpty(user.image) ? "" : user.image[0].base64
@@ -47,7 +49,7 @@ const index = (props) => {
 
 
       <Button onClick={() => { 
-        props.logout()
+        logout()
         // logout(); 
         // window.location.reload(false)
 

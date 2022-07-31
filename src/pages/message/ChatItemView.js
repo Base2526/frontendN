@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { ChatItem } from "react-chat-elements";
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { gqlUser, gqlConversations } from "../../gqlQuery"
+import { gqlUser, } from "../../gqlQuery"
 
 const ChatItemView = (props) => {
     let { item, onCurrentChat } = props

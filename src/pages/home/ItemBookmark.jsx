@@ -3,6 +3,7 @@ import IconButton from "@mui/material/IconButton";
 import { useQuery, useMutation } from "@apollo/client";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import _ from "lodash"
+import { connect } from "react-redux";
 
 import { gqlIsBookmark, gqlCreateAndUpdateBookmark, subBookmark } from "../../gqlQuery"
 
@@ -10,56 +11,73 @@ let unsubscribe =null
 const ItemBookmark = (props) => {
   let {user, item, onDialogLogin, onBookmark} = props 
 
-  useEffect(()=>{
-    return () => {
-      unsubscribe && unsubscribe()
-    };
-  }, [])
-
-  if(_.isEmpty(user)){
-    return  <IconButton onClick={e=>onDialogLogin(true)}> <BookmarkIcon style={{ color:"" }} /> </IconButton>
-  }
-
+  
   let bmValus = useQuery(gqlIsBookmark, {
-    variables: {userId: user.id, postId: item.id},
+    variables: {userId: "", postId: ""},
     notifyOnNetworkStatusChange: true,
   });
+
+  useEffect(()=>{
+    if(!_.isEmpty(user)){
+      bmValus.refetch({userId: user.id, postId: item.id});
+    }else{
+      bmValus.refetch({userId: "", postId: item.id});
+    }
+  }, [user])
+
   
   if(!bmValus.loading){
 
-    
-    let {subscribeToMore} = bmValus
-    unsubscribe =  subscribeToMore({
-      document: subBookmark,
-      variables: { userId: user.id, postId: item.id },
-      updateQuery: (prev, {subscriptionData}) => {
-        if (!subscriptionData.data) return prev;
 
-        let { mutation, data } = subscriptionData.data.subBookmark;
+    if(!_.isEmpty(bmValus.data.isBookmark)){
 
-        let newPrev = {...prev.isBookmark, data}
-
-        return {isBookmark: newPrev};
+      let {subscribeToMore} = bmValus
+      unsubscribe =  subscribeToMore({
+        document: subBookmark,
+        variables: { userId: user.id, postId: item.id },
+        updateQuery: (prev, {subscriptionData}) => {
+          if (!subscriptionData.data) return prev;
+  
+          let { mutation, data } = subscriptionData.data.subBookmark;
+  
+          let newPrev = {...prev.isBookmark, data}
+  
+          return {isBookmark: newPrev};
+        }
+      });
+      
+      let isBookmark = bmValus.data.isBookmark.data
+      if(isBookmark == null){
+        return  <IconButton onClick={(e) =>{
+                  _.isEmpty(user) ?  onDialogLogin(true) :  onBookmark( item.id, user.id, true )
+                }}>
+                  <BookmarkIcon style={{ color:"" }} /> 
+                </IconButton>
       }
-    });
-    
-    let isBookmark = bmValus.data.isBookmark.data
-    if(isBookmark == null){
-      return  <IconButton onClick={(e) => onBookmark( item.id, user.id, true ) }>
-                <BookmarkIcon style={{ color:"" }} /> 
+  
+      let color = isBookmark.status == null ? "" : isBookmark.status ? "blue" : ""
+  
+      return  <IconButton onClick={(e) =>{
+                _.isEmpty(user) ?  onDialogLogin(true) : onBookmark( item.id, user.id, !isBookmark.status)
+              }}>
+                <BookmarkIcon style={{ color }} /> 
               </IconButton>
-    }
-
-    let color = isBookmark.status == null ? "" : isBookmark.status ? "blue" : ""
-
-    return  <IconButton onClick={(e) => onBookmark( item.id, user.id, !isBookmark.status) }>
-              <BookmarkIcon style={{ color }} /> 
-            </IconButton>
+    }       
   }
-  return  <IconButton onClick={(e) => onBookmark( item.id, user.id,true)}> 
+  return  <IconButton onClick={(e) =>{
+              _.isEmpty(user) ?  onDialogLogin(true) : onBookmark( item.id, user.id,true)
+            }}> 
             <BookmarkIcon style={{ color:"" }} />
           </IconButton>
 
 };
 
-export default ItemBookmark;
+// export default ItemBookmark;
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    user: state.auth.user
+  }
+};
+
+export default connect( mapStateToProps, null )(ItemBookmark);

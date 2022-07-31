@@ -1,8 +1,9 @@
 import { gql } from "@apollo/client";
 
 export const gqlHomes = gql`
-    query Homes($page: Int, $perPage: Int, $keywordSearch: String, $category: String) {
+    query Homes( $userId: ID, $page: Int, $perPage: Int, $keywordSearch: String, $category: String) {
         homes(
+            userId: $userId
             page: $page
             perPage: $perPage
             keywordSearch: $keywordSearch
@@ -190,7 +191,7 @@ export const gqlUsers = gql`
     }`;
 
 export const gqlUser = gql`
-    query User($id: ID!) {
+    query User($id: ID) {
         user(_id: $id) {
             status 
             executionTime
@@ -378,6 +379,7 @@ export const gqlBookmarks = gql`
                 id: _id
                 userId
                 postId
+                status
             }
         }
     }`;
@@ -415,7 +417,7 @@ export const gqlBookmarksByUserId = gql`
     }`;
 
 export const gqlIsBookmark = gql`
-    query IsBookmark($userId: ID!, $postId: ID!){
+    query IsBookmark($userId: ID, $postId: ID!){
         isBookmark(
             userId: $userId
             postId: $postId
@@ -423,7 +425,9 @@ export const gqlIsBookmark = gql`
             status
             executionTime
             data{
-                _id
+                id: _id
+                userId
+                postId
                 status
             }
         }
@@ -521,28 +525,7 @@ export const gqlDblog = gql`
         }
     }`;
 
-export const gqlConversations = gql`
-    query Conversations($userId: ID){
-        conversations(
-            userId: $userId
-        ){
-            status
-            executionTime
-            data{
-                id: _id
-                userId
-                name
-                lastSenderName
-                info
-                avatarSrc
-                avatarName
-                status
-                unreadCnt
-                sentTime
-                members
-            }
-        }
-    }`;
+export const gqlConversations = gql`query conversations($userId: ID){ conversations(userId: $userId) }`;
 
 export const gqlBasicContent =  gql`
     query BasicContent($id: ID!){
@@ -640,25 +623,7 @@ export const gqlFollowingByUserId = gql`
         }
     }`;
 
-export const gqlFetchMessage = gql`
-    query fetchMessage( $id: ID! ){
-            fetchMessage( id: $id ){
-              status
-              executionTime
-              data{
-                id: _id
-                conversationId
-                type
-                message
-                sentTime
-                sender
-                direction
-                position
-                status
-              }
-          }
-      }`;
-
+export const gqlFetchMessage = gql`query fetchMessage( $conversationId: ID ){ fetchMessage( conversationId: $conversationId ) }`;
 
 
 //////////////////  mutation  ///////////////////
@@ -745,7 +710,7 @@ export const gqlCreatePost = gql`
 export const gqlCreateAndUpdateBookmark = gql`
     mutation CreateAndUpdateBookmark($input: BookmarkInput) {
         createAndUpdateBookmark(input: $input) {
-            _id
+            id: _id
             userId
             postId
             status
@@ -817,20 +782,8 @@ export const gqlCreateShare = gql`
     }`;
 
 export const gqlCreateConversation = gql`
-    mutation CreateConversation($input: ConversationInput) {
-        createConversation(input: $input) {
-            id: _id
-            userId
-            name
-            lastSenderName
-            info
-            avatarSrc
-            avatarName
-            status
-            unreadCnt
-            sentTime
-            members
-        }
+    mutation CreateConversation($input: ConversationInput!) {
+        createConversation(input: $input)
     }`;
 
 export const gqlCreateAndUpdateFollow = gql`
@@ -843,18 +796,8 @@ export const gqlCreateAndUpdateFollow = gql`
 
     
 export const gqlAddMessage = gql`
-    mutation AddMessage($id: ID! , $input: MessageInput) {
-        addMessage( _id: $id, input: $input) {
-            id: _id
-            conversationId
-            type
-            message
-            sentTime
-            sender
-            direction
-            position
-            status
-        }
+    mutation AddMessage( $userId: ID!, $conversationId: ID! , $input: MessageInput ) {
+        addMessage( userId: $userId, conversationId: $conversationId, input: $input )
     }`;
 
 export const gqlUpdateUser = gql`
@@ -923,14 +866,17 @@ export const gqlUpdateTContactUs = gql`
         }
     }`;
 
-    // createComment
+// createComment
 export const gqlCurrentNumber = gql`
     mutation Query {
         currentNumber
       }`;
 
-
-
+export const gqlUpdateMessageRead = gql`
+      mutation UpdateMessageRead($userId: ID!, $conversationId: ID!) {
+        updateMessageRead(userId: $userId, conversationId: $conversationId)
+      }`;
+  
 
 //////////////////  mutation  ///////////////////
 
@@ -992,7 +938,6 @@ export const subPost = gql`
     }
 `;
 
-// 
 export const subComment = gql`
     subscription subComment($commentID: String) {
         subComment(commentID: $commentID) {
@@ -1021,7 +966,7 @@ export const subBookmark = gql`
         subBookmark(userId: $userId, postId: $postId) {
         mutation
         data {
-            _id
+            id: _id
             userId
             postId
             status
@@ -1029,8 +974,6 @@ export const subBookmark = gql`
         }
     }
 `;
-
-// 
 
 export const subShare = gql`
     subscription subShare( $postId: ID! ) {
@@ -1045,43 +988,8 @@ export const subShare = gql`
         }
     }`;
 
-export const subConversation = gql`
-    subscription subConversation( $userId: ID! ) {
-        subConversation( userId: $userId ) {
-            mutation
-            data {
-                id: _id
-                userId
-                name
-                lastSenderName
-                info
-                avatarSrc
-                avatarName
-                status
-                unreadCnt
-                sentTime
-                members
-            }
-        }
-    }`;
+export const subConversation = gql`subscription subConversation( $userId: ID ) { subConversation( userId: $userId ) }`;
 
-export const subMessage = gql`
-    subscription subMessage( $id: ID! ) {
-        subMessage( id: $id ) {
-            mutation
-            data {
-                id: _id
-                conversationId
-                type
-                message
-                sentTime
-                sender
-                senderId
-                direction
-                position
-                status
-            }
-        }
-    }`;
+export const subMessage = gql`subscription subMessage( $userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
 
 //////////////////  subscription  ///////////////////

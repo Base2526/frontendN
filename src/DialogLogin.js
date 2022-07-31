@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { useDeviceData } from "react-device-detect";
 
-import { gqlLogin } from "./gqlQuery"
+import { gqlLogin, gqlConversations } from "./gqlQuery"
 
 import {
   FacebookLoginButton,
@@ -25,8 +25,10 @@ const DialogLogin = (props) => {
 
   const [input, setInput]   = useState({ username: "",  password: ""});
   const [onLogin, resultLogin] = useMutation(gqlLogin, {
+    refetchQueries: [  {query: gqlConversations} ],
     onCompleted({ data }) {
       // history.push("/")
+      // window.location.reload();
     },
   });
 

@@ -27,6 +27,7 @@ const index =({open, id, onClose})=> {
           // Update the cache as an approximation of server-side mutation effects
           console.log("update > createConversation", createConversation)
 
+          /*
           
           const data = cache.readQuery({
             query: gqlConversations,
@@ -56,6 +57,7 @@ const index =({open, id, onClose})=> {
             }
 
           }
+          */
         },
         onCompleted({ data }) {
           // history.push("/");
@@ -66,8 +68,6 @@ const index =({open, id, onClose})=> {
       },  
   );
   
-
-  // gqlCreateConversation
 
   return (
       <Dialog open={open}>
@@ -81,7 +81,6 @@ const index =({open, id, onClose})=> {
           <Button onClick={onClose}>CLOSE</Button>
           <IconButton onClick={() => {
               onCreateConversation({ variables: { input: {
-                    userId: userId,
                     friendId: id
                   }
                 }

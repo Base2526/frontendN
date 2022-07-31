@@ -65,13 +65,31 @@ const useStyles = makeStyles({
 });
 
 const HomeItem =(props) => {
-  
-  let { item, onLightbox } = props
-  
+  let { user, item, bookmarks, onLightbox, onBookmark } = props
+
   const classes = useStyles(item);
   let history = useHistory();
 
   const [expand, setExpand] = useState(false);
+
+  const onItemBookmark = () =>{
+    let bookmark = _.find(bookmarks, (bookmark)=>bookmark.userId === user.id && bookmark.postId === item.id)
+    if(_.isEmpty(bookmark)){
+      return  <IconButton onClick={(e) =>{
+                  _.isEmpty(user) ?  onDialogLogin(true) : onBookmark( item.id, user.id, true)
+                }}> 
+                <BookmarkIcon style={{ color:"" }} />
+              </IconButton>
+    }else{
+      let color = bookmark.status == null ? "" : bookmark.status ? "blue" : ""
+  
+      return  <IconButton onClick={(e) =>{
+                _.isEmpty(user) ?  onDialogLogin(true) : onBookmark( item.id, user.id, !bookmark.status)
+              }}>
+                <BookmarkIcon style={{ color }} /> 
+              </IconButton>
+    }
+  }
 
   const renderMedia = (m) =>{
     if( !_.isEmpty(m.files) ){
@@ -180,7 +198,8 @@ const HomeItem =(props) => {
           <Divider light />
           <div>
 
-            {/* <ItemBookmark {...props} /> */}
+            <ItemBookmark {...props} />
+            {/* {onItemBookmark()} */}
             <ItemShare {...props} />
             <ItemComment {...props}/>
 

@@ -491,16 +491,16 @@ const Detail = (props) => {
                                     open={report.open} 
                                     postId={report.postId} 
                                     onReport={(e)=>{
-                                    onCreateContactUs({ variables: { input: {
-                                            userId: user.id,
-                                            postId: e.postId,     
-                                            categoryId: e.categoryId,
-                                            description: e.description
-                                            } 
-                                        } 
-                                    });
+                                        // onCreateContactUs({ variables: { input: {
+                                        //         userId: user.id,
+                                        //         postId: e.postId,     
+                                        //         categoryId: e.categoryId,
+                                        //         description: e.description
+                                        //         } 
+                                        //     } 
+                                        // });
 
-                                    setReport({open: false, postId:""})
+                                        setReport({open: false, postId:""})
                                     }}
 
                                     // onCreateTContactUs

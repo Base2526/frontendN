@@ -18,7 +18,7 @@ import loremIpsum from "lorem-ipsum";
 import Identicon from "identicon.js";
 import Avatar from "@material-ui/core/Avatar";
 
-import { gqlUser, gqlConversations, gqlFetchMessage, gqlAddMessage } from "../../gqlQuery"
+import { gqlUser, gqlFetchMessage, gqlAddMessage } from "../../gqlQuery"
 
 let clearRef = () => {};
 

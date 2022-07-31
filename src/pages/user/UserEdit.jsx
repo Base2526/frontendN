@@ -38,7 +38,6 @@ import {  gqlUser,
           gqlUpdateUser, 
           gqlPostsByUser, 
           gqlConversations, 
-          gqlCreateConversation,
           gqlBookmarksByUserId,
           gqlFollower,
           gqlFollowingByUserId,
@@ -167,50 +166,6 @@ const UserEdit = (props) => {
   followerByUserId.data.followerByUserId.data
   */
 
-  const [onCreateConversation, resultCreateConversation] = useMutation(gqlCreateConversation
-    , {
-        update: (cache, {data: {createConversation}}) => {
-          // Update the cache as an approximation of server-side mutation effects
-          console.log("update > createConversation", createConversation)
-
-          
-          const data = cache.readQuery({
-            query: gqlConversations,
-            variables: {
-              userId: userId
-            }
-          });
-
-          console.log("data > createConversation :", data, createConversation)
-
-          if(data != null){
-            if(_.find(data.conversations.data, (v)=>v.id === createConversation.id) == null){
-              let new_data = {...data.conversations}
-          
-              new_data = [...new_data.data, createConversation]
-              let new_conversations = {...data.conversations, data: new_data}
-  
-              cache.writeQuery({
-                query: gqlConversations,
-                data: {
-                  conversations: new_conversations
-                },
-                variables: {
-                  userId: userId
-                }
-              });
-            }
-
-          }
-        },
-        onCompleted({ data }) {
-          // history.push("/");
-          console.log("onCompleted > onCreateConversation")
-
-          history.push("/message")
-        },
-      },  
-  );
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = () => setShowPassword(!showPassword);

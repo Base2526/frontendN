@@ -51,6 +51,18 @@ const MyAppBar = (props) =>{
 
   let history = useHistory();
   const [anchorEl, setAnchorEl] = useState(null)
+  let [conversationsBadge, setConversationsBadge] = useState(0)
+
+  useEffect(()=>{
+    // console.log("conversations :", conversations)
+
+    let countBadge = 0;
+    _.map(conversations, conversation=>{
+      let member = _.find( conversation.members, member => member.userId === user.id );
+      if(!_.isEmpty(member)) countBadge += member.unreadCnt
+    })
+    setConversationsBadge(countBadge)
+  }, [conversations])
 
   const handleClose = () =>{
     setAnchorEl(null)
@@ -98,7 +110,8 @@ const MyAppBar = (props) =>{
                       !_.isEmpty(conversations)  && <Link to="/message">
                                                       <IconContainer>
                                                         <CommentIcon />
-                                                        <TopIconBadge>2</TopIconBadge>
+                                                        
+                                                        { conversationsBadge === 0 ? "" : <TopIconBadge>{conversationsBadge}</TopIconBadge>}
                                                       </IconContainer>
                                                     </Link>
                     }
