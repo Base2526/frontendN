@@ -39,10 +39,7 @@ const BankList = (props) => {
     id: ""
   });
 
-  const bankValues = useQuery(gqlBanks, {
-    variables: {page: pageIndex, perPage: pageSize},
-    notifyOnNetworkStatusChange: true,
-  });
+  const bankValues = useQuery(gqlBanks, { notifyOnNetworkStatusChange: true });
 
   console.log("bankValues :", bankValues)
 
@@ -171,7 +168,7 @@ const BankList = (props) => {
          ?  <div><CircularProgress /></div> 
          :  <Table
               columns={columns}
-              data={bankValues.data.Banks.data}
+              data={bankValues.data.banks.data}
               fetchData={fetchData}
               rowsPerPage={pageOptions}
               updateMyData={updateMyData}

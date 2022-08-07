@@ -17,16 +17,13 @@ import { gqlBanks } from "../../gqlQuery"
 const ItemBank = (props) => {
     let {item} = props 
 
-    let valueBanks = useQuery(gqlBanks, {
-        variables: {page: 0, perPage: 100},
-        notifyOnNetworkStatusChange: true,
-    });
+    let valueBanks = useQuery(gqlBanks, { notifyOnNetworkStatusChange: true });
     
     if(valueBanks.loading){
         return <div />
     }
 
-    let bank = _.find(valueBanks.data.Banks.data, (v) => v.id === item.bankId)
+    let bank = _.find(valueBanks.data.banks.data, (v) => v.id === item.bankId)
     return <li><Typography variant="subtitle2" color="textSecondary">{item.bankAccountName} [{bank === null ? "" : bank.name}]</Typography></li>
 };
 

@@ -19,7 +19,7 @@ const initialState = {
 }
 
 const auth = (state = initialState, action) => {
-    console.log("auth :", action);
+    // console.log("auth :", action);
     switch (action.type) {
         case LOGIN:{
             return { ...state, user: action.data };
@@ -37,12 +37,12 @@ const auth = (state = initialState, action) => {
         case ADDED_CONVERSATION: {
             let {mutation, data} = action.data
 
-            console.log("ADDED_CONVERSATION #0 :", mutation, data)
+            // console.log("ADDED_CONVERSATION #0 :", mutation, data)
 
             let conversations = [...state.conversations]
             if(_.find(conversations, (c)=>c._id == data._id)){
 
-                console.log("ADDED_CONVERSATION #1 :", mutation, data)
+                // console.log("ADDED_CONVERSATION #1 :", mutation, data)
                 return { ...state, conversations: _.map(conversations, (c)=>c._id==data._id ? data : c ) };
             }
             switch(mutation){
@@ -53,7 +53,7 @@ const auth = (state = initialState, action) => {
                 }
             }
 
-            console.log("ADDED_CONVERSATION #2 :", mutation, data, conversations)
+            // console.log("ADDED_CONVERSATION #2 :", mutation, data, conversations)
             return { ...state, conversations };
         }
 

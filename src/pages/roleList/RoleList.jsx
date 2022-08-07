@@ -42,10 +42,7 @@ const RoleList = (props) => {
     id: ""
   });
 
-  const rolesValues = useQuery(gqlRoles, {
-    variables: {page: pageIndex, perPage: pageSize},
-    notifyOnNetworkStatusChange: true,
-  });
+  const rolesValues = useQuery(gqlRoles, { notifyOnNetworkStatusChange: true });
 
   console.log("rolesValues :", rolesValues)
 

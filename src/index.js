@@ -2,7 +2,8 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom";
 
 //////////////// redux /////////////////
-import { applyMiddleware, createStore } from "redux";
+import { applyMiddleware, legacy_createStore as createStore, combineReducers  } from "redux";
+import { configureStore } from '@reduxjs/toolkit'
 import { Provider } from "react-redux";
 import thunk from "redux-thunk";
 import { createLogger } from "redux-logger";    // Logger with default options
@@ -53,6 +54,8 @@ import { createClient } from 'graphql-ws';
 // import { WebSocketLink } from "@apollo/client/link/ws";
 // import { SubscriptionClient } from "subscriptions-transport-ws";
 
+import {ls_connecting} from "./redux/actions/ws"
+
 
 // const httpLink = createHttpLink({
 //   uri: 'http://localhost:4000/graphql'
@@ -83,44 +86,82 @@ const httpLink = new HttpLink({
 
 // authLink.concat(httpLink)
 
+const connecting = (status) =>{
+  let {ws} = store.getState()
+  if(ws){
+    ws.is_connnecting === status ? "" : store.dispatch(ls_connecting(status));
+  }
+}
+
 let activeSocket, timedOut;
 
 const wsLink = new GraphQLWsLink(createClient({
   url: 'ws://localhost:4000/graphql',
+  // reconnect: true,
   disablePong: false,
+  connectionAckWaitTimeout: 0,
+  retryAttempts: 5,
+  keepAlive: 10_000,
+  retryWait: async function randomisedExponentialBackoff(retries) {
+
+    console.log("wsLink retryWait")
+    let retryDelay = 1000; // start with 1s delay
+    for (let i = 0; i < retries; i++) {
+      retryDelay *= 2;
+    }
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        retryDelay +
+          // add random timeout from 300ms to 3s
+          Math.floor(Math.random() * (3000 - 300) + 300),
+      ),
+    );
+  },
+  shouldRetry: (errOrCloseEvent) => {
+    console.log("wsLink shouldRetry :")
+    return true;
+  },
   connectionParams: {
     authToken: localStorage.getItem('token'),
     textHeaders: "axxxx2"
   },
   on: {
     // connected: () => console.log("connected client"),
+    connecting: () => {
+      // this.setState({ socketStatus: 'connecting' });
+      // console.log("wsLink connecting");
+
+      connecting(true)
+    },
     closed: () =>{
-      console.log("closed")
+      // console.log("wsLink closed");
       activeSocket =null
+      connecting(false)
     } ,
     connected: (socket) =>{
       activeSocket = socket
 
-      console.log("connected client ", socket)
+      // console.log("wsLink connected client", socket);
     },
-    keepAlive: 1, // ping server every 10 seconds
+    keepAlive: 10, // ping server every 10 seconds
     ping: (received) => {
-      console.log("#0")
-      if (!received) // sent
+      console.log("wsLink #0")
+
+      if (!received){
         console.log("#1")
         timedOut = setTimeout(() => {
           if (activeSocket.readyState === WebSocket.OPEN){
             activeSocket.close(4408, 'Request Timeout');
           }
-
-          console.log("#2")
             
         }, 5_000); // wait 5 seconds for the pong and then close the connection
+      } // sent
     },
     pong: (received) => {
-      console.log("#4")
+      console.log("wsLink #4")
+
       if (received){
-        console.log("#3")
         clearTimeout(timedOut); // pong is received, clear connection close timeout
       } 
     },
@@ -183,7 +224,13 @@ import App from "./App";
 import { useConfigClient } from './useConfigClient'; 
 
 
-console.log("useConfigClient :", useConfigClient())
+// console.log("useConfigClient :", useConfigClient())
+
+
+//////////////////////////////////
+
+
+/////////////////////////////////
 
 
 ReactDOM.render(

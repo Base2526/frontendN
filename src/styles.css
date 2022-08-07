@@ -131,8 +131,14 @@ body {
 
 .user-profile{
   border-width: 0.1px;
-  border-style: solid;
+  /* border-style: solid; */
   border-color: lightgray;
+  height: 80px !important;
+  width: 80px !important;
+}
+
+.user-profile>img{
+  border-radius: 10% !important;
 }
 
 .App-grow-13 {
@@ -141,4 +147,8 @@ body {
 
 .card-header-title {
   cursor: pointer;
+}
+
+.card-header-title>img{
+  border-radius: 10% !important;
 }

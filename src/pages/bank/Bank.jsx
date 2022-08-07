@@ -70,7 +70,7 @@ const Bank = (props) => {
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.Bank
+            let {status, data} = editValues.data.bank
 
             console.log("edit editValues : ", status,  data, data.name)
             if(status){
@@ -108,9 +108,9 @@ const Bank = (props) => {
                           description: input.description
                         }
 
-        console.log("newInput :", newInput, editValues.data.Bank.data.id)
+        console.log("newInput :", newInput, editValues.data.bank.data.id)
         onUpdateBank({ variables: { 
-          id: editValues.data.Bank.data.id,
+          id: editValues.data.bank.data.id,
           input: newInput
         }});
 

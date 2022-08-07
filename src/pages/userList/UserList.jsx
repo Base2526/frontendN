@@ -189,7 +189,7 @@ const UserList = (props) => {
         ? <div><CircularProgress /></div> 
         : <Table
             columns={columns}
-            data={usersValue.data.Users.data}
+            data={usersValue.data.users.data}
             fetchData={fetchData}
             rowsPerPage={pageOptions}
             updateMyData={updateMyData}

@@ -81,10 +81,7 @@ const UserNew = (props) => {
     isActive: ""
   });
 
-  const rolesValue = useQuery(gqlRoles, {
-    variables: {page: 0, perPage: 20},
-    notifyOnNetworkStatusChange: true,
-  });
+  const rolesValue = useQuery(gqlRoles, { notifyOnNetworkStatusChange: true });
 
   const [onCreateUser, resultCreateUser] = useMutation(gqlCreateUser, {
     variables: {

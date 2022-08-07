@@ -133,7 +133,7 @@ const styles = (theme) => ({
 });
 
 const App = (props) => {
-  let {user, addedConversations, addedConversation} = props
+  let {is_connnecting, user, addedConversations, addedConversation} = props
 
   const history = useHistory();
   const [open, setOpen] = useState(false)
@@ -144,9 +144,9 @@ const App = (props) => {
   ////////////////////// conversation ////////////////////////////
   const conversationValues =useQuery(gqlConversations, { variables: { userId: ""}, notifyOnNetworkStatusChange: true });
 
-  console.log("conversationValues :", conversationValues )
+  // console.log("conversationValues :", conversationValues )
 
-  if( !conversationValues.loading && conversationValues.data.conversations){
+  if(  is_connnecting && !conversationValues.loading && conversationValues.data.conversations){
     let { status, data } = conversationValues.data.conversations  
     addedConversations(data)
   
@@ -298,9 +298,10 @@ const App = (props) => {
 // export default withStyles(styles, { withTheme: true })(App);
 
 const mapStateToProps = (state, ownProps) => {
-  console.log("mapStateToProps :", state)
+  // console.log("mapStateToProps :", state)
   return {
     user: state.auth.user,
+    is_connnecting: state.ws.is_connnecting
   }
 };
 

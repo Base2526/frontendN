@@ -1,9 +1,11 @@
 import React, { useState, useEffect, withStyles } from "react";
 import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
+// import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useParams, Link } from "react-router-dom";
+
+import { Avatar } from "@chatscope/chat-ui-kit-react";
 
 import _ from "lodash";
 import deepdash from "deepdash";
@@ -182,13 +184,14 @@ const UserView = (props) => {
               <Stack direction="row" spacing={2}>
                 <Avatar
                   className={"user-profile"}
-                  sx={{
-                    height: 80,
-                    width: 80
-                  }}
+                  // sx={{
+                  //   height: 80,
+                  //   width: 80
+                  // }}
                   variant="rounded"
                   alt="Example Alt"
                   src={imageSrc}
+                  status="available"
                 />
               </Stack>
               <Typography variant="overline" display="block" gutterBottom>

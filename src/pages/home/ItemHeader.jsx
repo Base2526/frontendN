@@ -10,11 +10,13 @@ import { useQuery, useMutation } from "@apollo/client";
 import CommentIcon from "@mui/icons-material/Comment";
 import CircularProgress from '@mui/material/CircularProgress';
 import CardHeader from "@material-ui/core/CardHeader";
-import Avatar from "@material-ui/core/Avatar";
+// import Avatar from "@material-ui/core/Avatar";
 import { useHistory } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import _ from "lodash"
 import moment from "moment";
+
+import { Avatar } from "@chatscope/chat-ui-kit-react";
 
 import { gqlUser } from "../../gqlQuery"
 
@@ -39,7 +41,8 @@ const ItemHeader = (props) => {
                     avatar={<Avatar 
                             className={"card-header-title"} 
                             src={user.image[0].base64}
-                            onClick={(e)=> history.push("/user/" + user.id +"/view") }  />}
+                            onClick={(e)=> history.push("/user/" + user.id +"/view") }
+                            status="available" />}
                     action={
                         <IconButton  onClick={(e) => {
                             onAnchorElSettingOpen(index, e);

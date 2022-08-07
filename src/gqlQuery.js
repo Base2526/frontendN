@@ -162,8 +162,8 @@ export const gqlPostsByUser =  gql`
     }`;
 
 export const gqlUsers = gql`
-    query Users($page: Int, $perPage: Int){
-        Users(
+    query users($page: Int, $perPage: Int){
+        users(
             page: $page
             perPage: $perPage
         ){
@@ -216,11 +216,8 @@ export const gqlUser = gql`
     }`;
 
 export const gqlRoles = gql`
-    query Roles($page: Int, $perPage: Int){
-        Roles(
-            page: $page
-            perPage: $perPage
-        ){
+    query roles{
+        roles{
             status
             executionTime
             data{
@@ -233,8 +230,8 @@ export const gqlRoles = gql`
     }`;
 
 export const gqlRole = gql`
-    query Role($id: ID!){
-        Role(_id: $id){
+    query role($id: ID!){
+        role(_id: $id){
             status
             executionTime
             data{
@@ -261,11 +258,8 @@ export const gqlManyRoles = gql`
     }`;
  
 export const gqlBanks = gql`
-    query Banks($page: Int, $perPage: Int){
-        Banks(
-            page: $page
-            perPage: $perPage
-        ){
+    query banks{
+        banks{
             status
             executionTime
             data{
@@ -277,8 +271,8 @@ export const gqlBanks = gql`
     }`;
 
 export const gqlBank = gql`
-    query Bank($id: ID!){
-        Bank(_id: $id){
+    query bank($id: ID!){
+        bank(_id: $id){
             status
             executionTime
             data{
@@ -319,8 +313,8 @@ export const gqlTContactUs = gql`
     }`;
 
 export const gqlSockets = gql`
-    query Sockets($page: Int, $perPage: Int){
-        Sockets(
+    query sockets($page: Int, $perPage: Int){
+        sockets(
             page: $page
             perPage: $perPage
         ){
