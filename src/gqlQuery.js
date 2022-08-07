@@ -982,8 +982,8 @@ export const subShare = gql`
         }
     }`;
 
-export const subConversation = gql`subscription subConversation( $userId: ID ) { subConversation( userId: $userId ) }`;
+export const subConversation = gql`subscription subConversation($userId: ID) { subConversation( userId: $userId ) }`;
 
-export const subMessage = gql`subscription subMessage( $userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
+export const subMessage = gql`subscription subMessage($userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
 
 //////////////////  subscription  ///////////////////
