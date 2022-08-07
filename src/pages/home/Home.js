@@ -32,10 +32,12 @@ import {gqlHomes, gqlCreateContactUs,
 
 import { login, addedBookmark } from "../../redux/actions/auth"
 
+let unsubscribePost = null;
+
 const Home = (props) => {
   let history = useHistory();
 
-  let { user, addedBookmark } = props
+  let { is_connnecting, user, addedBookmark } = props
 
   const [keywordSearch, setKeywordSearch] = useState("");
   const [category, setCategory] = useState([0,1]);
@@ -120,18 +122,15 @@ const Home = (props) => {
   });
   // console.log("homesValues :", homesValues )
 
-  if(!homesValues.loading){
+  if( is_connnecting && !homesValues.loading){
 
-    console.log("homesValues.data.homes.data :", homesValues)
+    // console.log("homesValues.data.homes.data :", homesValues)
 
     var keys = _.map(homesValues.data.homes.data, _.property("id"));
 
-    // const numberIncrementedValues = useSubscription(subNumberIncremented, 
-    //   { variables: { postIDs: JSON.stringify(keys) } });
-    // console.log("keys :", keys)
-
     let {subscribeToMore} = homesValues
-    const unsubscribe =  subscribeToMore({
+    unsubscribePost && unsubscribePost()
+    unsubscribePost =  subscribeToMore({
 			document: subPost,
       variables: { postIDs: JSON.stringify(keys) },
 			updateQuery: (prev, {subscriptionData}) => {
@@ -152,8 +151,10 @@ const Home = (props) => {
   }
 
   useEffect(()=>{
-    homesValues && homesValues.refetch({userId: _.isEmpty(user) ? "" : user.id, page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()})
-  }, [user])
+    if(is_connnecting){
+      homesValues && homesValues.refetch({userId: _.isEmpty(user) ? "" : user.id, page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()})
+    }
+  }, [user, is_connnecting])
 
   const handleAnchorElSettingOpen = (index, event) => {
     setAnchorElSetting({ [index]: event.currentTarget });
@@ -309,7 +310,7 @@ const Home = (props) => {
         <div>
           {
             homesValues.loading || homesValues.data == undefined
-            ? <div><CircularProgress /></div> 
+            ? is_connnecting ? <div><CircularProgress /></div> : <div>Server is down</div>
             : <div>
                 <Container>
                   <Masonry
@@ -512,11 +513,10 @@ const Home = (props) => {
 }
 
 const mapStateToProps = (state, ownProps) => {
-
-  console.log("state.auth.bookmarks :", state.auth.bookmarks)
   return {
     user: state.auth.user,
-    bookmarks: state.auth.bookmarks
+    bookmarks: state.auth.bookmarks,
+    is_connnecting: state.ws.is_connnecting
   }
 };
 

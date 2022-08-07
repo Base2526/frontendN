@@ -8,6 +8,7 @@ export const ADDED_MESSAGE     = "ADDED_MESSAGE";
 export const EDITED_MESSAGE    = "EDITED_MESSAGE";
 export const DELETED_MESSAGE   = "DELETED_MESSAGE";
 
-
 export const ADDED_BOOKMARKS   = "ADDED_BOOKMARKS";
 export const ADDED_BOOKMARK   = "ADDED_BOOKMARK";
+
+export const IS_CONNECTIING  = "IS_CONNECTIING";

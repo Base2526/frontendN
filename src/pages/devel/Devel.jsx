@@ -25,10 +25,7 @@ const Devel = (props) => {
 
   // console.log("valueUsers :", valueUsers)
 
-  const valueBanks = useQuery(gqlBanks, {
-    variables: {page: 0, perPage: 100},
-    notifyOnNetworkStatusChange: true,
-  });
+  const valueBanks = useQuery(gqlBanks, { notifyOnNetworkStatusChange: true });
 
   console.log("valueBanks :", valueBanks)
 
@@ -39,15 +36,8 @@ const Devel = (props) => {
 
   console.log("valuePosts :", valuePosts)
 
-
-  const valueRoles = useQuery(gqlRoles, {
-    variables: {page: 0, perPage: 100},
-    notifyOnNetworkStatusChange: true,
-  });
-
+  const valueRoles = useQuery(gqlRoles, { notifyOnNetworkStatusChange: true });
   console.log("valueRoles :", valueRoles)
-  /*
-  */
 
   const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
     variables: {
@@ -153,12 +143,12 @@ const Devel = (props) => {
       for ( var i = 0; i < length; i++ ) {
 
           const min = 0;
-          const max = valueBanks.data.Banks.data.length;
+          const max = valueBanks.data.banks.data.length;
           const rand = min + Math.random() * (max - min);
 
           banks.push({
                     bankAccountName: makeNumber(11),
-                    bankId:valueBanks.data.Banks.data[Math.floor(rand)].id
+                    bankId:valueBanks.data.banks.data[Math.floor(rand)].id
                   })
       }
       return banks

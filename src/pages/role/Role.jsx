@@ -23,9 +23,7 @@ import { gqlRole, gqlCreateRole, gqlUpdateRole } from "../../gqlQuery"
 let editValues = undefined;
 let initValues =  { name : "",  description: "" }
 
-
 const NewRole = (props) => {
-
   const { path, value, info, update } = props;
   console.log("path, value, info, update :", path, value, info, update)
   let history = useHistory();
@@ -65,10 +63,7 @@ const NewRole = (props) => {
     case "edit":{
 
       // if(editValues === undefined){
-        editValues = useQuery(gqlRole, {
-          variables: {id},
-          notifyOnNetworkStatusChange: true,
-        });
+      editValues = useQuery(gqlRole, { variables: {id}, notifyOnNetworkStatusChange: true });
       // }
      
       console.log("editValues : ", editValues, input)
@@ -78,7 +73,7 @@ const NewRole = (props) => {
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.Role
+            let {status, data} = editValues.data.role
 
             console.log("edit editValues : ", status,  data, data.name)
             if(status){
@@ -116,9 +111,9 @@ const NewRole = (props) => {
                           description: input.description
                         }
 
-        console.log("newInput :", newInput, editValues.data.Role.data.id)
+        console.log("newInput :", newInput, editValues.data.role.data.id)
         onUpdateRole({ variables: { 
-          id: editValues.data.Role.data.id,
+          id: editValues.data.role.data.id,
           input: newInput
         }});
 

@@ -19,10 +19,7 @@ import {gqlBanks} from "../../gqlQuery"
 const BankInputField = ({ values, onChange }) => {
   const [inputList, setInputList] = useState(values);
 
-  let valueBanks = useQuery(gqlBanks, {
-    variables: {page: 0, perPage: 100},
-    notifyOnNetworkStatusChange: true,
-  });
+  let valueBanks = useQuery(gqlBanks, { notifyOnNetworkStatusChange: true, });
 
   console.log("valueBanks :", valueBanks)
 
@@ -60,11 +57,11 @@ const BankInputField = ({ values, onChange }) => {
   };
 
   const bankView = (item, i) =>{
-    let value =  _.find(valueBanks.data.Banks.data, (v)=>item.bankId === v.id)
+    let value =  _.find(valueBanks.data.banks.data, (v)=>item.bankId === v.id)
     return  <Autocomplete
               disablePortal
               id="input-bank-id"
-              options={valueBanks.data.Banks.data}
+              options={valueBanks.data.banks.data}
               getOptionLabel={(option) => option.name}
               defaultValue={ value }
               renderInput={(params) => <TextField {...params} label="Bank" required={_.isEmpty(item.bankId) ? true : false} />}

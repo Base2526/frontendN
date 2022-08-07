@@ -37,6 +37,10 @@ import moment from "moment";
 
 import { gqlFetchMessage, gqlAddMessage, subMessage, gqlUpdateMessageRead} from "../../gqlQuery"
 
+import { addedConversation } from "../../redux/actions/auth"
+
+let unsubscribeSubMessage = null
+
 function makeid(length) {
   var result           = '';
   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -56,7 +60,7 @@ function truncate(str, n){
 };
 
 const MessageView =(props)=> {
-  let {user, conversations} = props;
+  let {user, conversations, addedConversation} = props;
 
   let {state} = useLocation()
 
@@ -103,7 +107,7 @@ const MessageView =(props)=> {
         }
     },  
   );
-  console.log("resultAddMessageValues :", resultAddMessageValues)
+  // console.log("resultAddMessageValues :", resultAddMessageValues)
 
   // 
   const [onUpdateMessageRead, resultUpdateMessageRead] = useMutation(gqlUpdateMessageRead
@@ -111,6 +115,8 @@ const MessageView =(props)=> {
         update: (cache, {data: {updateMessageRead}}) => {
 
           console.log("update : updateMessageRead :", updateMessageRead)
+
+          addedConversation(updateMessageRead)
           // const data1 = cache.readQuery({
           //     query: gqlFetchMessage,
           //     variables: {conversationId: currentConversation._id},
@@ -134,7 +140,14 @@ const MessageView =(props)=> {
         }
     },  
   );
-  console.log("resultAddMessageValues :", resultAddMessageValues)
+  // console.log("resultAddMessageValues :", resultAddMessageValues)
+
+  useEffect(()=>{
+
+    return () => {
+      console.log("cleaned up");
+    };
+  }, [])
 
   useEffect(()=>{
     if(!_.isEmpty(state)){
@@ -145,9 +158,13 @@ const MessageView =(props)=> {
 
   useEffect(()=>{
     setConversationList(conversations)
+
+    // console.log("conversations :", currentConversation)
   }, [conversations])
 
   useEffect(()=>{
+    
+    console.log("unsubscribeSubMessage")
     if(!_.isEmpty(currentConversation)){
       fetchMessageValues.refetch({conversationId: currentConversation._id});
     }else{
@@ -165,14 +182,14 @@ const MessageView =(props)=> {
                     let muser = _.find(conversation.members, (member)=>member.userId === user.id)
                     let mfriend = _.find(conversation.members, (member)=>member.userId !== user.id)
 
-                    console.log("muser :", muser, mfriend, conversation, user.id)
+                    // console.log("muser :", muser, mfriend, conversation, user.id)
 
                     return  <Conversation
                               name={mfriend.name}
                               lastSenderName={conversation.lastSenderName}
                               info={ truncate(conversation.info, 25)}
                               unreadCnt={muser.unreadCnt}
-                              active={_.isEqual(conversation, currentConversation) ? true: false}
+                              active={ conversation._id === currentConversation._id ? true: false}
                               onClick={(e)=>{
                                 onUpdateMessageRead({ variables: {userId: user.id, conversationId: conversation._id} });
                                 setCurrentConversation(conversation)
@@ -245,17 +262,24 @@ const MessageView =(props)=> {
   const onMessageList = () =>{
     if(!fetchMessageValues.loading){
 
-      console.log("fetchMessageValues.data.fetchMessage :",  fetchMessageValues.data.fetchMessage)
+      // console.log("fetchMessageValues.data.fetchMessage :",  fetchMessageValues.data.fetchMessage)
 
       let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       let {subscribeToMore} = fetchMessageValues
-      const unsubscribe =  subscribeToMore({
+
+      unsubscribeSubMessage && unsubscribeSubMessage()
+      unsubscribeSubMessage =  subscribeToMore({
         document: subMessage,
         variables: { userId: user.id, conversationId: currentConversation._id },
-        updateQuery: (prev, {subscriptionData}) => {
+        updateQuery: (prev, {subscriptionData, variables}) => {
           if (!subscriptionData.data) return prev;
 
+          let {conversationId} = variables
           let {mutation, data} = subscriptionData.data.subMessage
+
+          if(data.conversationId !== conversationId){
+            return prev;
+          }
           
           if(!_.find(prev.fetchMessage.data, (f)=>f._id === data._id)){
             let newPrev = {...prev.fetchMessage, data: [...prev.fetchMessage.data, data]}
@@ -265,10 +289,10 @@ const MessageView =(props)=> {
               }
             }  
 
-            console.log("subscribeToMore : ", newPrev)
             return {fetchMessage: newPrev};
           }
           return prev
+          
         }
       });
 
@@ -443,12 +467,18 @@ const MessageView =(props)=> {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  let conversations = _.orderBy(state.auth.conversations, (dateObj) => new Date(dateObj.updatedAt) , 'desc')
+  let conversations = _.orderBy(state.auth.conversations, (dateObj) => new Date(dateObj.sentTime) , 'desc')
+  
+  // console.log("conversations :", conversations)
   return {
     user: state.auth.user,
     conversations,
-    messages: state.auth.messages
+    // messages: state.auth.messages
   }
 };
 
-export default connect( mapStateToProps, null )(MessageView);
+const mapDispatchToProps = {
+  addedConversation
+}
+
+export default connect( mapStateToProps, mapDispatchToProps )(MessageView);
