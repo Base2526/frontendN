@@ -153,6 +153,8 @@ const MessageView =(props)=> {
 
     return () => {
       console.log("cleaned up");
+
+      unsubscribeSubMessage && unsubscribeSubMessage()
     };
   }, [])
 
@@ -170,10 +172,12 @@ const MessageView =(props)=> {
   }, [conversations])
 
   useEffect(()=>{
+
     
-    console.log("unsubscribeSubMessage")
     if(!_.isEmpty(currentConversation)){
       fetchMessageValues.refetch({conversationId: currentConversation._id});
+
+      onUpdateMessageRead({ variables: {userId: user.id, conversationId: currentConversation._id} });
     }else{
       fetchMessageValues.refetch({conversationId: ""});
     }
@@ -198,7 +202,7 @@ const MessageView =(props)=> {
                               unreadCnt={muser.unreadCnt}
                               active={ conversation._id === currentConversation._id ? true: false}
                               onClick={(e)=>{
-                                onUpdateMessageRead({ variables: {userId: user.id, conversationId: conversation._id} });
+                               
                                 setCurrentConversation(conversation)
                               }}
                               lastActivityTime={moment(conversation.sentTime).format('MMMM Do YYYY, hh:mm A')}>
@@ -268,17 +272,15 @@ const MessageView =(props)=> {
 
   const onMessageList = () =>{
     if(!fetchMessageValues.loading){
-
-      // console.log("fetchMessageValues.data.fetchMessage :",  fetchMessageValues.data.fetchMessage)
-
       let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       let {subscribeToMore} = fetchMessageValues
 
-      unsubscribeSubMessage && unsubscribeSubMessage()
+      console.log("unsubscribeSubMessage :",  user.id, currentConversation._id)
       unsubscribeSubMessage =  subscribeToMore({
         document: subMessage,
         variables: { userId: user.id, conversationId: currentConversation._id },
         updateQuery: (prev, {subscriptionData, variables}) => {
+
           if (!subscriptionData.data) return prev;
 
           let {conversationId} = variables
@@ -287,6 +289,8 @@ const MessageView =(props)=> {
           if(data.conversationId !== conversationId){
             return prev;
           }
+
+          console.log("subMessage :", subscriptionData, variables)
           
           if(!_.find(prev.fetchMessage.data, (f)=>f._id === data._id)){
             let newPrev = {...prev.fetchMessage, data: [...prev.fetchMessage.data, data]}
@@ -383,72 +387,22 @@ const MessageView =(props)=> {
 
                       case "image":{
 
-                        let {src } = payload
+                        let { src } = payload[0]
 
                         switch(direction){
                           case "incoming":{
-                            // return <Message model={{
-                            //           type,
-                            //           direction,
-                            //           position
-                            //         }}>
-                                        
-                            //             <Message.HtmlContent html={message} />
-                            //             <Avatar src={avatarIco} name="Akane" size="sm" />
-                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />
-                            //         </Message>
-
-                            // return  <Message type={type} model={{
-                            //           // type,
-                            //           direction,
-                            //           position,
-                            //           payload: {
-                            //             src,
-                            //             alt: "Joe avatar",
-                            //             width: "100px"
-                            //           }
-                            //           }}>
-                            //             <Avatar src={avatarIco} name="Joe" />   
-                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />                 
-                            //         </Message>
-
                             return <Message model={{direction, position}}>
                                       <Avatar src={avatarIco} name="Akane" />
                                       <Message.ImageContent src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
                                       <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
                                     </Message>
-
                           }
 
                           case "outgoing":{
-                            // return  <Message model={{
-                            //           type,
-                            //           direction,
-                            //           position
-                            //         }}>
-                            //             <Message.HtmlContent html={message} />
-                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />
-                            //         </Message>
-                            // return  <Message type={type} model={{
-                            //           // type,
-                            //           direction,
-                            //           position,
-                            //           payload: {
-                            //             src,
-                            //             alt: "Joe avatar",
-                            //             width: "100px"
-                            //           }
-                            //           }}>
-                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />               
-                            //         </Message>
-
                             return <Message model={{direction, position}}>
-                                    {/* <Avatar src={avatarIco} name="Akane" /> */}
                                     <Message.ImageContent src={src} alt={"alt"} width={150} />
                                     <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />  
-                                    
                                   </Message>
-                                  {/* <p>{moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')}</p>  */}
                           }
                         }
 
@@ -547,18 +501,18 @@ const MessageView =(props)=> {
 
     let input = {
       type: "image",
-      message: messageInputValue,
+      message: "picture",
       sentTime: Date.now(),
       // sender: user.displayName,
       // senderId: user.id, 
       direction: "outgoing",
       position: "single",
 
-      payload: {
+      payload: [{
               src: URL.createObjectURL(event.target.files[0]),
               alt: "Joe avatar",
               width: "100px"
-            },
+            }],
 
       files:event.target.files
     }
