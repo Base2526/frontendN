@@ -51,6 +51,9 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 
 import { createClient } from 'graphql-ws';
 
+import { createUploadLink } from 'apollo-upload-client' // v15.0.0
+
+
 // import { WebSocketLink } from "@apollo/client/link/ws";
 // import { SubscriptionClient } from "subscriptions-transport-ws";
 
@@ -183,9 +186,11 @@ const splitLink = split(
   },
   wsLink,
   // httpLink,
-  authLink.concat(httpLink)
+  // authLink.concat(httpLink),
+  createUploadLink({ uri: 'http://localhost:4000/graphql', headers:{ authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : "", } })
 );
 
+// const link = createUploadLink({ uri: "http://localhost:4000/graphql" });
 const client = new ApolloClient({
   // uri: 'http://localhost:4040/graphql',
   link: splitLink,

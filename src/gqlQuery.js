@@ -867,10 +867,18 @@ export const gqlCurrentNumber = gql`
       }`;
 
 export const gqlUpdateMessageRead = gql`
-      mutation UpdateMessageRead($userId: ID!, $conversationId: ID!) {
-        updateMessageRead(userId: $userId, conversationId: $conversationId)
-      }`;
+        mutation UpdateMessageRead($userId: ID!, $conversationId: ID!) {
+            updateMessageRead(userId: $userId, conversationId: $conversationId)
+        }`;
   
+export const gqlFileUpload = gql`
+        mutation fileUpload($text: String!, $file: [Upload]!) {
+            fileUpload(text: $text, file: $file) {
+                filename
+                mimetype
+                encoding
+            }
+        }`
 
 //////////////////  mutation  ///////////////////
 

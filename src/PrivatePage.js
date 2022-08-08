@@ -37,6 +37,8 @@ import BasicContent from "./pages/basicContent/BasicContent"
 
 import Profile from "./pages/profile"
 
+import Upload from "./pages/test/Upload"
+
 // import { isAuth } from "./AuthProvider";
 import { connect } from "react-redux";
 import _ from "lodash"
@@ -149,6 +151,9 @@ const PrivatePage =(props) => {
                 </Route>
                 <Route path="/basic-content/:mode">
                     <BasicContent />
+                </Route>
+                <Route path="/upload">
+                    <Upload />
                 </Route>
             </Switch>
         :   <Redirect to="/" />

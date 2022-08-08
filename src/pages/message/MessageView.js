@@ -1,5 +1,5 @@
 import "./messenger.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
   MainContainer,
@@ -62,6 +62,8 @@ function truncate(str, n){
 const MessageView =(props)=> {
   let {user, conversations, addedConversation} = props;
 
+  const inputFile = useRef(null) 
+
   let {state} = useLocation()
 
   const [conversationList, setConversationList] = useState(conversations);
@@ -101,6 +103,11 @@ const MessageView =(props)=> {
                 variables: {conversationId: currentConversation._id},
             });
           }
+        },
+        context: {
+          headers: {
+            'apollo-require-preflight': true,
+          },
         },
         onCompleted({ data }) {
           console.log(data)
@@ -303,7 +310,7 @@ const MessageView =(props)=> {
                 >
                 {
                   _.map( data, item=>{
-                    let {type, message, sentTime, senderId, senderName, position} = item
+                    let {type, message, sentTime, senderId, senderName, position, payload} = item
                     let direction = senderId == user.id  ? "outgoing" : "incoming"
                   
                     switch(type){
@@ -373,6 +380,80 @@ const MessageView =(props)=> {
 
                         break;
                       }
+
+                      case "image":{
+
+                        let {src } = payload
+
+                        switch(direction){
+                          case "incoming":{
+                            // return <Message model={{
+                            //           type,
+                            //           direction,
+                            //           position
+                            //         }}>
+                                        
+                            //             <Message.HtmlContent html={message} />
+                            //             <Avatar src={avatarIco} name="Akane" size="sm" />
+                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />
+                            //         </Message>
+
+                            // return  <Message type={type} model={{
+                            //           // type,
+                            //           direction,
+                            //           position,
+                            //           payload: {
+                            //             src,
+                            //             alt: "Joe avatar",
+                            //             width: "100px"
+                            //           }
+                            //           }}>
+                            //             <Avatar src={avatarIco} name="Joe" />   
+                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />                 
+                            //         </Message>
+
+                            return <Message model={{direction, position}}>
+                                      <Avatar src={avatarIco} name="Akane" />
+                                      <Message.ImageContent src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
+                                      <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
+                                    </Message>
+
+                          }
+
+                          case "outgoing":{
+                            // return  <Message model={{
+                            //           type,
+                            //           direction,
+                            //           position
+                            //         }}>
+                            //             <Message.HtmlContent html={message} />
+                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />
+                            //         </Message>
+                            // return  <Message type={type} model={{
+                            //           // type,
+                            //           direction,
+                            //           position,
+                            //           payload: {
+                            //             src,
+                            //             alt: "Joe avatar",
+                            //             width: "100px"
+                            //           }
+                            //           }}>
+                            //             <Message.Footer sentTime={moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')} />               
+                            //         </Message>
+
+                            return <Message model={{direction, position}}>
+                                    {/* <Avatar src={avatarIco} name="Akane" /> */}
+                                    <Message.ImageContent src={src} alt={"alt"} width={150} />
+                                    <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />  
+                                    
+                                  </Message>
+                                  {/* <p>{moment.unix(sentTime/1000).format('MMMM Do YYYY, hh:mm A')}</p>  */}
+                          }
+                        }
+
+                        break;
+                      }
                     } 
                     
                   })
@@ -386,7 +467,14 @@ const MessageView =(props)=> {
     return  <MessageInput
               placeholder="Type message here"
               value={messageInputValue}
-              onChange={(val) => setMessageInputValue(val)}
+              onAttachClick={(f)=>{
+                console.log("onAttachClick :", f)
+                inputFile.current.click();
+              }}
+              onChange={(val) =>{
+                console.log("onChange :", val)
+                setMessageInputValue(val)
+              } }
               onSend={(a, b, c, d) => {
 
                 let input = {}
@@ -451,6 +539,41 @@ const MessageView =(props)=> {
     */
   };
 
+  const onChangeFile = (event) =>{
+    event.stopPropagation();
+    event.preventDefault();
+    // var file = event.target.files[0];
+    console.log("file :", event.target.files);
+
+    let input = {
+      type: "image",
+      message: messageInputValue,
+      sentTime: Date.now(),
+      // sender: user.displayName,
+      // senderId: user.id, 
+      direction: "outgoing",
+      position: "single",
+
+      payload: {
+              src: URL.createObjectURL(event.target.files[0]),
+              alt: "Joe avatar",
+              width: "100px"
+            },
+
+      files:event.target.files
+    }
+
+      
+
+    
+    input = {...input, _id: makeid(20) , conversationId: currentConversation._id, status: "waiting" }
+
+
+    onAddMessage({ variables: {userId: user.id, conversationId: currentConversation._id, input } });
+    
+    // image
+  }
+
   return (
     <div style={{ height: "600px", position: "relative", width: "100%" }} >
       <MainContainer responsive>
@@ -461,6 +584,8 @@ const MessageView =(props)=> {
           {onMessageInput()}
         </ChatContainer>
         {/* {onSidebarRight()} */}
+
+        <input type='file' id='file' ref={inputFile} style={{display: 'none'}}  onChange={onChangeFile} />
       </MainContainer>
     </div>
   );

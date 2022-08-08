@@ -42,7 +42,8 @@ const ItemHeader = (props) => {
                             className={"card-header-title"} 
                             src={user.image[0].base64}
                             onClick={(e)=> history.push("/user/" + user.id +"/view") }
-                            status="available" />}
+                            // status="available" 
+                            />}
                     action={
                         <IconButton  onClick={(e) => {
                             onAnchorElSettingOpen(index, e);
