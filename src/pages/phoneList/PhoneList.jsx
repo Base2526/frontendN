@@ -1,4 +1,4 @@
-import { ButtonWrapper } from "./PostList.styled";
+import { ButtonWrapper } from "./PhoneList.styled";
 import { Link } from "react-router-dom";
 import { useState, useCallback, useEffect, useMemo, useRef  } from "react";
 import Box from "@mui/material/Box";
@@ -25,11 +25,11 @@ import PostAddIcon from '@mui/icons-material/PostAdd';
 import AddIcCallIcon from '@mui/icons-material/AddIcCall';
 
 import Footer from "../footer";
-import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment, gqlUser} from "../../gqlQuery"
+import { gqlPhones } from "../../gqlQuery"
 import ReadMoreMaster from "../../utils/ReadMoreMaster"
 import Table from "../../TableContainer"
 
-const PostList = (props) => {
+const PhoneList = (props) => {
   let history = useHistory();
 
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
@@ -47,17 +47,16 @@ const PostList = (props) => {
     id: ""
   });
 
-  const postsValue = useQuery(gqlPosts, {
+  const phonesValue = useQuery(gqlPhones, {
     variables: {page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
-  console.log("postsValue :", postsValue)
+  console.log("phonesValue :", phonesValue)
 
   ///////////////
   const fetchData = useCallback(
     ({ pageSize, pageIndex }) => {
-    console.log("fetchData is being called #1")
 
     setPageSize(pageSize)
     setPageIndex(pageIndex)
@@ -81,56 +80,19 @@ const PostList = (props) => {
   ///////////////////////
   const columns = useMemo(
     () => [
-      // 
       {
-        Header: 'Username',
+        Header: 'Phone List',
         accessor: 'id',
         columns: [
           {
-            Header: 'Profile',
-            accessor: 'files',
+            Header: 'Phones',
+            accessor: 'phones',
             Cell: props =>{
-              if(props.value.length < 1){
-                return <div />
-              }
-              return (
-                <div style={{ position: "relative" }}>
-                  <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
-                    <Avatar
-                      sx={{
-                        height: 100,
-                        width: 100
-                      }}
-                      variant="rounded"
-                      alt="Example Alt"
-                      src={props.value[0].base64}
-                      onClick={(e) => {
-                        console.log("files props: ", props.value)
-                        setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
-                      }}
-                    />
-                  </CardActionArea>
-                  <div
-                      style={{
-                          position: "absolute",
-                          bottom: "5px",
-                          right: "5px",
-                          padding: "5px",
-                          backgroundColor: "#e1dede",
-                          color: "#919191"
-                      }}
-                      >{props.value.length}</div>
-                </div>
-              );
+                let {phones} = props.row.values
+
+                return ( <div style={{ position: "relative" }}> {phones.join()} </div> );
             }
           },
-          {
-            Header: 'Title',
-            accessor: 'title',
-            Cell: props =>{
-              return <Link to={`/detail/${props.row.original.id}`}>{props.value}</Link>
-            }
-          }, 
           {
             Header: 'Detail',
             accessor: 'description',
@@ -151,92 +113,12 @@ const PostList = (props) => {
             }
           },
           {
-            Header: 'Owner',
-            accessor: 'ownerId',
-            Cell: props =>{
-              let userValue = useQuery(gqlUser, {
-                variables: {id: props.value},
-                notifyOnNetworkStatusChange: true,
-              });
-      
-              return userValue.loading 
-                    ? <LinearProgress sx={{width:"100px"}} />
-                    : userValue.data.user.data != null ? <Link to={`/user/${userValue.data.user.data.id}/view`}>{userValue.data.user.data.displayName}</Link> : <div />
-            } 
-          },
-          {
-            Header: 'Comments',
-            Cell: props =>{
-              let commentValues = useQuery(gqlComment, {
-                variables: {postId: props.row.original.id},
-                notifyOnNetworkStatusChange: true,
-              });
-
-              if(!commentValues.loading){
-                if(commentValues.data.comment.data.length == 0){
-                  return <div />
-                }
-          
-                let count = 0;
-                _.map(commentValues.data.comment.data, (v) => {
-                  if (v.replies) {
-                    count += v.replies.length;
-                  }
-                });
-          
-                return  <ButtonWrapper><Link to={`/comments`}>
-                          <button className="editBtn">{commentValues.data.comment.data.length + count}</button>
-                        </Link></ButtonWrapper>
-              }
-              
-              return <div />
-            } 
-          },
-          {
-            Header: 'Bookmark',
-            Cell: props =>{
-              const bmValus = useQuery(gqlBookmarksByPostId, {
-                variables: { postId: props.row.original.id},
-                notifyOnNetworkStatusChange: true, 
-              });
-      
-              // console.log("gqlBookmarksByPostId : ", bmValus)
-      
-              return  bmValus.loading 
-                      ? <LinearProgress sx={{width:"100px"}} />
-                      : bmValus.data.bookmarksByPostId.data.length == 0 
-                          ? <div /> 
-                          : <ButtonWrapper><Link to={`/comments`}>
-                              <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
-                            </Link></ButtonWrapper>
-            } 
-          }, // 
-          {
-            Header: 'Share',
-            Cell: props =>{
-              const shareValus = useQuery(gqlShareByPostId, {
-                variables: {postId: props.row.original.id},
-                notifyOnNetworkStatusChange: true,
-              });
-      
-              return  shareValus.loading 
-                      ? <LinearProgress sx={{width:"100px"}} />
-                      : shareValus.data.shareByPostId.data.length == 0 
-                          ? <div /> 
-                          : <ButtonWrapper><Link to={`/comments`}>
-                              <button className="editBtn">{shareValus.data.shareByPostId.data.length}</button>
-                            </Link></ButtonWrapper>
-            } 
-          },
-          {
             Header: 'Action',
             Cell: props => {
-              return  <div>
-                        <Link to={`/post/${props.row.original.id}/edit`}>
-                          <button>Edit</button>
-                        </Link>
-                        <button>Delete</button>
-                      </div>
+                return  <div>
+                            <Link to={`/phone/${props.row.original._id}/edit`}><button>Edit</button></Link>
+                            <button>Delete</button>
+                        </div>
             }
           },
         ],
@@ -285,11 +167,11 @@ const PostList = (props) => {
   return (
     <Box style={{ flex: 4 }}>
       {
-        postsValue.loading
+        phonesValue.loading
         ? <div><CircularProgress /></div> 
         : <Table
             columns={columns}
-            data={postsValue.data.posts.data}
+            data={phonesValue.data.phones.data}
             fetchData={fetchData}
             rowsPerPage={pageOptions}
             updateMyData={updateMyData}
@@ -361,8 +243,8 @@ const PostList = (props) => {
         icon={<SpeedDialIcon />}>
         {
           _.map([
-                  { icon: <PostAddIcon />, name: 'Post', id: 1 },
-                  // { icon: <AddIcCallIcon />, name: 'Phone', id: 2 },
+                  // { icon: <PostAddIcon />, name: 'Post', id: 1 },
+                  { icon: <AddIcCallIcon />, name: 'Phone', id: 2 },
                 ], (action) => (
                   <SpeedDialAction
                     key={action.name}
@@ -371,15 +253,15 @@ const PostList = (props) => {
                     tooltipOpen
                     onClick={(e)=>{
                       switch(action.id){
-                        case 1:{
-                          history.push({ pathname: "/post/new", state: {from: "/"} });
-                          break;
-                        }
-
-                        // case 2:{
-                        //   history.push({ pathname: "/phone/new", state: {from: "/"} });
+                        // case 1:{
+                        //   history.push({ pathname: "/post/new", state: {from: "/"} });
                         //   break;
                         // }
+
+                        case 2:{
+                          history.push({ pathname: "/phone/new", state: {from: "/"} });
+                          break;
+                        }
                       }
                     }}
                   />
@@ -392,4 +274,4 @@ const PostList = (props) => {
   );
 };
 
-export default PostList;
+export default PhoneList;

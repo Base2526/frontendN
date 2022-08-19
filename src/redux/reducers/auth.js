@@ -3,6 +3,10 @@ import {LOGIN,
         LOGOUT, 
         ADDED_CONVERSATIONS, 
         ADDED_CONVERSATION,
+
+        ADDED_NOTIFICATIONS, 
+        ADDED_NOTIFICATION,
+
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
         DELETED_MESSAGE,
@@ -15,7 +19,9 @@ const initialState = {
     user: {},
     conversations: [],
     bookmarks:[],
-    messages:[]
+    messages:[],
+
+    notifications: []
 }
 
 const auth = (state = initialState, action) => {
@@ -46,7 +52,7 @@ const auth = (state = initialState, action) => {
                 return { ...state, conversations: _.map(conversations, (c)=>c._id==data._id ? data : c ) };
             }
             switch(mutation){
-                case "CREATE":
+                case "CREATED":
                 case "UPDATED":{
                     conversations = [...conversations, data]
                     break;
@@ -55,6 +61,30 @@ const auth = (state = initialState, action) => {
 
             // console.log("ADDED_CONVERSATION #2 :", mutation, data, conversations)
             return { ...state, conversations };
+        }
+
+        case ADDED_NOTIFICATIONS: {
+            return  {...state, notifications: action.data }
+        }
+
+        case ADDED_NOTIFICATION: {
+            let {mutation, data} = action.data
+
+            let notifications = [...state.notifications]
+            if(_.find(notifications, (c)=>c._id == data._id)){
+                return { ...state, notifications: _.map(notifications, (c)=>c._id==data._id ? data : c ) };
+            }
+            switch(mutation){
+                case "CREATED": 
+                case "UPDATED":{
+                    notifications = [...notifications, data]
+                    break;
+                }
+            }
+
+            console.log("ADDED_NOTIFICATION : ", notifications, mutation, data)
+
+            return { ...state, notifications };
         }
 
         case ADDED_MESSAGE: {
@@ -143,7 +173,7 @@ const auth = (state = initialState, action) => {
             //     return { ...state, bookmarks: _.map(bookmarks, (c)=>c.id==data.id ? data : c ) };
             // }
             // switch(mutation){
-            //     case "CREATE":
+            //     case "CREATED":
             //     case "UPDATED":{
             //         bookmarks = [...bookmarks, data]
             //         break;

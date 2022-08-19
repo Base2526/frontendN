@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import ListItem from "@material-ui/core/ListItem";
+import React, { useState, useEffect } from "react";
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ExpandLess from "@material-ui/icons/ExpandLess";
@@ -7,18 +7,15 @@ import ExpandMore from "@material-ui/icons/ExpandMore";
 import List from "@material-ui/core/List";
 import Collapse from "@material-ui/core/Collapse";
 import Divider from '@mui/material/Divider';
+import { useLocation, useHistory } from "react-router-dom";
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory
-} from "react-router-dom";
-
-const CustomizedListItem = ({item}) => {
+const CustomizedListItem = (props) => {
+  let location = useLocation();
   let history = useHistory();
   let [state, setState] = useState(false);
 
+  let {item} = props
+ 
   const handleClick = (path) => {
     setState(!state);
     history.push(path);
@@ -26,7 +23,8 @@ const CustomizedListItem = ({item}) => {
 
   return (
     <div key={item.Id}>
-      <ListItem
+      <ListItemButton
+        selected={location.pathname === item.Path ? true : false}
         button
         key={item.Id}
         onClick={() => {
@@ -38,13 +36,13 @@ const CustomizedListItem = ({item}) => {
         </ListItemIcon>
         <ListItemText primary={item.Name} />
         {item.Sheets && (state ? <ExpandLess /> : <ExpandMore />)}
-      </ListItem>
+      </ListItemButton>
       {item.Sheets && (
         <Collapse key={item.Sheets.Id} in={state} timeout="auto" unmountOnExit>
           <List component="li" disablePadding key={item.Id}>
             {item.Sheets.map((sheet, key) => {
               return (
-                <ListItem
+                <ListItemButton
                   button
                   key={key}
                   onClick={() => {
@@ -55,7 +53,7 @@ const CustomizedListItem = ({item}) => {
                     {sheet.Icon}
                   </ListItemIcon>
                   <ListItemText key={sheet.Id} primary={sheet.Title} />
-                </ListItem>
+                </ListItemButton>
               );
             })}
           </List>

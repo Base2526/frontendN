@@ -2,6 +2,10 @@ import {LOGIN,
         LOGOUT, 
         ADDED_CONVERSATIONS, 
         ADDED_CONVERSATION, 
+
+        ADDED_NOTIFICATIONS, 
+        ADDED_NOTIFICATION, 
+
         ADDED_MESSAGE, 
         EDITED_MESSAGE, 
         DELETED_MESSAGE,
@@ -13,6 +17,10 @@ const _logout = (data) => ({ type: LOGOUT, data });
 
 const _addedConversations = (data) => ({ type: ADDED_CONVERSATIONS, data });
 const _addedConversation = (data) => ({ type: ADDED_CONVERSATION, data });
+
+// 
+const _addedNotifications = (data) => ({ type: ADDED_NOTIFICATIONS, data });
+const _addedNotification = (data) => ({ type: ADDED_NOTIFICATION, data });
 
 const _addedMessage = (data) => ({ type: ADDED_MESSAGE, data });
 const _editedMessage = (data) => ({ type: EDITED_MESSAGE, data });
@@ -35,6 +43,19 @@ export const addedConversations = (data) => (dispatch) => {
 
 export const addedConversation = (data) => (dispatch) => {
     dispatch(_addedConversation(data));
+}
+
+/*
+
+  , 
+  
+*/
+export const addedNotifications = (data) => (dispatch) => {
+    dispatch(_addedNotifications(data));
+}
+
+export const addedNotification = (data) => (dispatch) => {
+    dispatch(_addedNotification(data));
 }
 
 export const addedMessage = (data) => (dispatch) => {

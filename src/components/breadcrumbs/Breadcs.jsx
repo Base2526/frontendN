@@ -42,6 +42,10 @@ const Breadcs = ({ title }) => {
   const basicContentMatches = useRouteMatch("/basic-content/:id/edit");
   const profileMatches = useRouteMatch("/me")
 
+  const newPhoneMatches = useRouteMatch("/phone/new");
+  const phoneMatches = useRouteMatch("/phone/:jobid/edit");
+  const phonesMatches = useRouteMatch("/phones");
+
   const handleClick = () => {};
   return (
     <div role="presentation" onClick={handleClick}>
@@ -259,6 +263,28 @@ const Breadcs = ({ title }) => {
             to={`/me`}
           >
             Profile
+          </MuiLink>
+        )}
+
+        {newPhoneMatches && (
+          <MuiLink 
+            component={Link} 
+            to="/phone/new">
+            New phone
+          </MuiLink>
+        )}
+        {phoneMatches && (
+          <MuiLink
+            component={Link}
+            to={`/phone/${phoneMatches.params.id}/edit`}
+          >
+            Edit phone
+          </MuiLink>
+        )}
+
+        {phonesMatches && (
+          <MuiLink component={Link} to="/phones">
+            Phones
           </MuiLink>
         )}
 

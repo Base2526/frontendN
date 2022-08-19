@@ -1,5 +1,5 @@
 import "./messenger.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
   MainContainer,
@@ -39,6 +39,8 @@ import { gqlFetchMessage, gqlAddMessage, subMessage, gqlUpdateMessageRead} from 
 
 import { addedConversation } from "../../redux/actions/auth"
 
+import MessageItem from "./MessageItem"
+
 let unsubscribeSubMessage = null
 
 function makeid(length) {
@@ -61,6 +63,8 @@ function truncate(str, n){
 
 const MessageView =(props)=> {
   let {user, conversations, addedConversation} = props;
+
+  const inputFile = useRef(null) 
 
   let {state} = useLocation()
 
@@ -101,6 +105,11 @@ const MessageView =(props)=> {
                 variables: {conversationId: currentConversation._id},
             });
           }
+        },
+        context: {
+          headers: {
+            'apollo-require-preflight': true,
+          },
         },
         onCompleted({ data }) {
           console.log(data)
@@ -146,6 +155,8 @@ const MessageView =(props)=> {
 
     return () => {
       console.log("cleaned up");
+
+      unsubscribeSubMessage && unsubscribeSubMessage()
     };
   }, [])
 
@@ -163,10 +174,12 @@ const MessageView =(props)=> {
   }, [conversations])
 
   useEffect(()=>{
+
     
-    console.log("unsubscribeSubMessage")
     if(!_.isEmpty(currentConversation)){
       fetchMessageValues.refetch({conversationId: currentConversation._id});
+
+      onUpdateMessageRead({ variables: {userId: user.id, conversationId: currentConversation._id} });
     }else{
       fetchMessageValues.refetch({conversationId: ""});
     }
@@ -191,7 +204,7 @@ const MessageView =(props)=> {
                               unreadCnt={muser.unreadCnt}
                               active={ conversation._id === currentConversation._id ? true: false}
                               onClick={(e)=>{
-                                onUpdateMessageRead({ variables: {userId: user.id, conversationId: conversation._id} });
+                               
                                 setCurrentConversation(conversation)
                               }}
                               lastActivityTime={moment(conversation.sentTime).format('MMMM Do YYYY, hh:mm A')}>
@@ -261,17 +274,15 @@ const MessageView =(props)=> {
 
   const onMessageList = () =>{
     if(!fetchMessageValues.loading){
-
-      // console.log("fetchMessageValues.data.fetchMessage :",  fetchMessageValues.data.fetchMessage)
-
       let {executionTime, status, data}= fetchMessageValues.data.fetchMessage
       let {subscribeToMore} = fetchMessageValues
 
-      unsubscribeSubMessage && unsubscribeSubMessage()
+      console.log("unsubscribeSubMessage :",  user.id, currentConversation._id)
       unsubscribeSubMessage =  subscribeToMore({
         document: subMessage,
         variables: { userId: user.id, conversationId: currentConversation._id },
         updateQuery: (prev, {subscriptionData, variables}) => {
+
           if (!subscriptionData.data) return prev;
 
           let {conversationId} = variables
@@ -280,6 +291,8 @@ const MessageView =(props)=> {
           if(data.conversationId !== conversationId){
             return prev;
           }
+
+          console.log("subMessage :", subscriptionData, variables)
           
           if(!_.find(prev.fetchMessage.data, (f)=>f._id === data._id)){
             let newPrev = {...prev.fetchMessage, data: [...prev.fetchMessage.data, data]}
@@ -303,7 +316,9 @@ const MessageView =(props)=> {
                 >
                 {
                   _.map( data, item=>{
-                    let {type, message, sentTime, senderId, senderName, position} = item
+                    return <MessageItem {...props} item={item} />
+                    /*
+                    let {type, message, sentTime, senderId, senderName, position, payload} = item
                     let direction = senderId == user.id  ? "outgoing" : "incoming"
                   
                     switch(type){
@@ -373,7 +388,32 @@ const MessageView =(props)=> {
 
                         break;
                       }
+
+                      case "image":{
+
+                        let { src } = payload[0]
+
+                        switch(direction){
+                          case "incoming":{
+                            return <Message model={{direction, position}}>
+                                      <Avatar src={avatarIco} name="Akane" />
+                                      <Message.ImageContent src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
+                                      <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
+                                    </Message>
+                          }
+
+                          case "outgoing":{
+                            return <Message model={{direction, position}}>
+                                    <Message.ImageContent src={src} alt={"alt"} width={150} />
+                                    <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />  
+                                  </Message>
+                          }
+                        }
+
+                        break;
+                      }
                     } 
+                    */
                     
                   })
                 }  
@@ -386,7 +426,14 @@ const MessageView =(props)=> {
     return  <MessageInput
               placeholder="Type message here"
               value={messageInputValue}
-              onChange={(val) => setMessageInputValue(val)}
+              onAttachClick={(f)=>{
+                console.log("onAttachClick :", f)
+                inputFile.current.click();
+              }}
+              onChange={(val) =>{
+                console.log("onChange :", val)
+                setMessageInputValue(val)
+              } }
               onSend={(a, b, c, d) => {
 
                 let input = {}
@@ -451,6 +498,41 @@ const MessageView =(props)=> {
     */
   };
 
+  const onChangeFile = (event) =>{
+    event.stopPropagation();
+    event.preventDefault();
+    // var file = event.target.files[0];
+    console.log("file :", event.target.files);
+
+    let input = {
+      type: "image",
+      message: "picture",
+      sentTime: Date.now(),
+      // sender: user.displayName,
+      // senderId: user.id, 
+      direction: "outgoing",
+      position: "single",
+
+      payload: [{
+              src: URL.createObjectURL(event.target.files[0]),
+              alt: "Joe avatar",
+              width: "100px"
+            }],
+
+      files:event.target.files
+    }
+
+      
+
+    
+    input = {...input, _id: makeid(20) , conversationId: currentConversation._id, status: "waiting" }
+
+
+    onAddMessage({ variables: {userId: user.id, conversationId: currentConversation._id, input } });
+    
+    // image
+  }
+
   return (
     <div style={{ height: "600px", position: "relative", width: "100%" }} >
       <MainContainer responsive>
@@ -461,6 +543,8 @@ const MessageView =(props)=> {
           {onMessageInput()}
         </ChatContainer>
         {/* {onSidebarRight()} */}
+
+        <input type='file' id='file' ref={inputFile} style={{display: 'none'}}  onChange={onChangeFile} />
       </MainContainer>
     </div>
   );

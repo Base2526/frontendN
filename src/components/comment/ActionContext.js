@@ -49,7 +49,8 @@ export const ActionProvider = ({
             comId: uuid(),
             avatarUrl: currentUser.avatarUrl,
             fullName: currentUser.name,
-            text: text
+            text: text,
+            notify: true
           }
         ])
       } else if (parentId && child) {
@@ -60,7 +61,8 @@ export const ActionProvider = ({
           comId: uuid(),
           avatarUrl: currentUser.avatarUrl,
           fullName: currentUser.name,
-          text: text
+          text: text,
+          notify: true
         })
         setComment(newList)
       } else if (parentId && !child) {
@@ -75,7 +77,8 @@ export const ActionProvider = ({
           comId: uuid(),
           avatarUrl: currentUser.avatarUrl,
           fullName: currentUser.name,
-          text: text
+          text: text,
+          notify: true
         })
         // newList[index].replies = newReplies
         // setComment(newList)
@@ -93,13 +96,14 @@ export const ActionProvider = ({
       // newList[index].text = text
       // setComment(newList)
 
-      newList[index] = {...newList[index], text: text}
+      newList[index] = {...newList[index], text: text, notify: true}
       setComment(newList)
     } else if (parentId !== undefined) {
       const newList = [...comments]
       const index = newList.findIndex((x) => x.comId === parentId)
       const replyIndex = newList[index].replies.findIndex((i) => i.comId === id)
       newList[index].replies[replyIndex].text = text
+      newList[index].replies[replyIndex].notify = true
       setComment(newList)
     }
   }

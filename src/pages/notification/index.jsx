@@ -16,17 +16,28 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import _ from "lodash"
-
+import { useQuery, useMutation } from "@apollo/client";
+import moment from "moment";
+import { useHistory } from "react-router-dom";
 import { login } from "../../redux/actions/auth"
 
+import ItemList from "./ItemList"
+
 const index =(props)=> {
-  let {user} = props
+
+  let history = useHistory();
+
+  let {user, notifications} = props
 
   const [anchorElSetting, setAnchorElSetting] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  useEffect(()=>{
+    console.log("notifications :", notifications)
+  }, [notifications])
 
   const handleClose = () =>{
     setAnchorElSetting(null)
@@ -65,57 +76,33 @@ const index =(props)=> {
   return (
     <List sx={{ width: '100%', bgcolor: 'background.paper'  }} disablePadding>
       {
-      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((value, key) => {
-        return  <div key={key}>
-                  <ListItem 
-                    alignItems="flex-start" 
-                    disablePadding
-                    secondaryAction={
-                      <IconButton edge="end" aria-label="comments" onClick={(e)=>{
-                        setAnchorElSetting({ [key]: e.currentTarget });
-                      }}>
-                        <MoreVertIcon />
-
-                        
-                      </IconButton>
-                    }
-                    >
-                    <ListItemButton 
-                    onClick={e=>{
-                      console.log("ListItem")
-                    }}>
-                      <ListItemAvatar>
-                        <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary="Brunch this weekend?"
-                        secondary={
-                          <React.Fragment>
-                            <Typography
-                              sx={{ display: 'inline' }}
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                              Ali Connors
-                            </Typography>
-                            {" — I'll be in your neighborhood doing errands this…"}
-                          </React.Fragment>
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  {menuL(value, key)}
-                </div>
-      })
+        _.map(notifications, (value, key)=>{
+          return  <div key={key}>
+                    <ListItem 
+                      alignItems="flex-start" 
+                      disablePadding
+                      secondaryAction={
+                        <IconButton edge="end" aria-label="comments" onClick={(e)=>{
+                          setAnchorElSetting({ [key]: e.currentTarget });
+                        }}>
+                          <MoreVertIcon />
+                        </IconButton>
+                      }>
+                      <ItemList {...props} history={history} value={value} />
+                      </ListItem>
+                      {menuL(value, key)}
+                  </div>
+        })
       }
     </List>
   );
 }
 
 const mapStateToProps = (state, ownProps) => {
+  let notifications = _.orderBy(state.auth.notifications, (o) => { return moment(o.createdAt); }, ['desc']);
   return {
     user: state.auth.user,
+    notifications
   }
 };
 

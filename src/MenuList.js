@@ -23,6 +23,8 @@ import MailIcon from "@material-ui/icons/Mail";
 import AdbIcon from '@mui/icons-material/Adb';
 import HelpIcon from '@mui/icons-material/Help';
 
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+
 import BookmarksIcon from '@mui/icons-material/Bookmarks';
 import BugReportIcon from '@mui/icons-material/BugReport';
 
@@ -137,12 +139,12 @@ const MenuAuthenticated = [
     Icon: <Timeline className="icon" />,
     Path: "/posts"
   },
-  // {
-  //   Id: 3,
-  //   Name: "Bookmarks",
-  //   Icon: <BookmarksIcon className="icon" />,
-  //   Path: "/bookmarks"
-  // },
+  {
+    Id: 3,
+    Name: "Phones",
+    Icon: <LocalPhoneIcon className="icon" />,
+    Path: "/phones"
+  },
   // {
   //   Id: 4,
   //   Name: "Users",
