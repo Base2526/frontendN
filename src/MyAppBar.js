@@ -47,7 +47,7 @@ export const TopIconBadge = styled.span`
 
 const MyAppBar = (props) =>{
 
-  let {conversations, classes, onDrawerOpen, onDialogLogin, user} = props
+  let {conversations, classes, onDrawerOpen, onDialogLogin, user, notifications} = props
 
   let history = useHistory();
   const [anchorEl, setAnchorEl] = useState(null)
@@ -102,7 +102,7 @@ const MyAppBar = (props) =>{
                     <Link to="/notification">
                       <IconContainer >
                         <NotificationsNone />
-                        <TopIconBadge>2</TopIconBadge>
+                        {_.isEmpty(notifications) ? "" : <TopIconBadge>{notifications.length}</TopIconBadge>}
                       </IconContainer>
                     </Link>
 
@@ -168,10 +168,11 @@ const MyAppBar = (props) =>{
 // export default MyAppBar;
 
 const mapStateToProps = (state, ownProps) => {
-  // console.log("mapStateToProps  :", state)
+  console.log("mapStateToProps  :", state)
   return {
     user: state.auth.user,
-    conversations: state.auth.conversations
+    conversations: state.auth.conversations,
+    notifications: state.auth.notifications
   }
 };
 

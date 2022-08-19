@@ -521,6 +521,8 @@ export const gqlDblog = gql`
 
 export const gqlConversations = gql`query conversations($userId: ID){ conversations(userId: $userId) }`;
 
+export const gqlNotifications = gql`query notifications($userId: ID){ notifications(userId: $userId) }`;
+
 export const gqlBasicContent =  gql`
     query BasicContent($id: ID!){
         basicContent(_id: $id){
@@ -618,7 +620,8 @@ export const gqlFollowingByUserId = gql`
     }`;
 
 export const gqlFetchMessage = gql`query fetchMessage( $conversationId: ID ){ fetchMessage( conversationId: $conversationId ) }`;
-
+export const gqlPhones = gql`query phones($page: Int, $perPage: Int) { phones(page: $page, perPage: $perPage) }`;
+export const gqlPhone = gql`query phone($id: ID!){ phone(_id: $id) }`;
 
 //////////////////  mutation  ///////////////////
 
@@ -788,7 +791,10 @@ export const gqlCreateAndUpdateFollow = gql`
         }
     }`;
 
-    
+// gqlCreatePhone
+export const gqlCreatePhone = gql`mutation CreatePhone($input: PhoneInput) { createPhone(input: $input) }`;
+export const gqlUpdatePhone = gql`mutation updatePhone($id: ID!, $input: PhoneInput) { updatePhone(_id: $id, input: $input) }`;
+   
 export const gqlAddMessage = gql`
     mutation AddMessage( $userId: ID!, $conversationId: ID! , $input: MessageInput ) {
         addMessage( userId: $userId, conversationId: $conversationId, input: $input )
@@ -991,6 +997,8 @@ export const subShare = gql`
     }`;
 
 export const subConversation = gql`subscription subConversation($userId: ID) { subConversation( userId: $userId ) }`;
+
+export const subNotification = gql`subscription subNotification($userId: ID) { subNotification( userId: $userId ) }`;
 
 export const subMessage = gql`subscription subMessage($userId: ID!, $conversationId: ID!) { subMessage( userId: $userId, conversationId: $conversationId)  }`;
 

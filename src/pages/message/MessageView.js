@@ -39,6 +39,8 @@ import { gqlFetchMessage, gqlAddMessage, subMessage, gqlUpdateMessageRead} from 
 
 import { addedConversation } from "../../redux/actions/auth"
 
+import MessageItem from "./MessageItem"
+
 let unsubscribeSubMessage = null
 
 function makeid(length) {
@@ -314,6 +316,8 @@ const MessageView =(props)=> {
                 >
                 {
                   _.map( data, item=>{
+                    return <MessageItem {...props} item={item} />
+                    /*
                     let {type, message, sentTime, senderId, senderName, position, payload} = item
                     let direction = senderId == user.id  ? "outgoing" : "incoming"
                   
@@ -409,6 +413,7 @@ const MessageView =(props)=> {
                         break;
                       }
                     } 
+                    */
                     
                   })
                 }  

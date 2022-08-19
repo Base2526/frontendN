@@ -49,11 +49,13 @@ import DialogLogin from "./DialogLogin";
 
 import Help from "./pages/help"
 
-import { login, addedConversations, addedConversation } from "./redux/actions/auth"
+import { login, addedConversations, addedConversation, addedNotifications, addedNotification } from "./redux/actions/auth"
 
-import { gqlConversations, gqlBookmarksByUserId, subConversation, subBookmark } from "./gqlQuery"
+import { gqlConversations, gqlBookmarksByUserId, subConversation, subBookmark, gqlNotifications, subNotification } from "./gqlQuery"
 
 let unsubscribeConversation = null;
+let unsubscribeNotification = null;
+
 const drawerWidth = 220;
 
 const styles = (theme) => ({
@@ -133,7 +135,7 @@ const styles = (theme) => ({
 });
 
 const App = (props) => {
-  let {is_connnecting, user, addedConversations, addedConversation} = props
+  let {is_connnecting, user, addedConversations, addedConversation, addedNotifications, addedNotification} = props
 
   const history = useHistory();
   const [open, setOpen] = useState(false)
@@ -167,6 +169,35 @@ const App = (props) => {
 
   ////////////////////// conversation ////////////////////////////
 
+  //////////////////////  notifications //////////////////////////////////
+  const notificationValues =useQuery(gqlNotifications, { variables: { userId: ""}, notifyOnNetworkStatusChange: true });
+
+  console.log("notificationValues :", notificationValues )
+
+  if(  is_connnecting && !notificationValues.loading && notificationValues.data.notifications ){
+    
+    let { status, data } = notificationValues.data.notifications  
+    addedNotifications(data)
+  
+    let {subscribeToMore} = notificationValues
+    unsubscribeNotification = subscribeToMore({
+      document: subNotification,
+      variables: { userId: user.id },
+      updateQuery: (prev, {subscriptionData}) => {
+
+           
+        if (!subscriptionData.data) return prev;
+
+        let { subNotification } = subscriptionData.data;
+        addedNotification(subNotification)
+        console.log("addedNotification : ", subNotification)     
+
+        return prev;
+      }
+    });
+  }
+  //////////////////////  notifications //////////////////////////////////
+
   const [onlineIndicator, setOnlineIndicator] = useState(0);
   const worker = () => {
     console.log("worker :", new Date().toISOString())
@@ -182,11 +213,15 @@ const App = (props) => {
       clearInterval(onlineIndicator);
 
       unsubscribeConversation && unsubscribeConversation()
+
+      unsubscribeNotification && unsubscribeNotification()
     };
   }, [])
 
   useEffect(()=>{
     conversationValues.refetch({userId: _.isEmpty(user) ? "" : user.id})
+
+    notificationValues.refetch({userId: _.isEmpty(user) ? "" : user.id})
   }, [user])
 
   const handleDrawerOpen = () => {
@@ -239,7 +274,7 @@ const App = (props) => {
             }}
             open={open}>
             <div className={props.classes.toolbar} />
-            <LeftMenu />
+            <LeftMenu  {...props}/>
           </Drawer>
           <main className={props.classes.content}>
             <div className={props.classes.toolbar} />
@@ -308,7 +343,10 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = {
   login,
   addedConversations,
-  addedConversation
+  addedConversation,
+
+  addedNotifications, 
+  addedNotification
 }
 
 export default compose(

@@ -17,6 +17,10 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import { connect } from "react-redux";
 import IconButton from "@mui/material/IconButton";
 
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import AddIcCallIcon from '@mui/icons-material/AddIcCall';
+
 import PanelComment from "./PanelComment";
 import PopupSnackbar from "./PopupSnackbar";
 import Footer from "../footer";
@@ -498,13 +502,34 @@ const Home = (props) => {
         ? <SpeedDial
             ariaLabel="SpeedDial basic example"
             sx={{ position: 'absolute', bottom: 16, right: 16 }}
-            icon={<SpeedDialIcon />}
-            onClick={(e)=>{
-              history.push({
-                pathname: "/post/new",
-                state: {from: "/"},
-              });
-            }} />
+            icon={<SpeedDialIcon />}>
+            {
+              _.map([
+                      { icon: <PostAddIcon />, name: 'Post', id: 1 },
+                      { icon: <AddIcCallIcon />, name: 'Phone', id: 2 },
+                    ], (action) => (
+                      <SpeedDialAction
+                        key={action.name}
+                        icon={action.icon}
+                        tooltipTitle={action.name}
+                        tooltipOpen
+                        onClick={(e)=>{
+                          switch(action.id){
+                            case 1:{
+                              history.push({ pathname: "/post/new", state: {from: "/"} });
+                              break;
+                            }
+
+                            case 2:{
+                              history.push({ pathname: "/phone/new", state: {from: "/"} });
+                              break;
+                            }
+                          }
+                        }}
+                      />
+                    ))
+            }
+            </SpeedDial>
         : <div />
       }
       

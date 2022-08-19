@@ -39,6 +39,10 @@ import Profile from "./pages/profile"
 
 import Upload from "./pages/test/Upload"
 
+import Phone from "./pages/phone/Phone"
+
+import PhoneList from "./pages/phoneList/PhoneList"
+
 // import { isAuth } from "./AuthProvider";
 import { connect } from "react-redux";
 import _ from "lodash"
@@ -155,14 +159,21 @@ const PrivatePage =(props) => {
                 <Route path="/upload">
                     <Upload />
                 </Route>
+                <Route path="/phone/:id/:mode">
+                    <Phone />
+                </Route>
+                <Route path="/phone/:mode">
+                    <Phone />
+                </Route>
+                <Route path="/phones">
+                    <PhoneList />
+                </Route>
             </Switch>
         :   <Redirect to="/" />
   
 }
 
-// export default PrivatePage;
 const mapStateToProps = (state, ownProps) => {
-    // console.log("mapStateToProps  :", state)
     return {
       user: state.auth.user,
     }
