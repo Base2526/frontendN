@@ -98,6 +98,11 @@ const connecting = (status) =>{
 
 let activeSocket, timedOut;
 
+let restartRequestedBeforeConnected = false;
+let gracefullyRestart = () => {
+  restartRequestedBeforeConnected = true;
+};
+
 const wsLink = new GraphQLWsLink(createClient({
   url: 'ws://localhost:4000/graphql',
   // reconnect: true,
@@ -146,6 +151,22 @@ const wsLink = new GraphQLWsLink(createClient({
       activeSocket = socket
 
       // console.log("wsLink connected client", socket);
+
+      // gracefullyRestart = () => {
+      //   if (socket.readyState === WebSocket.OPEN) {
+      //     socket.close(4205, 'Client Restart');
+
+      //     console.log("gracefullyRestart #1")
+      //   }
+      // };
+
+      // // just in case you were eager to restart
+      // if (restartRequestedBeforeConnected) {
+      //   restartRequestedBeforeConnected = false;
+      //   gracefullyRestart();
+
+      //   console.log("gracefullyRestart #2")
+      // }
     },
     keepAlive: 10, // ping server every 10 seconds
     ping: (received) => {
@@ -226,9 +247,7 @@ const client = new ApolloClient({
 
 import App from "./App";
 
-import { useConfigClient } from './useConfigClient'; 
-
-
+// import { useConfigClient } from './useConfigClient'; 
 // console.log("useConfigClient :", useConfigClient())
 
 

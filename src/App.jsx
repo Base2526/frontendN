@@ -172,7 +172,7 @@ const App = (props) => {
   //////////////////////  notifications //////////////////////////////////
   const notificationValues =useQuery(gqlNotifications, { variables: { userId: ""}, notifyOnNetworkStatusChange: true });
 
-  console.log("notificationValues :", notificationValues )
+  // console.log("notificationValues :", notificationValues )
 
   if(  is_connnecting && !notificationValues.loading && notificationValues.data.notifications ){
     
@@ -307,11 +307,12 @@ const App = (props) => {
         {
           dialogLoginOpen &&  
           <DialogLogin
+            {...props}
             open={dialogLoginOpen}
             onComplete={(data)=>{
               console.log("onComplete :", data)
 
-              props.login(data)
+              // props.login(data)
               setDialogLoginOpen(false);
 
             }}
@@ -321,7 +322,7 @@ const App = (props) => {
               setDialogLoginOpen(false);
 
               // DialogLogin
-              history.push("/")
+              // history.push("/")
             }}
           />
         }

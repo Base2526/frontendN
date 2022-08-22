@@ -61,7 +61,7 @@ function truncate(str, n){
   return (str.length > n) ? str.substr(0, n-1) + '...' : str;
 };
 
-const MessageView =(props)=> {
+const MessagePage =(props)=> {
   let {user, conversations, addedConversation} = props;
 
   const inputFile = useRef(null) 
@@ -69,6 +69,7 @@ const MessageView =(props)=> {
   let {state} = useLocation()
 
   const [conversationList, setConversationList] = useState(conversations);
+  const [preConversationList, setPreConversationList] = useState(conversations);
   const [currentConversation, setCurrentConversation] = useState(conversations[0]);
   const [messageList, setMessageList] = useState([]);
 
@@ -170,12 +171,12 @@ const MessageView =(props)=> {
   useEffect(()=>{
     setConversationList(conversations)
 
+    setPreConversationList(conversations)
+
     // console.log("conversations :", currentConversation)
   }, [conversations])
 
   useEffect(()=>{
-
-    
     if(!_.isEmpty(currentConversation)){
       fetchMessageValues.refetch({conversationId: currentConversation._id});
 
@@ -188,7 +189,22 @@ const MessageView =(props)=> {
   // status, waiting, sent, received, read
   const onSidebarLeft = () =>{
     return  <Sidebar position="left" scrollable={false}>
-              <Search placeholder="Search..." />
+              <Search 
+                placeholder="Search..." 
+                onClearClick={(e)=>{
+                  setConversationList(preConversationList)
+                }}
+                onChange={(e)=>{
+                  if(!_.isEmpty(e)){
+                    let newConversationList = _.filter(conversationList, conversation =>{ 
+                      let mfriend = _.find(conversation.members, (member)=>member.userId !== user.id)
+                      return conversation.lastSenderName.toLowerCase().includes(e.toLowerCase()) || conversation.info.toLowerCase().includes(e.toLowerCase()) || mfriend.name.toLowerCase().includes(e.toLowerCase())
+                    })
+                    setConversationList(newConversationList)
+                  }else{
+                    setConversationList(preConversationList)
+                  }
+                }}/>
               <ConversationList>
                 {
                   _.map(conversationList, (conversation)=>{
@@ -207,7 +223,7 @@ const MessageView =(props)=> {
                                
                                 setCurrentConversation(conversation)
                               }}
-                              lastActivityTime={moment(conversation.sentTime).format('MMMM Do YYYY, hh:mm A')}>
+                              lastActivityTime={moment(conversation.sentTime).format('M/D/YY, hh:mm A')}>
                               <Avatar src={mfriend.avatarSrc} name={conversation.avatarName} status={conversation.status} />
                             </Conversation>
                   })
@@ -227,7 +243,7 @@ const MessageView =(props)=> {
               <Avatar src={friend.avatarSrc} name={friend.name} />
               <ConversationHeader.Content
                 userName={friend.name}
-                info={moment(currentConversation.sentTime).format('MMMM Do YYYY, hh:mm A')}
+                info={moment(currentConversation.sentTime).format('M/D/YY, hh:mm A')}
               />
               <ConversationHeader.Actions>
                 {/* <VoiceCallButton />
@@ -553,11 +569,9 @@ const MessageView =(props)=> {
 const mapStateToProps = (state, ownProps) => {
   let conversations = _.orderBy(state.auth.conversations, (dateObj) => new Date(dateObj.sentTime) , 'desc')
   
-  // console.log("conversations :", conversations)
   return {
     user: state.auth.user,
-    conversations,
-    // messages: state.auth.messages
+    conversations
   }
 };
 
@@ -565,4 +579,4 @@ const mapDispatchToProps = {
   addedConversation
 }
 
-export default connect( mapStateToProps, mapDispatchToProps )(MessageView);
+export default connect( mapStateToProps, mapDispatchToProps )(MessagePage);

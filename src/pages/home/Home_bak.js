@@ -448,6 +448,7 @@ const Home = (props) => {
 
       {dialogLoginOpen && (
         <DialogLogin
+         {...props}
           open={dialogLoginOpen}
           onClose={() => {
             setDialogLoginOpen(false);

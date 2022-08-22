@@ -23,6 +23,7 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import AddIcCallIcon from '@mui/icons-material/AddIcCall';
+import { connect } from "react-redux";
 
 import Footer from "../footer";
 import {gqlPosts, gqlBookmarksByPostId, gqlShareByPostId, gqlComment, gqlUser} from "../../gqlQuery"
@@ -32,23 +33,16 @@ import Table from "../../TableContainer"
 const PostList = (props) => {
   let history = useHistory();
 
+  let { user } = props
+
   const [pageOptions, setPageOptions] = useState([30, 50, 100]);  
   const [pageIndex, setPageIndex] = useState(0);  
   const [pageSize, setPageSize] = useState(pageOptions[0])
-
-  const [lightbox, setLightbox] = useState({
-    isOpen: false,
-    photoIndex: 0,
-    images: []
-  });
-
-  const [openDialogDelete, setOpenDialogDelete] = useState({
-    isOpen: false,
-    id: ""
-  });
+  const [lightbox, setLightbox] = useState({ isOpen: false, photoIndex: 0, images: [] });
+  const [openDialogDelete, setOpenDialogDelete] = useState({ isOpen: false, id: "" });
 
   const postsValue = useQuery(gqlPosts, {
-    variables: {page: pageIndex, perPage: pageSize},
+    variables: {userId: _.isEmpty(user) ? "" : user.id, page: pageIndex, perPage: pageSize},
     notifyOnNetworkStatusChange: true,
   });
 
@@ -392,4 +386,11 @@ const PostList = (props) => {
   );
 };
 
-export default PostList;
+// export default PostList;
+const mapStateToProps = (state, ownProps) => {
+  return {
+    user: state.auth.user,
+  }
+};
+
+export default connect( mapStateToProps, null )(PostList);

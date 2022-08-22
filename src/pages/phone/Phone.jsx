@@ -20,6 +20,8 @@ let initValues = { phones: [''] , description: ""}
 const Phone = (props) => {
     let history = useHistory();
 
+    let { user } = props
+
     let { id, mode } = useParams();
 
     const [input, setInput]       = useState(initValues);
@@ -35,7 +37,7 @@ const Phone = (props) => {
                 cache.writeQuery({
                     query: gqlPhones,
                     data: { phones: newPhones },
-                    variables: { page: 0, perPage: 30 }
+                    variables: { userId: _.isEmpty(user) ? "" : user.id, page: 0, perPage: 30 }
                 });
             }
         },
@@ -76,7 +78,7 @@ const Phone = (props) => {
                 cache.writeQuery({
                     query: gqlPhones,
                     data: { phones: newPhones },
-                    variables: { page: 0, perPage: 30 }
+                    variables: { userId: _.isEmpty(user) ? "" : user.id, page: 0, perPage: 30 }
                 });
             }
         },

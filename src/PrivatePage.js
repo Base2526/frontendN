@@ -9,7 +9,7 @@ import RoleList from "./pages/roleList/RoleList";
 import Role from "./pages/role/Role";
 import Devel from "./pages/devel/Devel";
 import Notification from "./pages/notification"
-import Message from "./pages/message/MessageView"
+import Message from "./pages/message/MessagePage"
 import BookmarkList from "./pages/bookmarkList/BookmarkList"
 import ContactUsList from "./pages/contactUsList/ContactUsList"
 import TContactUs from "./pages/taxonomy/tContactUs/TContactUs"

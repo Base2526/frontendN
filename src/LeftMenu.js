@@ -34,7 +34,7 @@ const LeftMenu = (props) => {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  console.log("mapStateToProps  :", state)
+  // console.log("mapStateToProps  :", state)
   return {
     user: state.auth.user,
   }

@@ -159,6 +159,17 @@ const MyAppBar = (props) =>{
                     color="primary"
                     onClick={(e)=>{
                       onDialogLogin(true)
+
+                      // localStorage.setItem('token', data.login.token)
+
+                      // if(localStorage.getItem('token')){
+                      //   console.log("A")
+                      //   // localStorage.setItem('token', "")
+                      //   localStorage.removeItem("token");
+                      // }else{
+                      //   console.log("B")
+                      //   localStorage.setItem('token', "data.login.token")
+                      // }
                     }}>Login</Button>
               }
             </Toolbar>
@@ -168,7 +179,7 @@ const MyAppBar = (props) =>{
 // export default MyAppBar;
 
 const mapStateToProps = (state, ownProps) => {
-  console.log("mapStateToProps  :", state)
+  // console.log("mapStateToProps  :", state)
   return {
     user: state.auth.user,
     conversations: state.auth.conversations,

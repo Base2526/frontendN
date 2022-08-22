@@ -6,6 +6,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { connect } from "react-redux";
 
+import { useApolloClient } from '@apollo/client';
+
 import _ from "lodash";
 import deepdash from "deepdash";
 deepdash(_);
@@ -16,6 +18,8 @@ import { logout } from "../../redux/actions/auth"
 
 const index = (props) => {
   let history = useHistory();
+
+  const client = useApolloClient();
 
   let {logout} = props
 
@@ -48,10 +52,17 @@ const index = (props) => {
       </Typography>
 
 
-      <Button onClick={() => { 
+      <Button onClick={async() => { 
         logout()
         // logout(); 
         // window.location.reload(false)
+
+        await client.refetchQueries({
+          include: "all", // Consider using "active" instead!
+        });
+
+        // history.push("/")
+        window.location.reload();
 
         history.push("/")
       }}>Logout</Button>

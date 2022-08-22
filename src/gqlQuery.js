@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const gqlHomes = gql`
-    query Homes( $userId: ID, $page: Int, $perPage: Int, $keywordSearch: String, $category: String) {
+    query Homes( $userId: ID,  $page: Int, $perPage: Int, $keywordSearch: String, $category: String) {
         homes(
             userId: $userId
             page: $page
@@ -49,8 +49,9 @@ export const gqlHomes = gql`
     }`;
 
 export const gqlPosts = gql`
-    query Posts($page: Int, $perPage: Int) {
+    query Posts( $userId: ID, $page: Int, $perPage: Int ) {
         posts(
+            userId: $userId
             page: $page
             perPage: $perPage
         ){
@@ -620,7 +621,7 @@ export const gqlFollowingByUserId = gql`
     }`;
 
 export const gqlFetchMessage = gql`query fetchMessage( $conversationId: ID ){ fetchMessage( conversationId: $conversationId ) }`;
-export const gqlPhones = gql`query phones($page: Int, $perPage: Int) { phones(page: $page, perPage: $perPage) }`;
+export const gqlPhones = gql`query phones($userId: ID, $page: Int, $perPage: Int) { phones(userId: $userId, page: $page, perPage: $perPage) }`;
 export const gqlPhone = gql`query phone($id: ID!){ phone(_id: $id) }`;
 
 //////////////////  mutation  ///////////////////

@@ -239,11 +239,12 @@ const UserView = (props) => {
 
       {dialogLoginOpen && (
         <DialogLogin
+          {...props}
           open={dialogLoginOpen}
           onComplete={(data)=>{
             console.log("onComplete :", data)
 
-            props.login(data)
+            // props.login(data)
             setDialogLoginOpen(false);
           }}
           onClose={() => {

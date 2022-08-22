@@ -17,9 +17,9 @@ import { createClient } from 'graphql-ws';
 
 export const useConfigClient = () => {
 
-    // useEffect(()=>{
-    //     console.log("useConfigClient")
-    // }, [])
+    useEffect(()=>{
+        console.log("useConfigClient")
+    }, [])
 
     const token = localStorage.getItem('token');
 

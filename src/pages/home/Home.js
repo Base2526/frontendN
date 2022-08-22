@@ -121,10 +121,10 @@ const Home = (props) => {
   );
   
   const homesValues =useQuery(gqlHomes, {
-    variables: {userId: _.isEmpty(user) ? "" : user.id, page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
+    variables: { userId: "", page, perPage: rowsPerPage, keywordSearch: keywordSearch, category: category.join()},
     notifyOnNetworkStatusChange: true,
   });
-  // console.log("homesValues :", homesValues )
+  console.log("homesValues :", homesValues )
 
   if( is_connnecting && !homesValues.loading){
 
@@ -456,11 +456,12 @@ const Home = (props) => {
 
       {dialogLoginOpen && (
         <DialogLogin
+          {...props}
           open={dialogLoginOpen}
           onComplete={(data)=>{
             console.log("onComplete :", data)
 
-            props.login(data)
+            // props.login(data)
             setDialogLoginOpen(false);
           }}
           onClose={() => {

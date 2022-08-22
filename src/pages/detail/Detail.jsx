@@ -472,6 +472,7 @@ const Detail = (props) => {
 
             {dialogLoginOpen && (
                 <DialogLogin
+                {...props}
                 open={dialogLoginOpen}
                 onComplete={(data)=>{
                     console.log("onComplete :", data)

@@ -218,6 +218,7 @@ const Post = (props) => {
               const data1 = cache.readQuery({
                 query: gqlPosts,
                 variables: {
+                  userId: _.isEmpty(user) ? "" : user.id,
                   page: 0, 
                   perPage: 100
                 }
@@ -235,7 +236,8 @@ const Post = (props) => {
                     Posts: newPosts
                   },
                   variables: {
-                   page: 0, 
+                    userId: _.isEmpty(user) ? "" : user.id,
+                    page: 0, 
                     perPage: 100
                   }
                 });
@@ -248,6 +250,11 @@ const Post = (props) => {
               break;
             }
           }
+        },
+        context: {
+          headers: {
+            'apollo-require-preflight': true,
+          },
         },
         onCompleted({ data }) {
           // console.log("bookmark :::: onCompleted")
@@ -668,6 +675,7 @@ const Post = (props) => {
                             <AttackFileField
                               values={input.attackFiles}
                               onChange={(values) => {
+                                console.log("attackFiles :", attackFiles)
                                 setInput({...input, attackFiles: values})
                               }}
                               onSnackbar={(data) => {

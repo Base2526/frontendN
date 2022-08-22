@@ -22,7 +22,7 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
   const [inputList, setInputList] = useState(values);
 
   useEffect(() => {
-    // console.log("useEffect > : ", values);
+    console.log("inputList > : ", inputList);
 
     onChange(inputList)
   }, [inputList]);
@@ -35,6 +35,9 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
         newInputList = [...newInputList, file];
       }
     }
+    // src: URL.createObjectURL(event.target.files[0]),
+
+    // console.log("onFileChange :", newInputList)
     setInputList(newInputList);
   };
 
