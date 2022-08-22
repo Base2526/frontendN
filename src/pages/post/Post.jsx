@@ -210,58 +210,57 @@ const Post = (props) => {
   const [bmPerPage, setBmPerPage] = useState(bmPageOptions[0])
 
   const [onCreatePost, resultCreatePost] = useMutation(gqlCreatePost, {
-        update: (cache, {data: {createPost}}) => {
+    update: (cache, {data: {createPost}}) => {
 
-          let {state} = history.location
-          switch(state.from){
-            case "/posts":{
-              const data1 = cache.readQuery({
-                query: gqlPosts,
-                variables: {
-                  userId: _.isEmpty(user) ? "" : user.id,
-                  page: 0, 
-                  perPage: 100
-                }
-              });
-  
-              if(data1 != null){
-                let newPosts = {...data1.Posts}
-                let newData = [...newPosts.data, createPost]
-  
-                newPosts = {...newPosts, data: newData}
+      // let {state} = history.location
+      // switch(state.from){
+      //   case "/posts":{
+          const data1 = cache.readQuery({
+            query: gqlPosts,
+            variables: {
+              userId: _.isEmpty(user) ? "" : user.id,
+              page: 0, 
+              perPage: 30
+            }
+          });
 
-                cache.writeQuery({
-                  query: gqlPosts,
-                  data: {
-                    Posts: newPosts
-                  },
-                  variables: {
-                    userId: _.isEmpty(user) ? "" : user.id,
-                    page: 0, 
-                    perPage: 100
-                  }
-                });
+          console.log("onCreatePost data1:", data1)
+
+          if(data1 != null){ 
+            let newPosts = {...data1.posts}
+            let newData = [...newPosts.data, createPost]
+
+            cache.writeQuery({
+              query: gqlPosts,
+              data: { posts: {...newPosts, data: newData} },
+              variables: {
+                userId: _.isEmpty(user) ? "" : user.id,
+                page: 0, 
+                perPage: 30
               }
-              break;
-            }
-
-            default:{
-
-              break;
-            }
+            });
           }
-        },
-        context: {
-          headers: {
-            'apollo-require-preflight': true,
-          },
-        },
-        onCompleted({ data }) {
-          // console.log("bookmark :::: onCompleted")
+      //     break;
+      //   }
 
-          history.push("/posts")
-        },
-      });
+      //   default:{
+
+      //     break;
+      //   }
+      // }
+    },
+    context: {
+      headers: {
+        'apollo-require-preflight': true,
+      },
+    },
+    onCompleted({ data }) {
+      // console.log("bookmark :::: onCompleted")
+
+      history.push("/posts")
+    },
+  });
+  console.log("resultCreatePost :", resultCreatePost)
 
   const [onUpdatePost, resultUpdatePost] = useMutation(gqlUpdatePost, 
     {
@@ -325,27 +324,27 @@ const Post = (props) => {
           let {loading}  = editValues
           
           if(!loading){
-            let {status, data} = editValues.data.post
+            // let {status, data} = editValues.data.post
 
-            console.log("edit editValues : ", data)
-            if(status){
+            console.log("edit editValues : ", editValues.data)
+            // if(status){
 
-              if( data.ownerId != user.id){
-                history.push("/")
-              }
+            //   if( data.ownerId != user.id){
+            //     history.push("/")
+            //   }
 
-              setInput({
-                title: data.title, 
-                nameSubname: data.nameSubname, 
-                idCard: data.idCard, 
-                amount: data.amount,
-                tels: data.tels,
-                banks: data.banks,
-                description: data.description,
-                dateTranfer: data.dateTranfer,
-                attackFiles: data.files
-              })
-            }
+            //   setInput({
+            //     title: data.title, 
+            //     nameSubname: data.nameSubname, 
+            //     idCard: data.idCard, 
+            //     amount: data.amount,
+            //     tels: data.tels,
+            //     banks: data.banks,
+            //     description: data.description,
+            //     dateTranfer: data.dateTranfer,
+            //     attackFiles: data.files
+            //   })
+            // }
           }
         }
       }
@@ -424,7 +423,7 @@ const Post = (props) => {
             banks: input.banks, // _.omitDeep(input.banks, ['__typename']),
             description: input.description,
             dateTranfer: input.dateTranfer,
-            files: [...newAttackFilesBase64, ...oldAttackFiles],
+            files: input.attackFiles,//[...newAttackFilesBase64, ...oldAttackFiles],
             ownerId: user.id
           }
         }});
@@ -557,6 +556,7 @@ const Post = (props) => {
                       <AttackFileField
                         values={input.attackFiles}
                         onChange={(values) => {
+                          console.log("AttackFileField :", values)
                           setInput({...input, attackFiles: values})
                         }}
                         onSnackbar={(data) => {

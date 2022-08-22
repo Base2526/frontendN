@@ -48,81 +48,9 @@ export const gqlHomes = gql`
         }
     }`;
 
-export const gqlPosts = gql`
-    query Posts( $userId: ID, $page: Int, $perPage: Int ) {
-        posts(
-            userId: $userId
-            page: $page
-            perPage: $perPage
-        ){
-            status
-            total
-            executionTime
-            data {
-                id: _id
-                title
-                nameSubname
-                idCard
-                amount
-                dateTranfer
-                description
-                tels
-                follows
-                isPublish
-                createdAt
-                updatedAt
-                banks{
-                    bankAccountName
-                    bankId
-                }
-                files {
-                    id:_id
-                    base64
-                    fileName
-                    lastModified
-                    size
-                    type
-                }
-                ownerId
-            }
-        }
-    }`;
+export const gqlPosts = gql`query Posts( $userId: ID, $page: Int, $perPage: Int ) { posts( userId: $userId page: $page perPage: $perPage ) }`;
 
-export const gqlPost = gql`
-    query Post($id: ID!) {
-        post(_id: $id) {
-            status 
-            executionTime
-            data {
-                id: _id
-                title
-                nameSubname
-                idCard
-                amount
-                dateTranfer
-                # body
-                description
-                banks{
-                    bankAccountName
-                    bankId
-                }
-                follows
-                files{
-                    id: _id
-                    base64
-                    fileName
-                    lastModified
-                    size
-                    type
-                }
-                tels
-                isPublish
-                ownerId
-                createdAt
-                updatedAt
-            }
-        }
-    }`;
+export const gqlPost = gql`query Post($id: ID!) { post(_id: $id) }`;
 
 export const gqlPostsByUser =  gql`
     query PostsByUser($userId: ID!) {
@@ -674,36 +602,7 @@ export const gqlCreateUser = gql`
     }
     }`;
 
-export const gqlCreatePost = gql`
-  mutation CreatePost($input: PostInput) {
-        createPost(input: $input) {
-            id: _id
-            title
-            nameSubname
-            idCard
-            amount
-            dateTranfer
-            description
-            tels
-            follows
-            isPublish
-            createdAt
-            updatedAt
-            banks{
-                bankAccountName
-                bankId
-            }
-            files {
-                id:_id
-                base64
-                fileName
-                lastModified
-                size
-                type
-            }
-            ownerId
-        }
-    }`;
+export const gqlCreatePost = gql`mutation CreatePost($input: JSON) { createPost(input: $input) }`;
 
 export const gqlCreateAndUpdateBookmark = gql`
     mutation CreateAndUpdateBookmark($input: BookmarkInput) {

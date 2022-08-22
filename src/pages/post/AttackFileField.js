@@ -73,7 +73,7 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
           (file, index) => {
             // console.log("Stack :", file);
 
-            if (!file.base64) {
+            if (!file.url) {
               // new file
               return (
                 <div style={{ position: "relative" }} key={index}>
@@ -124,7 +124,7 @@ const AttackFileField = ({ values, onChange, onSnackbar }) => {
                     }}
                     variant="rounded"
                     alt="Example Alt"
-                    src={file.base64}
+                    src={file.url}
                   />
                    <IconButton
                     style={{

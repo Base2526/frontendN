@@ -87,6 +87,8 @@ const PostList = (props) => {
               if(props.value.length < 1){
                 return <div />
               }
+
+              console.log("files :", props.value)
               return (
                 <div style={{ position: "relative" }}>
                   <CardActionArea style={{ position: "relative", paddingBottom: "10px" }}>
@@ -97,7 +99,7 @@ const PostList = (props) => {
                       }}
                       variant="rounded"
                       alt="Example Alt"
-                      src={props.value[0].base64}
+                      src={props.value[0].url}
                       onClick={(e) => {
                         console.log("files props: ", props.value)
                         setLightbox({ isOpen: true, photoIndex: 0, images:props.value })
@@ -144,20 +146,20 @@ const PostList = (props) => {
                     </Box>
             }
           },
-          {
-            Header: 'Owner',
-            accessor: 'ownerId',
-            Cell: props =>{
-              let userValue = useQuery(gqlUser, {
-                variables: {id: props.value},
-                notifyOnNetworkStatusChange: true,
-              });
+          // {
+          //   Header: 'Owner',
+          //   accessor: 'ownerId',
+          //   Cell: props =>{
+          //     let userValue = useQuery(gqlUser, {
+          //       variables: {id: props.value},
+          //       notifyOnNetworkStatusChange: true,
+          //     });
       
-              return userValue.loading 
-                    ? <LinearProgress sx={{width:"100px"}} />
-                    : userValue.data.user.data != null ? <Link to={`/user/${userValue.data.user.data.id}/view`}>{userValue.data.user.data.displayName}</Link> : <div />
-            } 
-          },
+          //     return userValue.loading 
+          //           ? <LinearProgress sx={{width:"100px"}} />
+          //           : userValue.data.user.data != null ? <Link to={`/user/${userValue.data.user.data.id}/view`}>{userValue.data.user.data.displayName}</Link> : <div />
+          //   } 
+          // },
           {
             Header: 'Comments',
             Cell: props =>{
@@ -165,9 +167,8 @@ const PostList = (props) => {
                 variables: {postId: props.row.original.id},
                 notifyOnNetworkStatusChange: true,
               });
-
               if(!commentValues.loading){
-                if(commentValues.data.comment.data.length == 0){
+                if( commentValues.data === undefined || commentValues.data.comment.data.length == 0){
                   return <div />
                 }
           
@@ -178,11 +179,12 @@ const PostList = (props) => {
                   }
                 });
           
-                return  <ButtonWrapper><Link to={`/comments`}>
-                          <button className="editBtn">{commentValues.data.comment.data.length + count}</button>
-                        </Link></ButtonWrapper>
+                return  <ButtonWrapper>
+                          <Link to={`/comments`}>
+                            <button className="editBtn">{commentValues.data.comment.data.length + count}</button>
+                          </Link>
+                        </ButtonWrapper>
               }
-              
               return <div />
             } 
           },
@@ -194,7 +196,9 @@ const PostList = (props) => {
                 notifyOnNetworkStatusChange: true, 
               });
       
-              // console.log("gqlBookmarksByPostId : ", bmValus)
+              if( bmValus.data === undefined ){
+                return <div />
+              }
       
               return  bmValus.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
@@ -204,7 +208,7 @@ const PostList = (props) => {
                               <button className="editBtn">{bmValus.data.bookmarksByPostId.data.length}</button>
                             </Link></ButtonWrapper>
             } 
-          }, // 
+          }, 
           {
             Header: 'Share',
             Cell: props =>{
@@ -212,6 +216,10 @@ const PostList = (props) => {
                 variables: {postId: props.row.original.id},
                 notifyOnNetworkStatusChange: true,
               });
+
+              if( shareValus.data === undefined ){
+                return <div />
+              }
       
               return  shareValus.loading 
                       ? <LinearProgress sx={{width:"100px"}} />
@@ -225,8 +233,10 @@ const PostList = (props) => {
           {
             Header: 'Action',
             Cell: props => {
+
+              console.log("action :", props.row.original)
               return  <div>
-                        <Link to={`/post/${props.row.original.id}/edit`}>
+                        <Link to={`/post/${props.row.original._id}/edit`}>
                           <button>Edit</button>
                         </Link>
                         <button>Delete</button>

@@ -69,7 +69,7 @@ const MessageItem = (props) => {
         notifyOnNetworkStatusChange: true,
     });
 
-    console.log("userValues :", userValues)
+    // console.log("userValues :", userValues)
 
     let direction = senderId == user.id  ? "outgoing" : "incoming"
     
@@ -142,25 +142,23 @@ const MessageItem = (props) => {
         }
 
         case "image":{
+            let { src } = payload[0]
+            switch(direction){
+                case "incoming":{
+                    return  <Message model={{direction, position}}>
+                                { userValues.loading ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(userValues.data.user.data.image) ? "" : userValues.data.user.data.image[0].base64} name="Zoe" size="sm" /> }
+                                <Message.ImageContent className={"message-image"} src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
+                                <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
+                            </Message>
+                }
 
-        let { src } = payload[0]
-
-        switch(direction){
-            case "incoming":{
-            return <Message model={{direction, position}}>
-                        { userValues.loading ? <LinearProgress sx={{width:"100px"}} /> : <Avatar src={_.isEmpty(userValues.data.user.data.image) ? "" : userValues.data.user.data.image[0].base64} name="Zoe" size="sm" /> }
-                        <Message.ImageContent src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
-                        <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />   
-                    </Message>
+                case "outgoing":{
+                    return  <Message model={{direction, position}}>
+                                <Message.ImageContent className={"message-image"} src={src} alt={"alt"} width={150} onClick={(event)=>{ console.log("event")}} />
+                                <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />  
+                            </Message>
+                }
             }
-
-            case "outgoing":{
-            return <Message model={{direction, position}}>
-                    <Message.ImageContent src={src} alt={"alt"} width={150} />
-                    <Message.Footer sentTime={moment.unix(sentTime/1000).format('hh:mm A')} />  
-                    </Message>
-            }
-        }
 
         break;
         }
