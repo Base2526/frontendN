@@ -430,10 +430,10 @@ const Home = (props) => {
 
       {lightbox.isOpen && (
         <Lightbox
-          mainSrc={lightbox.images[lightbox.photoIndex].base64}
-          nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].base64}
+          mainSrc={lightbox.images[lightbox.photoIndex].url}
+          nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
           prevSrc={
-            lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].base64
+            lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
           }
           onCloseRequest={() => {
             setLightbox({ ...lightbox, isOpen: false });

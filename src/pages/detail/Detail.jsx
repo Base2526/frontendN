@@ -318,7 +318,7 @@ const Detail = (props) => {
                                     <CardMedia
                                         component="img"
                                         // height="194"
-                                        image={  post.files[0].base64 }
+                                        image={  post.files[0].url }
                                         alt={ post.files[0].fileName }
                                         onClick={() => {
                                             setLightbox({ isOpen: true, photoIndex: 0, images:post.files })
@@ -452,10 +452,10 @@ const Detail = (props) => {
 
             {lightbox.isOpen && (
                 <Lightbox
-                    mainSrc={lightbox.images[lightbox.photoIndex].base64}
-                    nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].base64}
+                    mainSrc={lightbox.images[lightbox.photoIndex].url}
+                    nextSrc={lightbox.images[(lightbox.photoIndex + 1) % lightbox.images.length].url}
                     prevSrc={
-                        lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].base64
+                        lightbox.images[(lightbox.photoIndex + lightbox.images.length - 1) % lightbox.images.length].url
                     }
                     onCloseRequest={() => {
                         setLightbox({ ...lightbox, isOpen: false });
