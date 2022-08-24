@@ -93,13 +93,15 @@ const HomeItem =(props) => {
 
   const renderMedia = (m) =>{
     if( !_.isEmpty(m.files) ){
+
+        console.log("renderMedia : ", m.files)
         return <CardActionArea
           style={{ position: "relative", paddingBottom: "10px" }}
         >
           <CardMedia
             component="img"
             height="194"
-            image={ m.files[0].base64 }
+            image={ m.files[0].url }
             alt={ m.files[0].fileName }
             onClick={() => {
               onLightbox({ isOpen: true, photoIndex: 0, images:m.files })
@@ -204,7 +206,7 @@ const HomeItem =(props) => {
             <ItemComment {...props}/>
 
             <IconButton onClick={(e) => {
-              history.push("/detail/" + item.id);
+              history.push("/detail/" + item._id);
             }}>
               <OpenInNewIcon /> 
             </IconButton>

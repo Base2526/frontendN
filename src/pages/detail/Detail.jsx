@@ -303,6 +303,11 @@ const Detail = (props) => {
     }
 
     const mainView = () =>{
+
+        if(_.isEmpty(postValue.data)){
+            return <div />
+        }
+
         let post = postValue.data.post.data
         return  <div className="col-container">
                     <div className="col1">

@@ -42,7 +42,7 @@ const ItemComment = (props) => {
             }
           });
 
-          if(commentValues.data.comment.data.length == 0){
+          if( _.isEmpty(commentValues.data) || commentValues.data.comment.data.length == 0){
             return <CommentIcon />
           }
     

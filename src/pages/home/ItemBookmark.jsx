@@ -29,7 +29,7 @@ const ItemBookmark = (props) => {
   if(!bmValus.loading){
 
 
-    if(!_.isEmpty(bmValus.data.isBookmark)){
+    if(!_.isEmpty(bmValus.data)){
 
       let {subscribeToMore} = bmValus
       unsubscribe =  subscribeToMore({

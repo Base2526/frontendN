@@ -45,7 +45,7 @@ const ItemShare = (props) => {
     });
 
 
-    if(shareValues.data.shareByPostId.data.length == 0){
+    if( _.isEmpty(shareValues.data) || shareValues.data.shareByPostId.data.length == 0){
       return <IconButton onClick={(e) => handleClick(e)}>
                 <ShareIcon />
               </IconButton> 
